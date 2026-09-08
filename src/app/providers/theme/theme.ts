@@ -1,4 +1,4 @@
-import { createTheme, type MantineColorsTuple } from '@mantine/core';
+import {createTheme, type MantineColorsTuple} from '@mantine/core';
 
 // Brand accent — generated 10-shade scale from #004AAD (base at index 6).
 const brand: MantineColorsTuple = [
