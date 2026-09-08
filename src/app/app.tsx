@@ -1,17 +1,15 @@
-import type { ReactElement } from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { AppRouter } from './providers';
-import { AppShell } from '@/widgets';
-import { AppProviders } from './providers/theme/app-provider';
+import type {ReactElement} from 'react';
+import {BrowserRouter} from 'react-router-dom';
+import {AppRouter} from './providers/index.js';
+import {AppProviders} from './providers/theme/app-provider.js';
+import {AppShell} from '@/widgets';
 
-export const App = (): ReactElement => {
-  return (
+export const App = (): ReactElement => (
     <BrowserRouter>
-      <AppProviders>
-        <AppShell>
-          <AppRouter />
-        </AppShell>
-      </AppProviders>
+        <AppProviders>
+            <AppShell>
+                <AppRouter />
+            </AppShell>
+        </AppProviders>
     </BrowserRouter>
-  );
-};
+);
