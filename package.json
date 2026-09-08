@@ -10,9 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mantine/charts": "^9.6.0",
+    "@mantine/core": "^9.6.0",
+    "@mantine/dates": "^9.6.0",
+    "@mantine/hooks": "^9.6.0",
+    "@mantine/modals": "^9.6.0",
+    "@tabler/icons": "^3.46.0",
+    "@tabler/icons-react": "^3.46.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.3",
+    "styled-components": "^6.5.3"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
