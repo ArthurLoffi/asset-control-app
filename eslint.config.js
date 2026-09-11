@@ -20,6 +20,8 @@ export default defineConfig([
 
     {
         rules: {
+            // Keep regular expressions compatible with the ES2023 TypeScript target.
+            'require-unicode-regexp': ['error', {requireFlag: 'u'}],
             '@typescript-eslint/naming-convention': 'off',
             'unicorn/default-export-style': 'off',
             '@html-eslint/require-open-graph-protocol': 'off',

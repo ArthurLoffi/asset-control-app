@@ -1,5 +1,23 @@
 # React + TypeScript + Vite
 
+## Employee screen
+
+Open `/employees` or select **Employees** in the sidebar. The screen supports
+listing employees, name and ID searches, creation, and editing. The directory
+resolves branch and department IDs to their names through the API lookup endpoints.
+
+Run the API in `../asset-control` on port 8080, then run `npm run dev` here.
+Vite proxies `/api` to `http://localhost:8080`. For deployment, route `/api` to the
+backend with a reverse proxy or set `VITE_API_BASE_URL` at build time to a backend
+URL with CORS configured for the frontend origin (see `.env.example`).
+
+The implementation follows Feature-Sliced Design: `shared/api` owns the HTTP
+client, `entities/employee` owns employee types, requests, and list state,
+`features/employee-form` owns creation/editing, and `pages/employees-page` composes
+the directory screen. Slices expose their public API through `index.ts`.
+
+Validate with `npm run check` and `npm run build`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:
