@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useMemo, useState, type SubmitEvent} from 'react';
 import {
     Alert,
     Badge,
@@ -23,6 +23,7 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
+import {useEmployees} from '@/entities/employee/index.js';
 import {
     useMachines,
     type Machine,
@@ -31,6 +32,7 @@ import {
 import {MachineForm} from '@/features/machine-form/index.js';
 
 const pageSize = 10;
+const allEmployeesSearch = {kind: 'all'} as const;
 
 function formatDate(value: string) {
     const date = new Date(value);
@@ -49,9 +51,11 @@ function includedLabel(value: Machine['has_keyboard']) {
 
 function MachineRow({
     machine,
+    employeeName,
     onEdit,
 }: {
     machine: Machine;
+    employeeName?: string;
     onEdit: (machine: Machine) => void;
 }) {
     return (
@@ -77,7 +81,7 @@ function MachineRow({
                 <Text size="xs" c="dimmed">
                     {machine.employee_id === null
                         ? 'Unassigned'
-                        : `Employee #${machine.employee_id}`}
+                        : (employeeName ?? 'Employee not found')}
                 </Text>
             </Table.Td>
             <Table.Td>
@@ -124,6 +128,11 @@ export function MachinesPage() {
     const [form, setForm] = useState<{machine?: Machine} | undefined>();
     const [notice, setNotice] = useState('');
     const {machines, loading, error, reload} = useMachines(search);
+    const {employees} = useEmployees(allEmployeesSearch);
+    const employeeNames = useMemo(
+        () => new Map(employees.map(({id, name}) => [id, name])),
+        [employees],
+    );
     const totalPages = Math.max(1, Math.ceil(machines.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstMachineIndex = (currentPage - 1) * pageSize;
@@ -377,6 +386,14 @@ export function MachinesPage() {
                                                 <MachineRow
                                                     key={machine.id}
                                                     machine={machine}
+                                                    employeeName={
+                                                        machine.employee_id ===
+                                                        null
+                                                            ? undefined
+                                                            : employeeNames.get(
+                                                                  machine.employee_id,
+                                                              )
+                                                    }
                                                     onEdit={(
                                                         selectedMachine,
                                                     ) => {
