@@ -1,1 +1,1 @@
-export {EmployeesPage} from './ui/employees-page.js';
+export {EmployeesPage, EmployeesPage as default} from './ui/employees-page.js';
