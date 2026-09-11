@@ -18,6 +18,15 @@ the directory screen. Slices expose their public API through `index.ts`.
 
 Validate with `npm run check` and `npm run build`.
 
+## Machine screen
+
+Open `/machines` or select **Machines** in the sidebar. The inventory supports
+listing, machine and employee ID searches, pagination, creation, and editing.
+Machine code follows the same FSD boundaries as employees: entity data access and
+state, a form feature with isolated validation, and a route-level page composition.
+
+Run focused tests with `npm test`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:
