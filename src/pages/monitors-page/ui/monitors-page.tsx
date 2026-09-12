@@ -23,13 +23,13 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {useEmployees} from '@/entities/employee/index.js';
 import {
+    useEmployees,
     useMonitors,
     type Monitor,
     type MonitorSearch,
-} from '@/entities/monitor/index.js';
-import {MonitorForm} from '@/features/monitor-form/index.js';
+} from '@/entities';
+import {MonitorForm} from '@/features';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
@@ -106,7 +106,9 @@ function MonitorRow({
 
 export function MonitorsPage() {
     const [search, setSearch] = useState<MonitorSearch>({kind: 'all'});
-    const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>('id');
+    const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
+        'employee_name',
+    );
     const [query, setQuery] = useState('');
     const [searchError, setSearchError] = useState('');
     const [page, setPage] = useState(1);
@@ -234,7 +236,10 @@ export function MonitorsPage() {
                                         value={searchKind}
                                         allowDeselect={false}
                                         data={[
-                                            {value: 'id', label: 'Monitor ID'},
+                                            {
+                                                value: 'id',
+                                                label: 'Monitor ID',
+                                            },
                                             {
                                                 value: 'employee_name',
                                                 label: 'Employee name',

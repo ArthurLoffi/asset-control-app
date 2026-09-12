@@ -19,7 +19,7 @@ import {
     monitorConditions,
     monitorSituations,
     type Monitor,
-} from '@/entities/monitor/index.js';
+} from '@/entities';
 
 type MonitorFormProps = {
     monitor?: Monitor;

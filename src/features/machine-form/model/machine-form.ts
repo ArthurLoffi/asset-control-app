@@ -6,7 +6,7 @@ import {
     type MachineInput,
     type MachineSituation,
     type MachineType,
-} from '@/entities/machine/index.js';
+} from '@/entities';
 
 export type MachineFormValues = Record<
     | 'asset_number'

@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {machineApi} from '../api/machine-api.js';
 import type {Machine, MachineSearch} from './types.js';
-import {ApiError} from '@/shared/api/index.js';
+import {ApiError} from '@/shared';
 
 export function useMachines(search: MachineSearch) {
     const [machines, setMachines] = useState<Machine[]>([]);
@@ -28,7 +28,7 @@ export function useMachines(search: MachineSearch) {
                 }
 
                 if (
-                    search.kind !== 'all' &&
+                    search.kind === 'id' &&
                     requestError instanceof ApiError &&
                     requestError.status === 404
                 ) {

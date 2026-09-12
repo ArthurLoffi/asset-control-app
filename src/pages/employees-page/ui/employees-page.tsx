@@ -24,12 +24,8 @@ import {
     IconSearch,
     IconUsers,
 } from '@tabler/icons-react';
-import {
-    useEmployees,
-    type Employee,
-    type EmployeeSearch,
-} from '@/entities/employee/index.js';
-import {EmployeeForm} from '@/features/employee-form/index.js';
+import {useEmployees, type Employee, type EmployeeSearch} from '@/entities';
+import {EmployeeForm} from '@/features';
 
 const pageSize = 10;
 

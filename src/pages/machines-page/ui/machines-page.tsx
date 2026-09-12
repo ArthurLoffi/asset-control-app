@@ -23,13 +23,13 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {useEmployees} from '@/entities/employee/index.js';
 import {
+    useEmployees,
     useMachines,
     type Machine,
     type MachineSearch,
-} from '@/entities/machine/index.js';
-import {MachineForm} from '@/features/machine-form/index.js';
+} from '@/entities';
+import {MachineForm} from '@/features';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
@@ -121,7 +121,9 @@ function MachineRow({
 
 export function MachinesPage() {
     const [search, setSearch] = useState<MachineSearch>({kind: 'all'});
-    const [searchKind, setSearchKind] = useState<'id' | 'employee_id'>('id');
+    const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
+        'employee_name',
+    );
     const [query, setQuery] = useState('');
     const [searchError, setSearchError] = useState('');
     const [page, setPage] = useState(1);
@@ -157,9 +159,10 @@ export function MachinesPage() {
         }
 
         if (
-            !/^\d+$/u.test(value) ||
-            !Number.isSafeInteger(Number(value)) ||
-            Number(value) <= 0
+            searchKind === 'id' &&
+            (!/^\d+$/u.test(value) ||
+                !Number.isSafeInteger(Number(value)) ||
+                Number(value) <= 0)
         ) {
             setSearchError('Enter a valid positive ID.');
             return;
@@ -250,16 +253,17 @@ export function MachinesPage() {
                                         data={[
                                             {value: 'id', label: 'Machine ID'},
                                             {
-                                                value: 'employee_id',
-                                                label: 'Employee ID',
+                                                value: 'employee_name',
+                                                label: 'Employee name',
                                             },
                                         ]}
                                         onChange={(value) => {
                                             setSearchKind(
-                                                value === 'employee_id'
-                                                    ? 'employee_id'
+                                                value === 'employee_name'
+                                                    ? 'employee_name'
                                                     : 'id',
                                             );
+                                            setQuery('');
                                             setSearchError('');
                                         }}
                                     />
@@ -267,9 +271,13 @@ export function MachinesPage() {
                                         label={
                                             searchKind === 'id'
                                                 ? 'Machine ID'
-                                                : 'Employee ID'
+                                                : 'Employee name'
                                         }
-                                        placeholder="Enter a positive ID"
+                                        placeholder={
+                                            searchKind === 'id'
+                                                ? 'Enter a machine ID'
+                                                : 'Enter an employee name'
+                                        }
                                         leftSection={<IconSearch size={16} />}
                                         value={query}
                                         onChange={(event) => {
@@ -342,7 +350,7 @@ export function MachinesPage() {
                                 <Text c="dimmed" size="sm" ta="center">
                                     {search.kind === 'all'
                                         ? 'Add your first machine to start the inventory.'
-                                        : 'Check the machine or employee ID and try again.'}
+                                        : 'Check the machine ID or employee name and try again.'}
                                 </Text>
                                 <Button
                                     variant="light"

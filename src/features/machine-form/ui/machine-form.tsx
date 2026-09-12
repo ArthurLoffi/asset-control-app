@@ -20,7 +20,7 @@ import {
     machineSituations,
     machineTypes,
     type Machine,
-} from '@/entities/machine/index.js';
+} from '@/entities';
 
 type MachineFormProps = {
     machine?: Machine;

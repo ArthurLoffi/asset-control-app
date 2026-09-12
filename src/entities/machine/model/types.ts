@@ -31,4 +31,5 @@ export type Machine = {
 export type MachineInput = Omit<Machine, 'id' | 'created_at'>;
 
 export type MachineSearch =
-    {kind: 'all'} | {kind: 'id' | 'employee_id'; value: string};
+    | {kind: 'all'}
+    | {kind: 'id' | 'employee_id' | 'employee_name'; value: string};

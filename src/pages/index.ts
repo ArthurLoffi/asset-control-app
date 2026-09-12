@@ -1,1 +1,5 @@
-export {HomePage} from './home-page/index.js';
+export * from './employees-page';
+export * from './home-page';
+export * from './machines-page';
+export * from './monitors-page';
+export * from './phones-page';

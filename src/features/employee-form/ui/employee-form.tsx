@@ -10,8 +10,7 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
-import {employeeApi, type Employee} from '@/entities/employee/index.js';
-import {useOrganizations} from '@/entities/organization/index.js';
+import {employeeApi, type Employee, useOrganizations} from '@/entities';
 
 type EmployeeFormProps = {
     employee?: Employee;
