@@ -54,6 +54,18 @@ async function addOrganizationNames(
 }
 
 export const employeeApi = {
+    async findIdsByName(name: string, signal: AbortSignal): Promise<number[]> {
+        const employees =
+            (await apiRequest<EmployeeResponse[] | undefined>('/employees', {
+                signal,
+            })) ?? [];
+        const normalizedName = name.toLocaleLowerCase();
+        return employees
+            .filter((employee) =>
+                employee.name.toLocaleLowerCase().includes(normalizedName),
+            )
+            .map(({id}) => id);
+    },
     async list(
         search: EmployeeSearch,
         signal: AbortSignal,

@@ -4,12 +4,14 @@ import {
     Button,
     Group,
     Modal,
+    Select,
     SimpleGrid,
     Stack,
     Text,
     TextInput,
 } from '@mantine/core';
 import {employeeApi, type Employee} from '@/entities/employee/index.js';
+import {useOrganizations} from '@/entities/organization/index.js';
 
 type EmployeeFormProps = {
     employee?: Employee;
@@ -20,6 +22,14 @@ type EmployeeFormProps = {
 export function EmployeeForm({employee, onClose, onSaved}: EmployeeFormProps) {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const {
+        branches,
+        departments,
+        loading: loadingOrganizations,
+        error: organizationError,
+    } = useOrganizations();
+    const toSelectData = (items: typeof branches) =>
+        items.map(({id, name}) => ({value: String(id), label: name}));
 
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -49,7 +59,7 @@ export function EmployeeForm({employee, onClose, onSaved}: EmployeeFormProps) {
             )
         ) {
             setError(
-                'Enter a name, email, and valid positive branch and department IDs.',
+                'Enter a name and email, then select a branch and department.',
             );
             return;
         }
@@ -108,6 +118,11 @@ export function EmployeeForm({employee, onClose, onSaved}: EmployeeFormProps) {
                             {error}
                         </Alert>
                     )}
+                    {organizationError.length > 0 && (
+                        <Alert color="red" title="Could not load form options">
+                            {organizationError}
+                        </Alert>
+                    )}
                     <fieldset
                         disabled={saving}
                         style={{border: 0, padding: 0, margin: 0, minWidth: 0}}
@@ -140,27 +155,37 @@ export function EmployeeForm({employee, onClose, onSaved}: EmployeeFormProps) {
                                 placeholder="Optional"
                             />
                             <SimpleGrid cols={{base: 1, sm: 2}}>
-                                <TextInput
+                                <Select
                                     required
-                                    type="number"
-                                    min={1}
-                                    max={Number.MAX_SAFE_INTEGER}
-                                    step={1}
-                                    label="Branch ID"
+                                    searchable
+                                    allowDeselect={false}
+                                    label="Branch"
                                     name="branch_id"
-                                    defaultValue={employee?.branch_id}
-                                    placeholder="e.g. 1"
+                                    data={toSelectData(branches)}
+                                    defaultValue={
+                                        employee
+                                            ? String(employee.branch_id)
+                                            : null
+                                    }
+                                    placeholder="Select a branch"
+                                    nothingFoundMessage="No branches found"
+                                    disabled={loadingOrganizations}
                                 />
-                                <TextInput
+                                <Select
                                     required
-                                    type="number"
-                                    min={1}
-                                    max={Number.MAX_SAFE_INTEGER}
-                                    step={1}
-                                    label="Department ID"
+                                    searchable
+                                    allowDeselect={false}
+                                    label="Department"
                                     name="department_id"
-                                    defaultValue={employee?.department_id}
-                                    placeholder="e.g. 1"
+                                    data={toSelectData(departments)}
+                                    defaultValue={
+                                        employee
+                                            ? String(employee.department_id)
+                                            : null
+                                    }
+                                    placeholder="Select a department"
+                                    nothingFoundMessage="No departments found"
+                                    disabled={loadingOrganizations}
                                 />
                             </SimpleGrid>
                         </Stack>
@@ -173,7 +198,14 @@ export function EmployeeForm({employee, onClose, onSaved}: EmployeeFormProps) {
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" loading={saving}>
+                        <Button
+                            type="submit"
+                            loading={saving}
+                            disabled={
+                                loadingOrganizations ||
+                                organizationError.length > 0
+                            }
+                        >
                             {employee ? 'Save changes' : 'Create employee'}
                         </Button>
                     </Group>
