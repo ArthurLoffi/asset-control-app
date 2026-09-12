@@ -1,8 +1,8 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {monitorApi} from './monitor-api.js';
-import {ApiError, apiRequest} from '@/shared/api/index.js';
+import {ApiError, apiRequest} from '@/shared';
 
-vi.mock(import('@/shared/api/index.js'), async (importOriginal) => ({
+vi.mock(import('@/shared'), async (importOriginal) => ({
     ...(await importOriginal()),
     apiRequest: vi.fn(),
 }));

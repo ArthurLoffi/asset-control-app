@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {monitorApi} from '../api/monitor-api.js';
 import type {Monitor, MonitorSearch} from './types.js';
-import {ApiError} from '@/shared/api/index.js';
+import {ApiError} from '@/shared';
 
 export function useMonitors(search: MonitorSearch) {
     const [monitors, setMonitors] = useState<Monitor[]>([]);

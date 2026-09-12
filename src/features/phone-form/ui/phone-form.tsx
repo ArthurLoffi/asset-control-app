@@ -16,7 +16,7 @@ import {
     phoneSituations,
     phoneEquipmentOptions,
     type Phone,
-} from '@/entities/phone/index.js';
+} from '@/entities';
 
 type PhoneFormProps = {
     phone?: Phone;

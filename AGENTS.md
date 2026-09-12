@@ -26,3 +26,11 @@ No automated test framework or coverage threshold is currently configured. For e
 ## Commit & Pull Request Guidelines
 
 Recent history uses short Conventional Commit-style subjects such as `feat: added navbar and header to app shell` and `chore: added eslint tool`. Continue with an imperative summary in the form `type: description` (`feat`, `fix`, `chore`, or `refactor`) and keep each commit focused. Pull requests should explain the user-visible behavior, identify key files or routes, link related issues, and include screenshots for visual changes. Report the validation commands run and call out any known follow-up work.
+
+## Formatting and structuring
+
+Follow the FSD structure and separate the frontend (UI) from the business logic (model); do not mix the two. Prioritize code reusability while aiming for clean, scalable code. Avoid unnecessary spacing—such as spreading a simple return statement across multiple lines.
+
+## Import rules
+
+To import a file from `@/shared`, for example, simply use `import ... from '@/shared'`—do not use the full path. Make proper use of the `index.ts` files within those folders, Never import files as 'file.js'.

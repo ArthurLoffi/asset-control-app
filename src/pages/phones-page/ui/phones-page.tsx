@@ -24,15 +24,15 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {useEmployees} from '@/entities/employee/index.js';
 import {
+    useEmployees,
     usePhones,
     phoneEquipmentOptions,
     type Phone,
     type PhoneSearch,
-} from '@/entities/phone/index.js';
-import {PhoneForm} from '@/features/phone-form/index.js';
-import {EmployeePhoneOverview} from '@/widgets/employee-phone-overview/index.js';
+} from '@/entities';
+import {PhoneForm} from '@/features';
+import {EmployeePhoneOverview} from '@/widgets';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;

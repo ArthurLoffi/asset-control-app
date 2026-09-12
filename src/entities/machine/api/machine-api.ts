@@ -1,6 +1,6 @@
 import type {Machine, MachineInput, MachineSearch} from '../model/types.js';
-import {employeeApi} from '@/entities/employee/index.js';
-import {ApiError, apiRequest} from '@/shared/api/index.js';
+import {employeeApi} from '@/entities';
+import {ApiError, apiRequest} from '@/shared';
 
 export const machineApi = {
     async list(search: MachineSearch, signal: AbortSignal): Promise<Machine[]> {

@@ -3,7 +3,7 @@ import {
     phoneEquipmentOptions,
     type PhoneInput,
     type PhoneSituation,
-} from '@/entities/phone/index.js';
+} from '@/entities';
 
 export type PhoneFormValues = Record<
     | 'equipament'

@@ -1,6 +1,6 @@
 import type {Monitor, MonitorInput, MonitorSearch} from '../model/types.js';
-import {employeeApi} from '@/entities/employee/index.js';
-import {ApiError, apiRequest} from '@/shared/api/index.js';
+import {employeeApi} from '@/entities';
+import {ApiError, apiRequest} from '@/shared';
 
 export const monitorApi = {
     async list(search: MonitorSearch, signal: AbortSignal): Promise<Monitor[]> {

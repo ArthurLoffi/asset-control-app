@@ -22,8 +22,7 @@ import {
     provisionOptions,
     summarizeEmployeePhones,
 } from '../model/employee-phone-overview.js';
-import type {Employee} from '@/entities/employee/index.js';
-import type {Phone} from '@/entities/phone/index.js';
+import {type Employee, type Phone} from '@/entities';
 
 type EmployeePhoneOverviewProps = {
     employees: Employee[];

@@ -23,13 +23,13 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {useEmployees} from '@/entities/employee/index.js';
 import {
+    useEmployees,
     useMachines,
     type Machine,
     type MachineSearch,
-} from '@/entities/machine/index.js';
-import {MachineForm} from '@/features/machine-form/index.js';
+} from '@/entities';
+import {MachineForm} from '@/features';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;

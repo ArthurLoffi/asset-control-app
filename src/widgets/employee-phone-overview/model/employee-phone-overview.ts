@@ -1,5 +1,4 @@
-import type {Employee} from '@/entities/employee/index.js';
-import type {Phone} from '@/entities/phone/index.js';
+import {type Employee, type Phone} from '@/entities';
 
 export const provisionOptions = [
     {

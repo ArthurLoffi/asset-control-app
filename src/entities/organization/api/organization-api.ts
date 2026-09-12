@@ -1,5 +1,5 @@
 import type {OrganizationOption} from '../model/types.js';
-import {apiRequest} from '@/shared/api/index.js';
+import {apiRequest} from '@/shared';
 
 export const organizationApi = {
     async list(signal: AbortSignal) {

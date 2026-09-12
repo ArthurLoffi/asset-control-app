@@ -23,13 +23,13 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {useEmployees} from '@/entities/employee/index.js';
 import {
+    useEmployees,
     useMonitors,
     type Monitor,
     type MonitorSearch,
-} from '@/entities/monitor/index.js';
-import {MonitorForm} from '@/features/monitor-form/index.js';
+} from '@/entities';
+import {MonitorForm} from '@/features';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;

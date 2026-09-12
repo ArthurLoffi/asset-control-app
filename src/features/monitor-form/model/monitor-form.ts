@@ -4,7 +4,7 @@ import {
     type MonitorCondition,
     type MonitorInput,
     type MonitorSituation,
-} from '@/entities/monitor/index.js';
+} from '@/entities';
 
 export type MonitorFormValues = Record<
     | 'asset_number'

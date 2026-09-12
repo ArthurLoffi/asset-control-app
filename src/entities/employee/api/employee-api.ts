@@ -1,5 +1,5 @@
 import type {Employee, EmployeeInput, EmployeeSearch} from '../model/types.js';
-import {apiRequest} from '@/shared/api/index.js';
+import {apiRequest} from '@/shared';
 
 type EmployeeResponse = Omit<Employee, 'branch_name' | 'department_name'>;
 
