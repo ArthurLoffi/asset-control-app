@@ -28,7 +28,7 @@ export function useMachines(search: MachineSearch) {
                 }
 
                 if (
-                    search.kind !== 'all' &&
+                    search.kind === 'id' &&
                     requestError instanceof ApiError &&
                     requestError.status === 404
                 ) {

@@ -53,16 +53,28 @@ async function addOrganizationNames(
     }));
 }
 
+function normalizeName(value: string) {
+    return value
+        .trim()
+        .normalize('NFD')
+        .replaceAll(/\p{Mark}/gu, '')
+        .toLocaleLowerCase();
+}
+
 export const employeeApi = {
     async findIdsByName(name: string, signal: AbortSignal): Promise<number[]> {
         const employees =
             (await apiRequest<EmployeeResponse[] | undefined>('/employees', {
                 signal,
             })) ?? [];
-        const normalizedName = name.toLocaleLowerCase();
+        const normalizedName = normalizeName(name);
+        if (normalizedName.length === 0) {
+            return [];
+        }
+
         return employees
             .filter((employee) =>
-                employee.name.toLocaleLowerCase().includes(normalizedName),
+                normalizeName(employee.name).includes(normalizedName),
             )
             .map(({id}) => id);
     },

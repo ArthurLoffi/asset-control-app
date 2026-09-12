@@ -27,4 +27,5 @@ export type Monitor = {
 export type MonitorInput = Omit<Monitor, 'id' | 'created_at'>;
 
 export type MonitorSearch =
-    {kind: 'all'} | {kind: 'id' | 'employee_name'; value: string};
+    | {kind: 'all'}
+    | {kind: 'id' | 'employee_id' | 'employee_name'; value: string};

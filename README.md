@@ -21,11 +21,37 @@ Validate with `npm run check` and `npm run build`.
 ## Machine screen
 
 Open `/machines` or select **Machines** in the sidebar. The inventory supports
-listing, machine and employee ID searches, pagination, creation, and editing.
+listing, machine ID and employee name searches, pagination, creation, and editing.
 Machine code follows the same FSD boundaries as employees: entity data access and
 state, a form feature with isolated validation, and a route-level page composition.
 
 Run focused tests with `npm test`.
+
+## Monitor and phone screens
+
+Open `/monitors` or `/phones`, or select **Monitors** or **Phones** in the sidebar.
+Both inventories support listing, pagination, ID search, creation, and editing.
+Employee name is the default search on machines, monitors, and phones; matching
+supports partial names and ignores case, accents, and surrounding spaces. Clear
+restores the full inventory. All equipment for matching employees is included.
+
+The phone form supports model, IMEI, serial number, equipment category, SIM
+card status, situation, and optional employee assignment. Its API payload preserves
+the backend's `equipament` field name. Phone slices follow the same entity, form,
+and page boundaries as monitors and machines.
+
+The Phones screen opens on **Employee overview**. Summary cards and a searchable
+employee table show **Phone + SIM**, **SIM only**, **No SIM**, and **Not recorded**.
+Each employee is counted once across all their assigned records; unassigned
+inventory is excluded. Missing or incomplete assignments remain **Not recorded**.
+Select a category or search by name, then use **View equipment** to open that
+employee's inventory. The **Phone inventory** tab retains ID/name search and editing.
+
+Equipment choices use the API's `Celular`, `Só chip`, and `Sem chip` values.
+A phone plus a confirmed SIM (including separate records) counts as **Phone + SIM**;
+explicit SIM-only records count as **SIM only**. **No SIM** requires recorded
+absence of a company SIM across all assignments. Unknown or conflicting details
+are kept out of the no-SIM count.
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
