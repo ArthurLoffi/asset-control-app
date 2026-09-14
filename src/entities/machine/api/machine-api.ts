@@ -1,6 +1,6 @@
 import type {Machine, MachineInput, MachineSearch} from '../model/types';
 import {employeeApi} from '@/entities';
-import {ApiError, apiRequest} from '@/shared';
+import {ApiError, apiRequest, createResourceWriter} from '@/shared';
 
 export const machineApi = {
     async list(search: MachineSearch, signal: AbortSignal): Promise<Machine[]> {
@@ -54,17 +54,5 @@ export const machineApi = {
         return [machine];
     },
 
-    async create(input: MachineInput): Promise<void> {
-        await apiRequest<Machine>('/machines', {
-            method: 'POST',
-            body: JSON.stringify(input),
-        });
-    },
-
-    async update(id: number, input: MachineInput): Promise<void> {
-        await apiRequest<Machine>(`/machines?id=${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(input),
-        });
-    },
+    ...createResourceWriter<Machine, MachineInput>('/machines'),
 };

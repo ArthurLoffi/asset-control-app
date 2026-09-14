@@ -9,6 +9,7 @@ const MachinesPage = lazy(async () => import('@/pages/machines-page'));
 const PhonesPage = lazy(async () => import('@/pages/phones-page'));
 const PrintersPage = lazy(async () => import('@/pages/printers-page'));
 const MonitorsPage = lazy(async () => import('@/pages/monitors-page'));
+const EmailsPage = lazy(async () => import('@/pages/emails-page'));
 
 const AppRouter = (): ReactElement => (
     <Suspense
@@ -25,6 +26,7 @@ const AppRouter = (): ReactElement => (
             <Route path={ROUTES.PHONES} element={<PhonesPage />} />
             <Route path={ROUTES.PRINTERS} element={<PrintersPage />} />
             <Route path={ROUTES.MONITORS} element={<MonitorsPage />} />
+            <Route path={ROUTES.EMAILS} element={<EmailsPage />} />
         </Routes>
     </Suspense>
 );

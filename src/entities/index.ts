@@ -4,3 +4,4 @@ export * from './monitor';
 export * from './organization';
 export * from './phone';
 export * from './printer';
+export * from './email';

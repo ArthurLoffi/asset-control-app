@@ -1,6 +1,6 @@
 import type {Monitor, MonitorInput, MonitorSearch} from '../model/types';
 import {employeeApi} from '@/entities';
-import {ApiError, apiRequest} from '@/shared';
+import {ApiError, apiRequest, createResourceWriter} from '@/shared';
 
 export const monitorApi = {
     async list(search: MonitorSearch, signal: AbortSignal): Promise<Monitor[]> {
@@ -54,17 +54,5 @@ export const monitorApi = {
         return [monitor];
     },
 
-    async create(input: MonitorInput): Promise<void> {
-        await apiRequest<Monitor>('/monitors', {
-            method: 'POST',
-            body: JSON.stringify(input),
-        });
-    },
-
-    async update(id: number, input: MonitorInput): Promise<void> {
-        await apiRequest<Monitor>(`/monitors?id=${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(input),
-        });
-    },
+    ...createResourceWriter<Monitor, MonitorInput>('/monitors'),
 };

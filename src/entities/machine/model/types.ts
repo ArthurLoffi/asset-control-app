@@ -1,3 +1,5 @@
+import type {ResourceRecord, ResourceInput, CollectionSearch} from '@/shared';
+
 export const machineTypes = ['Notebook', 'PC'] as const;
 export const machineConditions = ['Novo', 'Bom', 'Ruim'] as const;
 export const machineSituations = [
@@ -13,8 +15,7 @@ export type MachineCondition = (typeof machineConditions)[number];
 export type MachineSituation = (typeof machineSituations)[number];
 type Nullable<T> = T | null; // eslint-disable-line @typescript-eslint/no-restricted-types
 
-export type Machine = {
-    id: number;
+export type Machine = ResourceRecord & {
     user: string;
     asset_number: Nullable<number>;
     type: MachineType;
@@ -25,11 +26,10 @@ export type Machine = {
     machine_condition: Nullable<MachineCondition>;
     situation: MachineSituation;
     employee_id: Nullable<number>;
-    created_at: string;
 };
 
-export type MachineInput = Omit<Machine, 'id' | 'created_at'>;
+export type MachineInput = ResourceInput<Machine>;
 
-export type MachineSearch =
-    | {kind: 'all'}
-    | {kind: 'id' | 'employee_id' | 'employee_name'; value: string};
+export type MachineSearch = CollectionSearch<
+    'id' | 'employee_id' | 'employee_name'
+>;

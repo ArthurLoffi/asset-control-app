@@ -1,5 +1,5 @@
 import type {Employee, EmployeeInput, EmployeeSearch} from '../model/types';
-import {apiRequest} from '@/shared';
+import {apiRequest, createResourceWriter} from '@/shared';
 
 type EmployeeResponse = Omit<Employee, 'branch_name' | 'department_name'>;
 
@@ -102,17 +102,5 @@ export const employeeApi = {
 
         return addOrganizationNames(employees, signal);
     },
-    async create(input: EmployeeInput): Promise<void> {
-        // The create response does not contain the generated ID; reload after saving.
-        await apiRequest<EmployeeResponse>('/employees', {
-            method: 'POST',
-            body: JSON.stringify(input),
-        });
-    },
-    async update(id: number, input: EmployeeInput): Promise<void> {
-        await apiRequest<EmployeeResponse>(`/employees?id=${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(input),
-        });
-    },
+    ...createResourceWriter<EmployeeResponse, EmployeeInput>('/employees'),
 };

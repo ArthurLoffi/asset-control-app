@@ -1,6 +1,6 @@
 import {Badge, Button, Table, Text} from '@mantine/core';
 import type {ReactElement} from 'react';
-import {formatPrinterDate} from '../model/use-printers-page';
+import {formatRecordDate} from '@/shared';
 import type {Printer} from '@/entities';
 
 type PrinterRowProps = {
@@ -43,7 +43,7 @@ export function PrinterRow({
             </Table.Td>
             <Table.Td>
                 <Text size="sm" c="dimmed">
-                    {formatPrinterDate(printer.created_at)}
+                    {formatRecordDate(printer.created_at)}
                 </Text>
             </Table.Td>
             <Table.Td>

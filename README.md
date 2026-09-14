@@ -1,5 +1,27 @@
 # React + TypeScript + Vite
 
+## Email screen
+
+Open `/emails` or select **Emails** in the sidebar. The page loads all email
+accounts by default through `GET /api/emails`, showing 10 records per page.
+Search by user or positive int32 ID, view/reveal the stored password, refresh,
+and create or edit accounts. User search matches a literal substring without
+case sensitivity and returns the lowest-ID match. Clearing a search or submitting
+an empty search reloads the full list and resets pagination.
+
+The form sends `user`, `email`, and `password_hash` to `POST /api/emails` or
+`PUT /api/emails?id=<id>`. Passwords are preserved exactly, including whitespace.
+After saving, the page searches the returned ID so renamed and newly created
+accounts stay accessible. Run the updated sibling backend so its email routes
+and startup ID counter are available.
+
+Reusable infrastructure lives in `shared`: typed record/input/search models,
+create/update requests, single-record lookup normalization, cancellable query
+state, form submission, date/ID helpers, page headers, and loading/error/empty
+states. Emails and printers share page, query, and submission infrastructure;
+all six entity APIs share write operations and record models. Domain-specific
+validation, payloads, search rules, and presentation stay in their FSD slices.
+
 ## Employee screen
 
 Open `/employees` or select **Employees** in the sidebar. The screen supports

@@ -1,6 +1,6 @@
 import type {Phone, PhoneInput, PhoneSearch} from '../model/types';
 import {employeeApi} from '@/entities';
-import {ApiError, apiRequest} from '@/shared';
+import {ApiError, apiRequest, createResourceWriter} from '@/shared';
 
 export const phoneApi = {
     async list(search: PhoneSearch, signal: AbortSignal): Promise<Phone[]> {
@@ -56,17 +56,5 @@ export const phoneApi = {
         return [phone];
     },
 
-    async create(input: PhoneInput): Promise<void> {
-        await apiRequest<Phone>('/phones', {
-            method: 'POST',
-            body: JSON.stringify(input),
-        });
-    },
-
-    async update(id: number, input: PhoneInput): Promise<void> {
-        await apiRequest<Phone>(`/phones?id=${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(input),
-        });
-    },
+    ...createResourceWriter<Phone, PhoneInput>('/phones'),
 };
