@@ -36,7 +36,7 @@ function isIpAddress(value: string) {
 export function organizationOptions(
     items: OrganizationOption[],
     currentId?: number,
-) {
+): Array<{value: string; label: string}> {
     const options = items.map(({id, name}) => ({
         value: String(id),
         label: name,

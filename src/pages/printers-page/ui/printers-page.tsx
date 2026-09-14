@@ -21,11 +21,12 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
+import type {ReactElement} from 'react';
 import {usePrintersPage} from '../model/use-printers-page';
 import {PrinterRow} from './printer-row';
 import {PrinterForm} from '@/features';
 
-export function PrintersPage() {
+export function PrintersPage(): ReactElement {
     const model = usePrintersPage();
 
     return (
@@ -60,7 +61,7 @@ export function PrintersPage() {
                         {model.notice}
                     </Alert>
                 )}
-                {model.organizationError.length > 0 && (
+                {(model.organizationError?.length ?? 0) > 0 && (
                     <Alert
                         color="yellow"
                         title="Location names unavailable"
@@ -77,14 +78,15 @@ export function PrintersPage() {
                                 <Title order={2} size="h4">
                                     Printer inventory
                                 </Title>
-                                {!model.loading && model.error.length === 0 && (
-                                    <Badge variant="light">
-                                        {model.printers.length}{' '}
-                                        {model.search.kind === 'all'
-                                            ? 'total'
-                                            : 'found'}
-                                    </Badge>
-                                )}
+                                {!model.loading &&
+                                    (model.error?.length ?? 0) === 0 && (
+                                        <Badge variant="light">
+                                            {model.printers.length}{' '}
+                                            {model.search.kind === 'all'
+                                                ? 'total'
+                                                : 'found'}
+                                        </Badge>
+                                    )}
                             </Group>
                             <Button
                                 variant="subtle"
@@ -136,7 +138,7 @@ export function PrintersPage() {
                                     </Text>
                                 </Stack>
                             </Center>
-                        ) : model.error.length > 0 ? (
+                        ) : (model.error?.length ?? 0) > 0 ? (
                             <Alert
                                 color="red"
                                 title="Unable to load printers"

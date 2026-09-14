@@ -8,14 +8,49 @@ import {
 
 const pageSize = 10;
 
-export function formatPrinterDate(value: string) {
+type UsePrintersPageReturn = {
+    printers: Printer[];
+    loading: boolean;
+    error: string | undefined;
+    reload: () => void;
+
+    search: PrinterSearch;
+    query: string;
+    setQuery: React.Dispatch<React.SetStateAction<string>>;
+    searchError: string;
+
+    currentPage: number;
+    totalPages: number;
+    setPage: React.Dispatch<React.SetStateAction<number>>;
+    firstIndex: number;
+    lastIndex: number;
+
+    visiblePrinters: Printer[];
+
+    branchNames: Map<number, string>;
+    departmentNames: Map<number, string>;
+
+    organizationError: string | undefined;
+
+    form: {printer?: Printer} | undefined;
+    notice: string;
+
+    resetSearch: () => void;
+    handleSearch: (event: SubmitEvent<HTMLFormElement>) => void;
+
+    openForm: (printer?: Printer) => void;
+    closeForm: () => void;
+    onSaved: (message: string) => void;
+};
+
+export function formatPrinterDate(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
         : date.toLocaleDateString();
 }
 
-export function usePrintersPage() {
+export function usePrintersPage(): UsePrintersPageReturn {
     const [search, setSearch] = useState<PrinterSearch>({kind: 'all'});
     const [query, setQuery] = useState('');
     const [searchError, setSearchError] = useState('');

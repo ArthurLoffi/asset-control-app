@@ -1,4 +1,5 @@
 import {Badge, Button, Table, Text} from '@mantine/core';
+import type {ReactElement} from 'react';
 import {formatPrinterDate} from '../model/use-printers-page';
 import type {Printer} from '@/entities';
 
@@ -14,7 +15,7 @@ export function PrinterRow({
     branchName,
     departmentName,
     onEdit,
-}: PrinterRowProps) {
+}: PrinterRowProps): ReactElement {
     return (
         <Table.Tr>
             <Table.Td>

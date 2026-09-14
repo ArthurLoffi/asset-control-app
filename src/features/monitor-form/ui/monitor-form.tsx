@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Button,
@@ -33,7 +33,11 @@ function booleanDefault(value: Monitor['has_monitor'] | undefined) {
     return value === null || value === undefined ? null : String(value);
 }
 
-export function MonitorForm({monitor, onClose, onSaved}: MonitorFormProps) {
+export function MonitorForm({
+    monitor,
+    onClose,
+    onSaved,
+}: MonitorFormProps): ReactElement {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 

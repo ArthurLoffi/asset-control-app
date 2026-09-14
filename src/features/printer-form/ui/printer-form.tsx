@@ -9,10 +9,11 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
+import type {ReactElement} from 'react';
 import {usePrinterForm, type PrinterFormProps} from '../model/use-printer-form';
 import {printerConditions} from '@/entities';
 
-export function PrinterForm(props: PrinterFormProps) {
+export function PrinterForm(props: PrinterFormProps): ReactElement {
     const {printer, onClose} = props;
     const {
         saving,

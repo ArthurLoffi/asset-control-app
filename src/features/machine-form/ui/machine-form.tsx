@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Button,
@@ -34,7 +34,7 @@ function booleanDefault(value: Machine['has_keyboard'] | undefined) {
     return value === null || value === undefined ? null : String(value);
 }
 
-function MachineFields({machine}: {machine?: Machine}) {
+function MachineFields({machine}: {machine?: Machine}): ReactElement {
     return (
         <SimpleGrid cols={{base: 1, sm: 2}}>
             <TextInput

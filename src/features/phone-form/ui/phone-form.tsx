@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Button,
@@ -33,7 +33,11 @@ function booleanDefault(value: Phone['has_chip'] | undefined) {
     return value === null || value === undefined ? null : String(value);
 }
 
-export function PhoneForm({phone, onClose, onSaved}: PhoneFormProps) {
+export function PhoneForm({
+    phone,
+    onClose,
+    onSaved,
+}: PhoneFormProps): ReactElement {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [hasChip, setHasChip] = useState(booleanDefault(phone?.has_chip));
