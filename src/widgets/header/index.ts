@@ -1,1 +1,1 @@
-export {default as Header} from './ui/header.js';
+export {default as Header} from './ui/header';

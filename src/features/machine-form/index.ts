@@ -1,1 +1,1 @@
-export {MachineForm} from './ui/machine-form.js';
+export {MachineForm} from './ui/machine-form';

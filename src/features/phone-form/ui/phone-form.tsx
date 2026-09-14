@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Button,
@@ -10,7 +10,7 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
-import {parsePhoneForm, type PhoneFormValues} from '../model/phone-form.js';
+import {parsePhoneForm, type PhoneFormValues} from '../model/phone-form';
 import {
     phoneApi,
     phoneSituations,
@@ -33,7 +33,11 @@ function booleanDefault(value: Phone['has_chip'] | undefined) {
     return value === null || value === undefined ? null : String(value);
 }
 
-export function PhoneForm({phone, onClose, onSaved}: PhoneFormProps) {
+export function PhoneForm({
+    phone,
+    onClose,
+    onSaved,
+}: PhoneFormProps): ReactElement {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [hasChip, setHasChip] = useState(booleanDefault(phone?.has_chip));

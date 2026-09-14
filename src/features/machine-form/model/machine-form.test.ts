@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {parseMachineForm, type MachineFormValues} from './machine-form.js';
+import {parseMachineForm, type MachineFormValues} from './machine-form';
 
 const validValues: MachineFormValues = {
     user: 'alex.morgan',

@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {employeeApi} from '../api/employee-api.js';
-import type {Employee, EmployeeSearch} from './types.js';
+import {employeeApi} from '../api/employee-api';
+import type {Employee, EmployeeSearch} from './types';
 import {ApiError} from '@/shared';
 
 export function useEmployees(search: EmployeeSearch) {

@@ -1,4 +1,4 @@
-import type {Phone, PhoneInput, PhoneSearch} from '../model/types.js';
+import type {Phone, PhoneInput, PhoneSearch} from '../model/types';
 import {employeeApi} from '@/entities';
 import {ApiError, apiRequest} from '@/shared';
 

@@ -1,2 +1,2 @@
-export * from './app-provider.js';
-export * from './theme.js';
+export * from './app-provider';
+export * from './theme';

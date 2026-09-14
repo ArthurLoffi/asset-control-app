@@ -1,7 +1,7 @@
 import type {ReactElement} from 'react';
-import {sidebarItems} from '../model/items.js';
-import {Wrapper} from './styles.js';
-import SidebarItem from './sidebar-item.js';
+import {sidebarItems} from '../model/items';
+import {Wrapper} from './styles';
+import SidebarItem from './sidebar-item';
 
 type SidebarProps = {
     onNavigate?: () => void;

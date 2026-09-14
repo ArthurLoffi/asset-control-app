@@ -1,12 +1,13 @@
 import {lazy, Suspense, type ReactElement} from 'react';
 import {Center, Loader} from '@mantine/core';
 import {Route, Routes} from 'react-router-dom';
-import {HomePage} from '@/pages';
+import {HomePage} from '@/pages/home-page';
 import {ROUTES} from '@/shared';
 
 const EmployeesPage = lazy(async () => import('@/pages/employees-page'));
 const MachinesPage = lazy(async () => import('@/pages/machines-page'));
 const PhonesPage = lazy(async () => import('@/pages/phones-page'));
+const PrintersPage = lazy(async () => import('@/pages/printers-page'));
 const MonitorsPage = lazy(async () => import('@/pages/monitors-page'));
 
 const AppRouter = (): ReactElement => (
@@ -22,6 +23,7 @@ const AppRouter = (): ReactElement => (
             <Route path={ROUTES.EMPLOYEES} element={<EmployeesPage />} />
             <Route path={ROUTES.MACHINES} element={<MachinesPage />} />
             <Route path={ROUTES.PHONES} element={<PhonesPage />} />
+            <Route path={ROUTES.PRINTERS} element={<PrintersPage />} />
             <Route path={ROUTES.MONITORS} element={<MonitorsPage />} />
         </Routes>
     </Suspense>

@@ -1,5 +1,5 @@
 import {createRoot} from 'react-dom/client';
-import {App} from './app/app.js';
+import {App} from './app/app';
 
 const reactRoot = document.querySelector('#root');
 if (!reactRoot) {

@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {machineApi} from './machine-api.js';
+import {machineApi} from './machine-api';
 import {ApiError, apiRequest} from '@/shared';
 
 vi.mock(import('@/shared'), async (importOriginal) => ({

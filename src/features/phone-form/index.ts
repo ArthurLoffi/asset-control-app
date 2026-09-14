@@ -1,1 +1,1 @@
-export {PhoneForm} from './ui/phone-form.js';
+export {PhoneForm} from './ui/phone-form';

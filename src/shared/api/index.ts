@@ -1,1 +1,1 @@
-export {ApiError, apiRequest} from './client.js';
+export {ApiError, apiRequest} from './client';

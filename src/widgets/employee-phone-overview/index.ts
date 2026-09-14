@@ -1,1 +1,1 @@
-export {EmployeePhoneOverview} from './ui/employee-phone-overview.js';
+export {EmployeePhoneOverview} from './ui/employee-phone-overview';

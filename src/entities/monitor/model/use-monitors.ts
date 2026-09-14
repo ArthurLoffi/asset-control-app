@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {monitorApi} from '../api/monitor-api.js';
-import type {Monitor, MonitorSearch} from './types.js';
+import {monitorApi} from '../api/monitor-api';
+import type {Monitor, MonitorSearch} from './types';
 import {ApiError} from '@/shared';
 
 export function useMonitors(search: MonitorSearch) {

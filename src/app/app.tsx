@@ -1,7 +1,7 @@
 import type {ReactElement} from 'react';
 import {BrowserRouter} from 'react-router-dom';
-import {AppRouter} from './providers/index.js';
-import {AppProviders} from './providers/theme/app-provider.js';
+import {AppRouter} from './providers';
+import {AppProviders} from './providers/theme/app-provider';
 import {AppShell} from '@/widgets';
 
 export const App = (): ReactElement => (

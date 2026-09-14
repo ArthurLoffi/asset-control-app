@@ -1,36 +1,102 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
+## Framework and Tools
 
-This repository is a React 19 application built with TypeScript and Vite. Application startup lives in `src/index.tsx`, while composition, providers, routing, and theme setup belong under `src/app/`. Route-level screens live in `src/pages/`; reusable page sections such as the header, sidebar, and app shell live in `src/widgets/`; cross-cutting configuration and utilities belong in `src/shared/`. Each feature folder exposes its public API through an `index.ts` barrel. Place static files that must be served unchanged in `public/`. Generated output is written to `dist/` and must not be committed.
-
-## Build, Test, and Development Commands
-
+This is a React 19 application using TypeScript 6, Vite 8, and React Router 7.
 Use Node.js 22 or newer and install locked dependencies with `npm ci`.
+Mantine 9 provides components, layout, and theme support; Tabler supplies React
+icons. Existing sidebar styles use styled-components. Use the installed UI stack
+and shared theme instead of introducing another styling or component framework.
+ESLint with XO handles source linting and Prettier-compatible formatting; Vitest
+runs colocated model and API tests.
 
-- `npm run dev`: start the Vite development server with hot reload.
-- `npm run build`: type-check the project and create a production build in `dist/`.
-- `npm run preview`: serve the production build locally for final verification.
-- `npm run lint`: check all source files with ESLint.
-- `npm run lint:fix`: apply safe ESLint fixes.
-- `npm run check`: run TypeScript validation and ESLint together.
+## Project Structure and FSD Boundaries
 
-## Coding Style & Naming Conventions
+Application startup lives in `src/index.tsx`. Follow Feature-Sliced Design, with
+dependencies flowing downward: `app → pages → widgets → features → entities → shared`.
 
-Follow the XO ESLint configuration in `eslint.config.js`: four-space indentation, semicolons, and Prettier-compatible formatting. Keep TypeScript strict enough to avoid unused locals, unused parameters, and switch fallthrough. Use PascalCase for React components and types, camelCase for functions and variables, and kebab-case for filenames and feature directories (for example, `home-page/ui/home-page.tsx`). Prefer the `@/` alias for imports across architectural layers and relative imports within a feature. Preserve explicit `.js` extensions in local import paths, as used throughout the codebase.
+- `app/`: application composition, providers, global styles, theme, and routing.
+- `pages/<page>/`: route-level composition. Keep search, pagination, orchestration,
+  and derived state in `model/`, with components in `ui/`.
+- `widgets/<widget>/`: reusable page sections, including the header, sidebar,
+  app shell, and employee phone overview.
+- `features/<feature>/`: user actions such as creation/editing forms. Keep
+  validation, payload conversion, submission state, and requests in `model/`;
+  keep markup and event wiring in `ui/`.
+- `entities/<entity>/`: domain types and data hooks in `model/`, HTTP operations
+  in `api/`, and reusable domain presentation in `ui/` when needed.
+- `shared/`: domain-independent HTTP infrastructure, configuration, and utilities.
 
-## Testing Guidelines
+Each slice exposes its public API through `index.ts`; layer barrels expose
+reusable exports. Avoid importing another slice's implementation or introducing
+same-layer dependencies. Compose related entities in a higher layer. Do not import
+a layer's own barrel from inside a slice, since that can create circular imports.
+Place unchanged static assets in `public/`. Generated `dist/` output must not be
+committed. Prefer reusable code, but only extract abstractions with a clear use.
 
-No automated test framework or coverage threshold is currently configured. For every change, run `npm run check` and `npm run build`; verify affected flows manually with `npm run dev`. If tests are introduced, keep them beside the implementation as `*.test.ts` or `*.test.tsx`, add the runner to `package.json`, and document the command here.
+## Imports and Formatting
 
-## Commit & Pull Request Guidelines
+Use extensionless local imports; never append `.js` to TypeScript source imports.
+Use public layer exports for cross-layer imports, for example
+`import {apiRequest} from '@/shared'`. Use relative imports inside a slice. Lazy
+routes may import a page's public slice entry, such as `@/pages/printers-page`,
+to preserve route splitting. Do not import deep implementation paths across slices.
 
-Recent history uses short Conventional Commit-style subjects such as `feat: added navbar and header to app shell` and `chore: added eslint tool`. Continue with an imperative summary in the form `type: description` (`feat`, `fix`, `chore`, or `refactor`) and keep each commit focused. Pull requests should explain the user-visible behavior, identify key files or routes, link related issues, and include screenshots for visual changes. Report the validation commands run and call out any known follow-up work.
+Follow `eslint.config.js`: four-space indentation, semicolons, and
+Prettier-compatible formatting. Use PascalCase for components/types, camelCase
+for functions/variables, and kebab-case for filenames and slice directories.
+Keep simple expressions concise where the formatter permits. Preserve backend
+JSON field names even when they differ from frontend naming conventions.
+TypeScript checks unused locals/parameters and switch fallthrough.
 
-## Formatting and structuring
+## API Integration and Printer Contract
 
-Follow the FSD structure and separate the frontend (UI) from the business logic (model); do not mix the two. Prioritize code reusability while aiming for clean, scalable code. Avoid unnecessary spacing—such as spreading a simple return statement across multiple lines.
+The sibling `../asset-control` Go/Gin API uses MongoDB. Verify DTOs, validation,
+controllers, and routes there before implementing frontend contracts.
+`shared/api` owns `apiRequest` and `ApiError`, unwraps `{status, data}` responses,
+and exposes backend `{error}` messages. Hooks cancel stale reads with
+`AbortController`. Vite proxies `/api` to `http://localhost:8080`; production needs
+a reverse proxy or `VITE_API_BASE_URL` pointing at an API with suitable CORS.
+Never access MongoDB directly from browser code.
 
-## Import rules
+The `/printers` route is lazy-loaded and linked from the sidebar. It supports
+listing, ID search, client-side pagination, refreshing, and creation/editing:
 
-To import a file from `@/shared`, for example, simply use `import ... from '@/shared'`—do not use the full path. Make proper use of the `index.ts` files within those folders, Never import files as 'file.js'.
+- `GET /api/printers`: list; `GET /api/printers/id?id=<id>`: single printer.
+- `POST /api/printers`: create; `PUT /api/printers?id=<id>`: update.
+- Inputs: required positive integer `asset_number`, `branch_id`, `departments_id`;
+  required `model` (at most 100 characters); required IPv4/IPv6 `ip`; nullable
+  `machine_condition` (`Novo`, `Bom`, or `Ruim`). Keep the plural `departments_id`.
+- Responses additionally contain `id` and `created_at`. Printers are assigned to
+  branches/departments, not employees; they have no situation or serial field.
+- Location names/options come from `/api/utils/branches` and
+  `/api/utils/departments`. Preserve existing IDs when a lookup is unavailable.
+- Browser numeric inputs must be safe integers to avoid precision loss.
+
+Printer code lives in `entities/printer`, `features/printer-form`, and
+`pages/printers-page`. UI components delegate business logic to model hooks.
+
+## Development and Validation
+
+- `npm run dev`: start Vite with hot reload; run the sibling API on port 8080.
+- `npm run build`: type-check both TypeScript projects and build `dist/`.
+- `npm run preview`: serve the production build locally.
+- `npm run lint` / `npm run lint:fix`: check source / apply safe fixes.
+- `npm run check`: run project-reference TypeScript validation and ESLint.
+- `npm test`: run Vitest once; tests live beside implementation as `*.test.ts`
+  or `*.test.tsx`. No coverage threshold is configured.
+
+For changes, run `npm run check`, relevant tests, and `npm run build`. Manually
+verify affected flows with `npm run dev`, including loading/error/empty states,
+search reset, pagination, form validation, save failures, and successful editing.
+Use mocked API fixtures for UI checks when no backend is available, and report
+that limitation. Never mutate real inventory just to validate the UI.
+
+## Commits and Pull Requests
+
+Include an update to `AGENTS.md` in every commit.
+
+Use short Conventional Commit subjects: `type: imperative description`
+(`feat`, `fix`, `chore`, or `refactor`). Keep commits focused. PRs should describe
+user-visible behavior and routes, link related issues, include screenshots for
+visual changes, report validation, and identify remaining limitations.

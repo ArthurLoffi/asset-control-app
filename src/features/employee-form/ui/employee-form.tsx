@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Button,
@@ -18,7 +18,11 @@ type EmployeeFormProps = {
     onSaved: (message: string) => void;
 };
 
-export function EmployeeForm({employee, onClose, onSaved}: EmployeeFormProps) {
+export function EmployeeForm({
+    employee,
+    onClose,
+    onSaved,
+}: EmployeeFormProps): ReactElement {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const {

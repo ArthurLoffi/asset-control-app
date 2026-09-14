@@ -1,6 +1,6 @@
 import type {ReactElement} from 'react';
-import type {SidebarItemsType} from '../model/items.js';
-import {Li, NavLink} from './styles.js';
+import type {SidebarItemsType} from '../model/items';
+import {Li, NavLink} from './styles';
 
 type SidebarItemsProp = {
     item: SidebarItemsType;

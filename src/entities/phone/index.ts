@@ -1,5 +1,5 @@
-export {phoneApi} from './api/phone-api.js';
-export {usePhones} from './model/use-phones.js';
+export {phoneApi} from './api/phone-api';
+export {usePhones} from './model/use-phones';
 export {
     phoneSituations,
     phoneEquipmentOptions,
@@ -7,4 +7,4 @@ export {
     type PhoneInput,
     type PhoneSearch,
     type PhoneSituation,
-} from './model/types.js';
+} from './model/types';

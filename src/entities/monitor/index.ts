@@ -1,5 +1,5 @@
-export {monitorApi} from './api/monitor-api.js';
-export {useMonitors} from './model/use-monitors.js';
+export {monitorApi} from './api/monitor-api';
+export {useMonitors} from './model/use-monitors';
 export {
     monitorConditions,
     monitorSituations,
@@ -8,4 +8,4 @@ export {
     type MonitorInput,
     type MonitorSearch,
     type MonitorSituation,
-} from './model/types.js';
+} from './model/types';

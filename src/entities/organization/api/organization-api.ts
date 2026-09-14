@@ -1,4 +1,4 @@
-import type {OrganizationOption} from '../model/types.js';
+import type {OrganizationOption} from '../model/types';
 import {apiRequest} from '@/shared';
 
 export const organizationApi = {
