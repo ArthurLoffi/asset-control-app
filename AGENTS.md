@@ -76,7 +76,26 @@ listing, ID search, client-side pagination, refreshing, and creation/editing:
 Printer code lives in `entities/printer`, `features/printer-form`, and
 `pages/printers-page`. UI components delegate business logic to model hooks.
 
-## Development and Validation
+## Email Contract and Shared Resources
+
+The lazy-loaded `/emails` page lists all emails by default, with client-side
+pagination (10 per page), user/ID searches, creation, and editing. Use
+`GET /api/emails`, `GET /api/emails/user?user=...`, `GET /api/emails/id?id=...`,
+`POST /api/emails`, and `PUT /api/emails?id=...`. Clearing or submitting an empty
+search reloads all emails and resets pagination.
+IDs range from 1 through 2147483647. User search is a literal case-insensitive
+substring search that returns the lowest-ID match. Inputs require `user`,
+`email`, and `password_hash`; preserve passwords exactly, including whitespace.
+The server generates `id` and `created_at`, and returns the saved record. After
+save, select that ID, including when editing changes the original user search.
+
+Use `shared` exports for record/input/search types, write operations,
+single-record lookups, cancellable query state, submission state, ID/date helpers,
+and page headers/result states. Keep resource loaders stable at module scope;
+an undefined query means idle and must not fetch. Domain validation and payload
+conversion belong in feature models. Email and printer flows demonstrate reuse.
+
+## Development and Validation Commands
 
 - `npm run dev`: start Vite with hot reload; run the sibling API on port 8080.
 - `npm run build`: type-check both TypeScript projects and build `dist/`.
@@ -100,3 +119,6 @@ Use short Conventional Commit subjects: `type: imperative description`
 (`feat`, `fix`, `chore`, or `refactor`). Keep commits focused. PRs should describe
 user-visible behavior and routes, link related issues, include screenshots for
 visual changes, report validation, and identify remaining limitations.
+
+## Type the functions
+Type all necessary functions such as forms that return `ReactElement`, among others and never overlook them.

@@ -5,6 +5,7 @@ import {
     type Printer,
     type PrinterSearch,
 } from '@/entities';
+import {isPositiveId} from '@/shared';
 
 const pageSize = 10;
 
@@ -42,13 +43,6 @@ type UsePrintersPageReturn = {
     closeForm: () => void;
     onSaved: (message: string) => void;
 };
-
-export function formatPrinterDate(value: string): string {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
-        ? '—'
-        : date.toLocaleDateString();
-}
 
 export function usePrintersPage(): UsePrintersPageReturn {
     const [search, setSearch] = useState<PrinterSearch>({kind: 'all'});
@@ -88,11 +82,7 @@ export function usePrintersPage(): UsePrintersPageReturn {
             return;
         }
 
-        if (
-            !/^\d+$/u.test(value) ||
-            !Number.isSafeInteger(Number(value)) ||
-            Number(value) <= 0
-        ) {
+        if (!isPositiveId(value)) {
             setSearchError('Enter a valid positive ID.');
             return;
         }

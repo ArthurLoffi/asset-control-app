@@ -1,3 +1,5 @@
+import type {ResourceRecord, ResourceInput, CollectionSearch} from '@/shared';
+
 export const phoneEquipmentOptions = [
     {value: 'Celular', label: 'Mobile phone'},
     {value: 'Só chip', label: 'SIM card only'},
@@ -15,8 +17,7 @@ export const phoneSituations = [
 export type PhoneSituation = (typeof phoneSituations)[number];
 type Nullable<T> = T | null; // eslint-disable-line @typescript-eslint/no-restricted-types
 
-export type Phone = {
-    id: number;
+export type Phone = ResourceRecord & {
     equipament: Nullable<string>;
     model: string;
     imei: string;
@@ -24,11 +25,10 @@ export type Phone = {
     has_chip: Nullable<boolean>;
     situation: PhoneSituation;
     employee_id: Nullable<number>;
-    created_at: string;
 };
 
-export type PhoneInput = Omit<Phone, 'id' | 'created_at'>;
+export type PhoneInput = ResourceInput<Phone>;
 
-export type PhoneSearch =
-    | {kind: 'all'}
-    | {kind: 'id' | 'employee_id' | 'employee_name'; value: string};
+export type PhoneSearch = CollectionSearch<
+    'id' | 'employee_id' | 'employee_name'
+>;

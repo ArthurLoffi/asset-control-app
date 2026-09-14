@@ -1,7 +1,8 @@
 import type {Printer, PrinterInput, PrinterSearch} from '../model/types';
-import {ApiError, apiRequest} from '@/shared';
+import {apiRequest, createResourceWriter, findResource} from '@/shared';
 
 export const printerApi = {
+    ...createResourceWriter<Printer, PrinterInput>('/printers'),
     async list(search: PrinterSearch, signal: AbortSignal): Promise<Printer[]> {
         if (search.kind === 'all') {
             return (
@@ -11,33 +12,6 @@ export const printerApi = {
             );
         }
 
-        const query = new URLSearchParams({id: search.value});
-        try {
-            const printer = await apiRequest<Printer>(
-                `/printers/id?${query.toString()}`,
-                {signal},
-            );
-            return [printer];
-        } catch (error) {
-            if (error instanceof ApiError && error.status === 404) {
-                return [];
-            }
-
-            throw error;
-        }
-    },
-
-    async create(input: PrinterInput): Promise<void> {
-        await apiRequest<Printer>('/printers', {
-            method: 'POST',
-            body: JSON.stringify(input),
-        });
-    },
-
-    async update(id: number, input: PrinterInput): Promise<void> {
-        await apiRequest<Printer>(`/printers?id=${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(input),
-        });
+        return findResource<Printer>('/printers', search, signal);
     },
 };
