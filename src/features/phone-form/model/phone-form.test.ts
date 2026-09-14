@@ -12,6 +12,62 @@ const validValues: PhoneFormValues = {
 };
 
 describe('parsePhoneForm', () => {
+    it.each([
+        {equipament: 'Só chip', has_chip: 'true'},
+        {equipament: 'Sem chip', has_chip: 'false'},
+    ])(
+        'allows empty identification for $equipament without generating placeholders',
+        (equipment) => {
+            expect(
+                parsePhoneForm({
+                    ...validValues,
+                    ...equipment,
+                    model: '  ',
+                    imei: '',
+                    serial_number: '',
+                }),
+            ).toEqual({
+                input: {
+                    ...equipment,
+                    model: '',
+                    imei: '',
+                    serial_number: '',
+                    has_chip: equipment.has_chip === 'true',
+                    situation: 'Em uso',
+                    employee_id: 7,
+                },
+            });
+        },
+    );
+
+    it.each(['Celular', ''])(
+        'still requires identification for equipment %s',
+        (equipament) => {
+            expect(
+                parsePhoneForm({
+                    ...validValues,
+                    equipament,
+                    model: ' ',
+                    imei: '',
+                    serial_number: '',
+                }).error,
+            ).toBeDefined();
+        },
+    );
+
+    it.each([
+        {equipament: 'Só chip', has_chip: 'true'},
+        {equipament: 'Sem chip', has_chip: 'false'},
+    ])('preserves existing identification for $equipament', (equipment) => {
+        expect(
+            parsePhoneForm({...validValues, ...equipment}).input,
+        ).toMatchObject({
+            model: validValues.model,
+            imei: validValues.imei,
+            serial_number: validValues.serial_number,
+        });
+    });
+
     it('preserves IMEI leading zeros and maps assignment and SIM status', () => {
         expect(parsePhoneForm(validValues)).toEqual({
             input: {

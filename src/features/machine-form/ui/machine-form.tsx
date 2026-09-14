@@ -71,10 +71,9 @@ function MachineFields({machine}: {machine?: Machine}): ReactElement {
                 placeholder="e.g. Latitude 5450"
             />
             <TextInput
-                required
                 label="Serial number"
                 name="serial_number"
-                defaultValue={machine?.serial_number}
+                defaultValue={machine?.serial_number ?? ''}
                 placeholder="Manufacturer serial number"
             />
             <TextInput

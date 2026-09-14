@@ -95,6 +95,14 @@ and page headers/result states. Keep resource loaders stable at module scope;
 an undefined query means idle and must not fetch. Domain validation and payload
 conversion belong in feature models. Email and printer flows demonstrate reuse.
 
+## Phone form
+
+Model, IMEI, and serial number are optional for `Só chip` and `Sem chip`, but
+required for `Celular` or unspecified equipment. Use the same condition for
+native form validation and payload validation, and preserve entered values when
+equipment changes. Both backend POST and PUT must accept empty identification
+strings for these two equipment options; do not insert placeholder values.
+
 ## Dashboard
 
 The lazy-loaded home page uses only API records and the shared Mantine theme.

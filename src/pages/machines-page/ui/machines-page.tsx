@@ -1,4 +1,4 @@
-import {useMemo, useState, type SubmitEvent} from 'react';
+import { useMemo, useState, type SubmitEvent } from 'react';
 import {
     Alert,
     Badge,
@@ -29,10 +29,10 @@ import {
     type Machine,
     type MachineSearch,
 } from '@/entities';
-import {MachineForm} from '@/features';
+import { MachineForm } from '@/features';
 
 const pageSize = 10;
-const allEmployeesSearch = {kind: 'all'} as const;
+const allEmployeesSearch = { kind: 'all' } as const;
 
 function formatDate(value: string) {
     const date = new Date(value);
@@ -69,7 +69,9 @@ function MachineRow({
                 </Text>
             </Table.Td>
             <Table.Td>
-                <Text size="sm">{machine.serial_number}</Text>
+                <Text size="sm">
+                    {machine.serial_number === '' ? '—' : machine.serial_number}
+                </Text>
                 <Text size="xs" c="dimmed">
                     {machine.asset_number === null
                         ? 'No asset number'
@@ -120,19 +122,19 @@ function MachineRow({
 }
 
 export function MachinesPage() {
-    const [search, setSearch] = useState<MachineSearch>({kind: 'all'});
+    const [search, setSearch] = useState<MachineSearch>({ kind: 'all' });
     const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
         'employee_name',
     );
     const [query, setQuery] = useState('');
     const [searchError, setSearchError] = useState('');
     const [page, setPage] = useState(1);
-    const [form, setForm] = useState<{machine?: Machine} | undefined>();
+    const [form, setForm] = useState<{ machine?: Machine } | undefined>();
     const [notice, setNotice] = useState('');
-    const {machines, loading, error, reload} = useMachines(search);
-    const {employees} = useEmployees(allEmployeesSearch);
+    const { machines, loading, error, reload } = useMachines(search);
+    const { employees } = useEmployees(allEmployeesSearch);
     const employeeNames = useMemo(
-        () => new Map(employees.map(({id, name}) => [id, name])),
+        () => new Map(employees.map(({ id, name }) => [id, name])),
         [employees],
     );
     const totalPages = Math.max(1, Math.ceil(machines.length / pageSize));
@@ -146,7 +148,7 @@ export function MachinesPage() {
     function resetSearch() {
         setQuery('');
         setSearchError('');
-        setSearch({kind: 'all'});
+        setSearch({ kind: 'all' });
         setPage(1);
     }
 
@@ -169,7 +171,7 @@ export function MachinesPage() {
         }
 
         setSearchError('');
-        setSearch({kind: searchKind, value});
+        setSearch({ kind: searchKind, value });
         setPage(1);
     }
 
@@ -251,7 +253,7 @@ export function MachinesPage() {
                                         value={searchKind}
                                         allowDeselect={false}
                                         data={[
-                                            {value: 'id', label: 'Machine ID'},
+                                            { value: 'id', label: 'Machine ID' },
                                             {
                                                 value: 'employee_name',
                                                 label: 'Employee name',
@@ -283,18 +285,18 @@ export function MachinesPage() {
                                         onChange={(event) => {
                                             setQuery(event.currentTarget.value);
                                         }}
-                                        style={{flex: 1, minWidth: 180}}
+                                        style={{ flex: 1, minWidth: 180 }}
                                     />
                                     <Button type="submit">Search</Button>
                                     {(search.kind !== 'all' ||
                                         query.length > 0) && (
-                                        <Button
-                                            variant="default"
-                                            onClick={resetSearch}
-                                        >
-                                            Clear
-                                        </Button>
-                                    )}
+                                            <Button
+                                                variant="default"
+                                                onClick={resetSearch}
+                                            >
+                                                Clear
+                                            </Button>
+                                        )}
                                 </Group>
                                 {searchError.length > 0 && (
                                     <Text c="red" size="sm" role="alert">
@@ -326,7 +328,7 @@ export function MachinesPage() {
                                         color="red"
                                         size="xs"
                                         onClick={reload}
-                                        style={{alignSelf: 'flex-start'}}
+                                        style={{ alignSelf: 'flex-start' }}
                                     >
                                         Try again
                                     </Button>
@@ -357,8 +359,8 @@ export function MachinesPage() {
                                     onClick={
                                         search.kind === 'all'
                                             ? () => {
-                                                  setForm({});
-                                              }
+                                                setForm({});
+                                            }
                                             : resetSearch
                                     }
                                 >
@@ -395,16 +397,10 @@ export function MachinesPage() {
                                                     key={machine.id}
                                                     machine={machine}
                                                     employeeName={
-                                                        machine.employee_id ===
-                                                        null
+                                                        machine.employee_id === null
                                                             ? undefined
-                                                            : employeeNames.get(
-                                                                  machine.employee_id,
-                                                              )
-                                                    }
-                                                    onEdit={(
-                                                        selectedMachine,
-                                                    ) => {
+                                                            : employeeNames.get(machine.employee_id,)}
+                                                    onEdit={(selectedMachine) => {
                                                         setNotice('');
                                                         setForm({
                                                             machine:
