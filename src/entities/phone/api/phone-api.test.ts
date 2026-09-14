@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {phoneApi} from './phone-api.js';
+import {phoneApi} from './phone-api';
 import {ApiError, apiRequest} from '@/shared';
 
 vi.mock(import('@/shared'), async (importOriginal) => ({

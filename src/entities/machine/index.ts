@@ -1,10 +1,10 @@
-export {machineApi} from './api/machine-api.js';
-export {useMachines} from './model/use-machines.js';
+export {machineApi} from './api/machine-api';
+export {useMachines} from './model/use-machines';
 export {
     machineConditions,
     machineSituations,
     machineTypes,
-} from './model/types.js';
+} from './model/types';
 export type {
     Machine,
     MachineCondition,
@@ -12,4 +12,4 @@ export type {
     MachineSearch,
     MachineSituation,
     MachineType,
-} from './model/types.js';
+} from './model/types';

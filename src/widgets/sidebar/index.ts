@@ -1,1 +1,1 @@
-export {default as Sidebar} from './ui/sidebar.js';
+export {default as Sidebar} from './ui/sidebar';

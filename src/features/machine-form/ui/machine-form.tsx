@@ -10,10 +10,7 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
-import {
-    parseMachineForm,
-    type MachineFormValues,
-} from '../model/machine-form.js';
+import {parseMachineForm, type MachineFormValues} from '../model/machine-form';
 import {
     machineApi,
     machineConditions,

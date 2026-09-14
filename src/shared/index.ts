@@ -1,2 +1,2 @@
-export * from './config/index.js';
-export * from './api/index.js';
+export * from './config';
+export * from './api';

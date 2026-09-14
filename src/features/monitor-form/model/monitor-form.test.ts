@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {parseMonitorForm, type MonitorFormValues} from './monitor-form.js';
+import {parseMonitorForm, type MonitorFormValues} from './monitor-form';
 
 const validValues: MonitorFormValues = {
     has_monitor: 'true',

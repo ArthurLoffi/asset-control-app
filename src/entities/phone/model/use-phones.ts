@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {phoneApi} from '../api/phone-api.js';
-import type {Phone, PhoneSearch} from './types.js';
+import {phoneApi} from '../api/phone-api';
+import type {Phone, PhoneSearch} from './types';
 import {ApiError} from '@/shared';
 
 export function usePhones(search: PhoneSearch) {

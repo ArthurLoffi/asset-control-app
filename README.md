@@ -53,33 +53,14 @@ explicit SIM-only records count as **SIM only**. **No SIM** requires recorded
 absence of a company SIM across all assignments. Unknown or conflicting details
 are kept out of the no-SIM count.
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Printer screen
 
-Currently, two official plugins are available:
+Open `/printers` or select **Printers** in the sidebar. The inventory supports
+listing, ID search, pagination, refresh, creation, and editing. Rows show asset
+number, model, IPv4/IPv6 address, branch, department, condition, and creation date.
+The form uses branch and department lookups and preserves the API's plural
+`departments_id` field. Condition is optional (`Novo`, `Bom`, or `Ruim`).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The implementation separates entity API/state, form validation/submission, and
+page orchestration from UI in dedicated FSD slices. See `AGENTS.md` for architecture,
+API contracts, and validation commands.

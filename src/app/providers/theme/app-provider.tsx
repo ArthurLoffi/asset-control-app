@@ -4,7 +4,7 @@ import type {ReactElement, ReactNode} from 'react';
 import '@mantine/charts/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/core/styles.css';
-import {theme} from './theme.js';
+import {theme} from './theme';
 
 export const AppProviders = ({
     children,

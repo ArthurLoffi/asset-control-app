@@ -1,1 +1,1 @@
-export {EmployeeForm} from './ui/employee-form.js';
+export {EmployeeForm} from './ui/employee-form';

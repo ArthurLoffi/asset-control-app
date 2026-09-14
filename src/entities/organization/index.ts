@@ -1,3 +1,3 @@
-export {organizationApi} from './api/organization-api.js';
-export {useOrganizations} from './model/use-organizations.js';
-export type {OrganizationOption} from './model/types.js';
+export {organizationApi} from './api/organization-api';
+export {useOrganizations} from './model/use-organizations';
+export type {OrganizationOption} from './model/types';

@@ -10,7 +10,7 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
-import {parsePhoneForm, type PhoneFormValues} from '../model/phone-form.js';
+import {parsePhoneForm, type PhoneFormValues} from '../model/phone-form';
 import {
     phoneApi,
     phoneSituations,

@@ -1,4 +1,4 @@
-import type {Monitor, MonitorInput, MonitorSearch} from '../model/types.js';
+import type {Monitor, MonitorInput, MonitorSearch} from '../model/types';
 import {employeeApi} from '@/entities';
 import {ApiError, apiRequest} from '@/shared';
 

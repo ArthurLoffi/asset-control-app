@@ -1,1 +1,1 @@
-export {MonitorForm} from './ui/monitor-form.js';
+export {MonitorForm} from './ui/monitor-form';

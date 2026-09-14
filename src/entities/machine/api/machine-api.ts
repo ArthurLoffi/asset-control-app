@@ -1,4 +1,4 @@
-import type {Machine, MachineInput, MachineSearch} from '../model/types.js';
+import type {Machine, MachineInput, MachineSearch} from '../model/types';
 import {employeeApi} from '@/entities';
 import {ApiError, apiRequest} from '@/shared';
 

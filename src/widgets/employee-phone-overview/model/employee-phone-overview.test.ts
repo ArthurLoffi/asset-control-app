@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {
     matchesEmployeeName,
     summarizeEmployeePhones,
-} from './employee-phone-overview.js';
+} from './employee-phone-overview';
 import {type Employee, type Phone} from '@/entities';
 
 const employees: Employee[] = [1, 2, 3, 4].map((id) => ({

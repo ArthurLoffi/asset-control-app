@@ -10,10 +10,7 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
-import {
-    parseMonitorForm,
-    type MonitorFormValues,
-} from '../model/monitor-form.js';
+import {parseMonitorForm, type MonitorFormValues} from '../model/monitor-form';
 import {
     monitorApi,
     monitorConditions,

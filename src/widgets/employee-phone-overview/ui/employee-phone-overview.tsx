@@ -21,7 +21,7 @@ import {
     matchesEmployeeName,
     provisionOptions,
     summarizeEmployeePhones,
-} from '../model/employee-phone-overview.js';
+} from '../model/employee-phone-overview';
 import {type Employee, type Phone} from '@/entities';
 
 type EmployeePhoneOverviewProps = {

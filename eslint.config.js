@@ -19,6 +19,11 @@ export default defineConfig([
     },
 
     {
+        files: ['**/*.{ts,tsx}'],
+        rules: {'n/file-extension-in-import': ['error', 'never']},
+    },
+
+    {
         rules: {
             // Keep regular expressions compatible with the ES2023 TypeScript target.
             'require-unicode-regexp': ['error', {requireFlag: 'u'}],

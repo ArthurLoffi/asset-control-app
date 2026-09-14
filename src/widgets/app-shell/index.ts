@@ -1,1 +1,1 @@
-export {default as AppShell} from './ui/app-shell.js';
+export {default as AppShell} from './ui/app-shell';

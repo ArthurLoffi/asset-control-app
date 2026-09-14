@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
-import {organizationApi} from '../api/organization-api.js';
-import type {OrganizationOption} from './types.js';
+import {organizationApi} from '../api/organization-api';
+import type {OrganizationOption} from './types';
 
 export function useOrganizations() {
     const [branches, setBranches] = useState<OrganizationOption[]>([]);

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {parsePhoneForm, type PhoneFormValues} from './phone-form.js';
+import {parsePhoneForm, type PhoneFormValues} from './phone-form';
 
 const validValues: PhoneFormValues = {
     equipament: 'Celular',

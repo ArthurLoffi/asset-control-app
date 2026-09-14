@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {monitorApi} from './monitor-api.js';
+import {monitorApi} from './monitor-api';
 import {ApiError, apiRequest} from '@/shared';
 
 vi.mock(import('@/shared'), async (importOriginal) => ({
