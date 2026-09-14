@@ -1,7 +1,12 @@
-import type {Employee, EmployeeInput, EmployeeSearch} from '../model/types';
+import type {
+    Employee,
+    EmployeeInput,
+    EmployeeRecord,
+    EmployeeSearch,
+} from '../model/types';
 import {apiRequest, createResourceWriter} from '@/shared';
 
-type EmployeeResponse = Omit<Employee, 'branch_name' | 'department_name'>;
+type EmployeeResponse = EmployeeRecord;
 
 type NameResponse = {
     name: string;
@@ -62,11 +67,15 @@ function normalizeName(value: string) {
 }
 
 export const employeeApi = {
-    async findIdsByName(name: string, signal: AbortSignal): Promise<number[]> {
-        const employees =
-            (await apiRequest<EmployeeResponse[] | undefined>('/employees', {
+    async listRecords(signal: AbortSignal): Promise<EmployeeRecord[]> {
+        return (
+            (await apiRequest<EmployeeRecord[] | undefined>('/employees', {
                 signal,
-            })) ?? [];
+            })) ?? []
+        );
+    },
+    async findIdsByName(name: string, signal: AbortSignal): Promise<number[]> {
+        const employees = await employeeApi.listRecords(signal);
         const normalizedName = normalizeName(name);
         if (normalizedName.length === 0) {
             return [];
@@ -84,13 +93,7 @@ export const employeeApi = {
     ): Promise<Employee[]> {
         let employees: EmployeeResponse[];
         if (search.kind === 'all') {
-            employees =
-                (await apiRequest<EmployeeResponse[] | undefined>(
-                    '/employees',
-                    {
-                        signal,
-                    },
-                )) ?? [];
+            employees = await employeeApi.listRecords(signal);
         } else {
             const query = new URLSearchParams({[search.kind]: search.value});
             const employee = await apiRequest<EmployeeResponse>(

@@ -1,10 +1,10 @@
 import {lazy, Suspense, type ReactElement} from 'react';
 import {Center, Loader} from '@mantine/core';
 import {Route, Routes} from 'react-router-dom';
-import {HomePage} from '@/pages/home-page';
 import {ROUTES} from '@/shared';
 
 const EmployeesPage = lazy(async () => import('@/pages/employees-page'));
+const HomePage = lazy(async () => import('@/pages/home-page'));
 const MachinesPage = lazy(async () => import('@/pages/machines-page'));
 const PhonesPage = lazy(async () => import('@/pages/phones-page'));
 const PrintersPage = lazy(async () => import('@/pages/printers-page'));

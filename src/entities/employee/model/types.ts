@@ -15,4 +15,6 @@ export type EmployeeInput = Pick<
     'name' | 'phone' | 'email' | 'branch_id' | 'department_id'
 >;
 
+export type EmployeeRecord = Omit<Employee, 'branch_name' | 'department_name'>;
+
 export type EmployeeSearch = CollectionSearch<'id' | 'name'>;
