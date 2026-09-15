@@ -19,11 +19,19 @@ export type PhoneFormValues = Record<
 type PhoneFormResult =
     {input: PhoneInput; error?: never} | {input?: never; error: string};
 
+export function requiresPhoneIdentification(equipment: string | null): boolean {
+    return equipment !== 'Só chip' && equipment !== 'Sem chip';
+}
+
 export function parsePhoneForm(values: PhoneFormValues): PhoneFormResult {
+    const model = values.model.trim();
+    const imei = values.imei.trim();
+    const serialNumber = values.serial_number.trim();
     if (
-        values.model.length === 0 ||
-        values.imei.length === 0 ||
-        values.serial_number.length === 0 ||
+        (requiresPhoneIdentification(values.equipament) &&
+            (model.length === 0 ||
+                imei.length === 0 ||
+                serialNumber.length === 0)) ||
         values.situation.length === 0
     ) {
         return {error: 'Complete all required phone fields.'};
@@ -51,9 +59,9 @@ export function parsePhoneForm(values: PhoneFormValues): PhoneFormResult {
             // Preserve the field spelling used by the phone API.
             equipament:
                 values.equipament.length === 0 ? null : values.equipament,
-            model: values.model,
-            imei: values.imei,
-            serial_number: values.serial_number,
+            model,
+            imei,
+            serial_number: serialNumber,
             has_chip:
                 values.has_chip.length === 0
                     ? null

@@ -20,7 +20,7 @@ export type Machine = ResourceRecord & {
     asset_number: Nullable<number>;
     type: MachineType;
     model: string;
-    serial_number: string;
+    serial_number: Nullable<string>;
     has_keyboard: Nullable<boolean>;
     has_mouse: Nullable<boolean>;
     machine_condition: Nullable<MachineCondition>;

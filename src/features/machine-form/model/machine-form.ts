@@ -49,7 +49,6 @@ export function parseMachineForm(values: MachineFormValues): MachineFormResult {
         values.user,
         values.type,
         values.model,
-        values.serial_number,
         values.situation,
     ];
 

@@ -57,7 +57,7 @@ function PhoneRow({
         <Table.Tr>
             <Table.Td>
                 <Text size="sm" fw={500}>
-                    {phone.model}
+                    {phone.model === '' ? '—' : phone.model}
                 </Text>
                 <Text size="xs" c="dimmed">
                     {phoneEquipmentOptions.find(
@@ -67,9 +67,11 @@ function PhoneRow({
                 </Text>
             </Table.Td>
             <Table.Td>
-                <Text size="sm">{phone.serial_number}</Text>
+                <Text size="sm">
+                    {phone.serial_number === '' ? '—' : phone.serial_number}
+                </Text>
                 <Text size="xs" c="dimmed">
-                    IMEI: {phone.imei}
+                    {phone.imei === '' ? 'No imei number' : `Imei: ${phone.imei}`}
                 </Text>
             </Table.Td>
             <Table.Td>

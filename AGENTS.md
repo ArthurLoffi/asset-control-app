@@ -95,6 +95,26 @@ and page headers/result states. Keep resource loaders stable at module scope;
 an undefined query means idle and must not fetch. Domain validation and payload
 conversion belong in feature models. Email and printer flows demonstrate reuse.
 
+## Phone form
+
+Model, IMEI, and serial number are optional for `Só chip` and `Sem chip`, but
+required for `Celular` or unspecified equipment. Use the same condition for
+native form validation and payload validation, and preserve entered values when
+equipment changes. Both backend POST and PUT must accept empty identification
+strings for these two equipment options; do not insert placeholder values.
+
+## Dashboard
+
+The lazy-loaded home page uses only API records and the shared Mantine theme.
+Keep loading and aggregation in its model, reuse entity APIs and shared query/
+result components, and never substitute fixtures or partial totals after errors.
+Use bulk organization lookups and employee records without per-employee lookups.
+Count monitor/phone entries as records (phone entries may be SIM-only). Printers
+have no status, and `created_at` is not an assignment or update timestamp.
+Preserve raw statuses, missing values, and unresolved location IDs in summaries.
+Summary cards use medium labels and 32px totals for readability, retaining the
+shared theme and responsive grid.
+
 ## Development and Validation Commands
 
 - `npm run dev`: start Vite with hot reload; run the sibling API on port 8080.

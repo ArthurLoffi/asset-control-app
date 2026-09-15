@@ -10,7 +10,11 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
-import {parsePhoneForm, type PhoneFormValues} from '../model/phone-form';
+import {
+    parsePhoneForm,
+    requiresPhoneIdentification,
+    type PhoneFormValues,
+} from '../model/phone-form';
 import {
     phoneApi,
     phoneSituations,
@@ -41,6 +45,8 @@ export function PhoneForm({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [hasChip, setHasChip] = useState(booleanDefault(phone?.has_chip));
+    const [equipment, setEquipment] = useState(phone?.equipament ?? null);
+    const requiresIdentification = requiresPhoneIdentification(equipment);
 
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -115,6 +121,12 @@ export function PhoneForm({
                         Keep identification, assignment, and phone status up to
                         date.
                     </Text>
+                    {!requiresIdentification && (
+                        <Text size="sm" c="dimmed">
+                            Model, IMEI, and serial number are optional for
+                            SIM-only and no-SIM records.
+                        </Text>
+                    )}
                     {error.length > 0 && (
                         <Alert
                             color="red"
@@ -140,7 +152,7 @@ export function PhoneForm({
                                 placeholder="Optional"
                             />
                             <TextInput
-                                required
+                                required={requiresIdentification}
                                 label="Model"
                                 name="model"
                                 defaultValue={phone?.model}
@@ -153,9 +165,10 @@ export function PhoneForm({
                                 data={phoneEquipmentOptions.map(
                                     ({value, label}) => ({value, label}),
                                 )}
-                                defaultValue={phone?.equipament ?? null}
+                                value={equipment}
                                 placeholder="Not specified"
                                 onChange={(value) => {
+                                    setEquipment(value);
                                     if (value === 'Só chip') {
                                         setHasChip('true');
                                     } else if (value === 'Sem chip') {
@@ -164,14 +177,14 @@ export function PhoneForm({
                                 }}
                             />
                             <TextInput
-                                required
+                                required={requiresIdentification}
                                 label="IMEI"
                                 name="imei"
                                 defaultValue={phone?.imei}
                                 placeholder="Device IMEI"
                             />
                             <TextInput
-                                required
+                                required={requiresIdentification}
                                 label="Serial number"
                                 name="serial_number"
                                 defaultValue={phone?.serial_number ?? ''}
