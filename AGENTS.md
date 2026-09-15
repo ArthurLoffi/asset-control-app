@@ -149,3 +149,17 @@ visual changes, report validation, and identify remaining limitations.
 
 ## Type the functions
 Type all necessary functions such as forms that return `ReactElement`, among others and never overlook them.
+
+## Authentication
+
+The sibling API mounts /api/auth/login (POST), /api/auth/logout (POST), and
+/api/auth/session (GET). Session responses contain id, name, and expires_at
+(Unix seconds). JWTs remain in HttpOnly cookies and never enter browser storage.
+shared/api sends credentials and X-CSRF-Protection: 1, and broadcasts inventory
+401 responses. Session state and restoration live in entities/session; login
+and logout actions live in features; login composition lives in pages/login-page;
+app/providers/routes owns the protected layout. Do not fetch inventory before
+session restoration succeeds. On expiry, unmount inventory and redirect to login;
+on unavailable session checks, show retry. Logout errors retain the active UI.
+Keep frontend/API on one origin or same site; configure exact allowed origins
+and secure cookies in production. Vite continues proxying all /api calls to 8080.
