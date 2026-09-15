@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Avatar,
@@ -24,8 +24,9 @@ import {
     IconSearch,
     IconUsers,
 } from '@tabler/icons-react';
-import {useEmployees, type Employee, type EmployeeSearch} from '@/entities';
+import {type Employee, type EmployeeSearch} from '@/entities';
 import {EmployeeForm} from '@/features';
+import {useEmployeeDirectory} from '@/widgets';
 
 const pageSize = 10;
 
@@ -36,7 +37,7 @@ function formatDate(value: string) {
         : date.toLocaleDateString();
 }
 
-export function EmployeesPage() {
+export function EmployeesPage(): ReactElement {
     const [search, setSearch] = useState<EmployeeSearch>({kind: 'all'});
     const [searchKind, setSearchKind] = useState('name');
     const [query, setQuery] = useState('');
@@ -44,7 +45,7 @@ export function EmployeesPage() {
     const [page, setPage] = useState(1);
     const [form, setForm] = useState<{employee?: Employee} | undefined>();
     const [notice, setNotice] = useState('');
-    const {employees, loading, error, reload} = useEmployees(search);
+    const {employees, loading, error, reload} = useEmployeeDirectory(search);
     const totalPages = Math.max(1, Math.ceil(employees.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstEmployeeIndex = (currentPage - 1) * pageSize;

@@ -11,7 +11,7 @@ const request = vi.mocked(apiRequest);
 describe('dashboard API loading', () => {
     beforeEach(() => request.mockReset());
 
-    it('uses seven bulk GETs, forwards cancellation, and never performs per-record lookups', async () => {
+    it('uses seven bulk GETs and cancels inventory reads without cancelling shared lists', async () => {
         request.mockImplementation(async (path) =>
             path === '/employees'
                 ? [{id: 1, branch_id: 2, department_id: 3}]
@@ -27,11 +27,14 @@ describe('dashboard API loading', () => {
             '/monitors',
             '/phones',
             '/printers',
-            '/utils/branches',
-            '/utils/departments',
         ]) {
             expect(request).toHaveBeenCalledWith(path, {signal});
         }
+
+        expect(request).toHaveBeenCalledWith('/utils/branches');
+        expect(request).toHaveBeenCalledWith('/utils/departments');
+        await loadDashboard('all', signal);
+        expect(request).toHaveBeenCalledTimes(12);
     });
 
     it('rejects a failed collection instead of returning partial or fabricated totals', async () => {

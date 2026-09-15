@@ -1,4 +1,4 @@
-import {useMemo, useState, type SubmitEvent} from 'react';
+import {useState, type SubmitEvent} from 'react';
 import {
     useOrganizations,
     usePrinters,
@@ -53,15 +53,7 @@ export function usePrintersPage(): UsePrintersPageReturn {
     const [notice, setNotice] = useState('');
     const {printers, loading, error, reload} = usePrinters(search);
     const organizations = useOrganizations();
-    const branchNames = useMemo(
-        () => new Map(organizations.branches.map(({id, name}) => [id, name])),
-        [organizations.branches],
-    );
-    const departmentNames = useMemo(
-        () =>
-            new Map(organizations.departments.map(({id, name}) => [id, name])),
-        [organizations.departments],
-    );
+    const {branchNames, departmentNames} = organizations;
     const totalPages = Math.max(1, Math.ceil(printers.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstIndex = (currentPage - 1) * pageSize;
@@ -96,7 +88,10 @@ export function usePrintersPage(): UsePrintersPageReturn {
         printers,
         loading,
         error,
-        reload,
+        reload(): void {
+            reload();
+            organizations.reload();
+        },
         search,
         query,
         setQuery,
