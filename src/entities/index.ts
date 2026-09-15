@@ -5,3 +5,4 @@ export * from './organization';
 export * from './phone';
 export * from './printer';
 export * from './email';
+export * from './session';

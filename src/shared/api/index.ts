@@ -1,2 +1,2 @@
-export {ApiError, apiRequest} from './client';
+export {ApiError, apiRequest, onUnauthorized} from './client';
 export {createResourceWriter, findResource} from './resource-api';
