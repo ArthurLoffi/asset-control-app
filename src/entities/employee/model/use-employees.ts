@@ -1,10 +1,15 @@
 import {useEffect, useState} from 'react';
 import {employeeApi} from '../api/employee-api';
-import type {Employee, EmployeeSearch} from './types';
+import type {EmployeeRecord, EmployeeSearch} from './types';
 import {ApiError} from '@/shared';
 
-export function useEmployees(search: EmployeeSearch) {
-    const [employees, setEmployees] = useState<Employee[]>([]);
+export function useEmployees(search: EmployeeSearch): {
+    employees: EmployeeRecord[];
+    loading: boolean;
+    error: string;
+    reload: () => void;
+} {
+    const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [revision, setRevision] = useState(0);

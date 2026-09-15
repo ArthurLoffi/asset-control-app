@@ -78,6 +78,13 @@ Printer code lives in `entities/printer`, `features/printer-form`, and
 
 ## Email Contract and Shared Resources
 
+Organization reference data uses one bulk request each to `/api/utils/branches`
+and `/api/utils/departments`, cached in memory until a full page reload. Reuse
+the sorted lists and ID maps through `useOrganizations`; concurrent consumers
+share requests and failed lists remain retryable. Never request names per ID.
+Employee APIs return raw records; compose organization names in the
+`employee-directory` widget, preserving unresolved IDs in display labels.
+
 The lazy-loaded `/emails` page lists all emails by default, with client-side
 pagination (10 per page), user/ID searches, creation, and editing. Use
 `GET /api/emails`, `GET /api/emails/user?user=...`, `GET /api/emails/id?id=...`,

@@ -1,44 +1,38 @@
-import {useEffect, useState} from 'react';
+import {useMemo} from 'react';
 import {organizationApi} from '../api/organization-api';
-import type {OrganizationOption} from './types';
+import type {OrganizationLists, OrganizationOption} from './types';
+import {useResourceQuery} from '@/shared';
 
-export function useOrganizations() {
-    const [branches, setBranches] = useState<OrganizationOption[]>([]);
-    const [departments, setDepartments] = useState<OrganizationOption[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+const emptyOptions: OrganizationOption[] = [];
 
-    useEffect(() => {
-        const controller = new AbortController();
-        void organizationApi
-            .list(controller.signal)
-            .then((result) => {
-                if (controller.signal.aborted) {
-                    return;
-                }
+async function loadOrganizations(
+    _search: 'all',
+    signal: AbortSignal,
+): Promise<OrganizationLists[]> {
+    return [await organizationApi.list(signal)];
+}
 
-                setBranches(result.branches);
-                setDepartments(result.departments);
-            })
-            .catch((requestError: unknown) => {
-                if (!controller.signal.aborted) {
-                    setError(
-                        requestError instanceof Error
-                            ? requestError.message
-                            : 'Unable to load organization options.',
-                    );
-                }
-            })
-            .finally(() => {
-                if (!controller.signal.aborted) {
-                    setLoading(false);
-                }
-            });
-
-        return () => {
-            controller.abort();
-        };
-    }, []);
-
-    return {branches, departments, loading, error};
+export function useOrganizations(): OrganizationLists & {
+    branchNames: Map<number, string>;
+    departmentNames: Map<number, string>;
+    loading: boolean;
+    error: string;
+    reload: () => void;
+} {
+    const {data, ...query} = useResourceQuery(
+        'all',
+        loadOrganizations,
+        'Unable to load organization options.',
+    );
+    const branches = data[0]?.branches ?? emptyOptions;
+    const departments = data[0]?.departments ?? emptyOptions;
+    const branchNames = useMemo(
+        () => new Map(branches.map(({id, name}) => [id, name])),
+        [branches],
+    );
+    const departmentNames = useMemo(
+        () => new Map(departments.map(({id, name}) => [id, name])),
+        [departments],
+    );
+    return {...query, branches, departments, branchNames, departmentNames};
 }

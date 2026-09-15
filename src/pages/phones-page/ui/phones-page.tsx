@@ -1,4 +1,4 @@
-import {useMemo, useState, type SubmitEvent} from 'react';
+import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
 import {
     Alert,
     Badge,
@@ -25,14 +25,13 @@ import {
     IconSearch,
 } from '@tabler/icons-react';
 import {
-    useEmployees,
     usePhones,
     phoneEquipmentOptions,
     type Phone,
     type PhoneSearch,
 } from '@/entities';
 import {PhoneForm} from '@/features';
-import {EmployeePhoneOverview} from '@/widgets';
+import {EmployeePhoneOverview, useEmployeeDirectory} from '@/widgets';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
@@ -71,7 +70,9 @@ function PhoneRow({
                     {phone.serial_number === '' ? '—' : phone.serial_number}
                 </Text>
                 <Text size="xs" c="dimmed">
-                    {phone.imei === '' ? 'No imei number' : `Imei: ${phone.imei}`}
+                    {phone.imei === ''
+                        ? 'No imei number'
+                        : `Imei: ${phone.imei}`}
                 </Text>
             </Table.Td>
             <Table.Td>
@@ -114,7 +115,7 @@ function PhoneRow({
     );
 }
 
-export function PhonesPage() {
+export function PhonesPage(): ReactElement {
     const [view, setView] = useState('employees');
     const [search, setSearch] = useState<PhoneSearch>({kind: 'all'});
     const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
@@ -131,7 +132,7 @@ export function PhonesPage() {
         loading: employeesLoading,
         error: employeesError,
         reload: reloadEmployees,
-    } = useEmployees(allEmployeesSearch);
+    } = useEmployeeDirectory(allEmployeesSearch);
     const employeeNames = useMemo(
         () => new Map(employees.map(({id, name}) => [id, name])),
         [employees],
