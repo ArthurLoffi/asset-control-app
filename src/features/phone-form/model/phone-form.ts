@@ -2,6 +2,7 @@ import {
     phoneSituations,
     phoneEquipmentOptions,
     type PhoneInput,
+    type Phone,
     type PhoneSituation,
 } from '@/entities';
 
@@ -19,7 +20,9 @@ export type PhoneFormValues = Record<
 type PhoneFormResult =
     {input: PhoneInput; error?: never} | {input?: never; error: string};
 
-export function requiresPhoneIdentification(equipment: string | null): boolean {
+export function requiresPhoneIdentification(
+    equipment: Phone['equipament'],
+): boolean {
     return equipment !== 'Só chip' && equipment !== 'Sem chip';
 }
 

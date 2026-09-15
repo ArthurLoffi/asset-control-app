@@ -86,3 +86,25 @@ The form uses branch and department lookups and preserves the API's plural
 The implementation separates entity API/state, form validation/submission, and
 page orchestration from UI in dedicated FSD slices. See `AGENTS.md` for architecture,
 API contracts, and validation commands.
+
+## Authentication
+
+Run the sibling `asset-control` API with its auth configuration and existing
+bcrypt users. It mounts the sibling `asset-control-auth` module on port 8080;
+you do not need to start a separate auth process. Vite proxies login, session,
+logout, and inventory requests through `/api`.
+
+The app restores the server session before mounting inventory. `/login` supports
+credential errors and redirects back to the requested inventory page. The header
+shows the signed-in username and a working Sign out action; failed logout requests
+show an error, while successful logout returns to login. Expired sessions and
+inventory 401 responses return users to login with an explanation.
+
+Tokens stay in HttpOnly cookies. The shared API client always includes credentials
+and the CSRF protection header. Do not put secrets in `VITE_*` variables.
+For production, use HTTPS and a same-origin reverse proxy, or a same-site API URL
+with exact credentialed CORS origins configured in the backend. Arbitrary cross-site
+API URLs are incompatible with the server's SameSite=Lax cookie.
+
+Auth model/API and routed UI tests use mocked responses; run `npm test`,
+`npm run check`, and `npm run build` before delivery.

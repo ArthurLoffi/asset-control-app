@@ -24,15 +24,18 @@ const existing: Phone = {
 };
 
 beforeEach(() => {
+    // Jsdom does not implement scrolling used by Mantine's combobox.
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+        configurable: true,
+        value: vi.fn<() => void>(),
+    });
     vi.stubGlobal(
         'matchMedia',
-        vi
-            .fn()
-            .mockImplementation(() => ({
-                matches: false,
-                addEventListener: vi.fn(),
-                removeEventListener: vi.fn(),
-            })),
+        vi.fn().mockImplementation(() => ({
+            matches: false,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+        })),
     );
     vi.stubGlobal(
         'ResizeObserver',
@@ -65,7 +68,7 @@ describe('phone create and edit forms', () => {
         it.each(['create', 'edit'] as const)(
             `saves ${equipment.label} with blank identifiers in %s mode`,
             async (mode) => {
-                const onSaved = vi.fn();
+                const onSaved = vi.fn<(message: string) => void>();
                 render(
                     <MantineProvider env="test">
                         <PhoneForm
@@ -78,24 +81,30 @@ describe('phone create and edit forms', () => {
                                       }
                                     : undefined
                             }
-                            onClose={vi.fn()}
+                            onClose={vi.fn<() => void>()}
                             onSaved={onSaved}
                         />
                     </MantineProvider>,
                 );
-                if (mode === 'create') selectEquipment(equipment.label);
+                if (mode === 'create') {
+                    selectEquipment(equipment.label);
+                }
+
                 for (const name of [/^Model/u, /^IMEI/u, /^Serial number/u]) {
                     expect(
                         screen.getByRole<HTMLInputElement>('textbox', {name})
                             .required,
                     ).toBe(false);
                 }
+
                 const saveButton = screen.getByRole('button', {
                     name: mode === 'edit' ? 'Save changes' : 'Create phone',
                 });
                 expect(saveButton.closest('form')?.checkValidity()).toBe(true);
                 fireEvent.click(saveButton);
-                await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+                await waitFor(() => {
+                    expect(onSaved).toHaveBeenCalledOnce();
+                });
                 const input = {
                     equipament: equipment.value,
                     model: '',
@@ -129,8 +138,8 @@ describe('phone create and edit forms', () => {
                         imei: '012345678901234',
                         serial_number: 'SN-1',
                     }}
-                    onClose={vi.fn()}
-                    onSaved={vi.fn()}
+                    onClose={vi.fn<() => void>()}
+                    onSaved={vi.fn<(message: string) => void>()}
                 />
             </MantineProvider>,
         );
