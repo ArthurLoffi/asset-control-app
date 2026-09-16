@@ -3,6 +3,14 @@ import {ApiError, apiRequest} from './client';
 
 export function createResourceWriter<T, Input>(path: string) {
     return {
+        async deactivate(
+            id: number,
+        ): Promise<{id: number; deactivated_at: string}> {
+            const query = new URLSearchParams({id: String(id)});
+            return apiRequest(`${path}/deactivate?${query.toString()}`, {
+                method: 'POST',
+            });
+        },
         async create(input: Input): Promise<T> {
             return apiRequest<T>(path, {
                 method: 'POST',

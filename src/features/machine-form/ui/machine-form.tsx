@@ -18,6 +18,7 @@ import {
     machineTypes,
     type Machine,
 } from '@/entities';
+import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type MachineFormProps = {
     machine?: Machine;
@@ -121,13 +122,28 @@ function MachineFields({machine}: {machine?: Machine}): ReactElement {
     );
 }
 
-export function MachineForm({machine, onClose, onSaved}: MachineFormProps) {
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
+export function MachineForm({
+    machine,
+    onClose,
+    onSaved,
+}: MachineFormProps): ReactElement {
+    const [formSaving, setSaving] = useState(false);
+    const [formError, setError] = useState('');
+
+    const deactivation = useRecordDeactivation({
+        id: machine?.id,
+        deactivate: machineApi.deactivate,
+        onDeactivated() {
+            onSaved('Machine deactivated successfully.');
+        },
+    });
+    const isSaving = formSaving || deactivation.saving;
+    const error =
+        deactivation.error.length > 0 ? deactivation.error : formError;
 
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (saving) {
+        if (isSaving) {
             return;
         }
 
@@ -186,14 +202,18 @@ export function MachineForm({machine, onClose, onSaved}: MachineFormProps) {
             centered
             title={machine ? 'Edit machine' : 'New machine'}
             onClose={onClose}
-            closeOnClickOutside={!saving}
-            closeOnEscape={!saving}
-            withCloseButton={!saving}
+            closeOnClickOutside={!isSaving}
+            closeOnEscape={!isSaving}
+            withCloseButton={!isSaving}
             size="xl"
         >
             <form
                 onSubmit={(event) => {
-                    void handleSubmit(event);
+                    if (deactivation.selected) {
+                        void deactivation.handleSubmit(event);
+                    } else {
+                        void handleSubmit(event);
+                    }
                 }}
             >
                 <Stack>
@@ -210,22 +230,28 @@ export function MachineForm({machine, onClose, onSaved}: MachineFormProps) {
                             {error}
                         </Alert>
                     )}
-                    <fieldset
-                        disabled={saving}
-                        style={{border: 0, padding: 0, margin: 0, minWidth: 0}}
+                    <DeactivationFields
+                        editing={machine !== undefined}
+                        selected={deactivation.selected}
+                        saving={isSaving}
+                        onChange={deactivation.setSelected}
                     >
                         <MachineFields machine={machine} />
-                    </fieldset>
+                    </DeactivationFields>
                     <Group justify="flex-end" mt="sm">
                         <Button
                             variant="default"
-                            disabled={saving}
+                            disabled={isSaving}
                             onClick={onClose}
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" loading={saving}>
-                            {machine ? 'Save changes' : 'Create machine'}
+                        <Button type="submit" loading={isSaving}>
+                            {deactivation.selected
+                                ? 'Deactivate machine'
+                                : machine
+                                  ? 'Save changes'
+                                  : 'Create machine'}
                         </Button>
                     </Group>
                 </Stack>

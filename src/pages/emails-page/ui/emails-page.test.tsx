@@ -52,6 +52,56 @@ function openPage() {
 }
 
 describe('email screen with mocked API', () => {
+    it('removes a deactivated search result and reloads the active list', async () => {
+        let isActive = true;
+        const request = vi.fn(async (path: string) => {
+            if (path.includes('/deactivate')) {
+                isActive = false;
+                return Response.json({
+                    data: {
+                        id: original.id,
+                        deactivated_at: '2026-09-16T12:00:00Z',
+                    },
+                });
+            }
+
+            return Response.json({
+                data:
+                    path === '/api/emails'
+                        ? isActive
+                            ? [original]
+                            : []
+                        : original,
+            });
+        });
+        vi.stubGlobal('fetch', request);
+        openPage();
+        await screen.findByText(original.email);
+        fireEvent.change(screen.getByLabelText('User'), {
+            target: {value: 'Ana'},
+        });
+        fireEvent.click(screen.getByRole('button', {name: 'Search'}));
+        await screen.findByText(original.email);
+        fireEvent.click(
+            screen.getByRole('button', {name: `Edit ${original.email}`}),
+        );
+        fireEvent.click(
+            screen.getByRole('switch', {name: 'Deactivate record'}),
+        );
+        fireEvent.click(screen.getByRole('button', {name: 'Deactivate email'}));
+        await screen.findByText('Email deactivated successfully.');
+        await waitFor(() => {
+            expect(screen.queryByText(original.email)).toBeNull();
+        });
+        expect(screen.queryByRole('dialog')).toBeNull();
+        expect(request).toHaveBeenLastCalledWith(
+            '/api/emails',
+            expect.anything(),
+        );
+        expect(
+            request.mock.calls.some(([path]) => path.includes('/inactive')),
+        ).toBe(false);
+    });
     it('lists by default, searches, edits, and restores the list on clear', async () => {
         let record = {...original};
         const request = vi.fn(async (path: string, options: RequestInit) => {

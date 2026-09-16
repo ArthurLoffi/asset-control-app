@@ -81,6 +81,12 @@ export function useEmailsPage() {
         closeForm() {
             setForm(undefined);
         },
+        onDeactivated(): void {
+            setForm(undefined);
+            resetSearch();
+            results.reload();
+            setNotice('Email deactivated successfully.');
+        },
         onSaved(email: Email) {
             setNotice(
                 form?.email

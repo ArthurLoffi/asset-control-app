@@ -5,6 +5,7 @@ import {useResourceForm} from '@/shared';
 export type EmailFormProps = {
     email?: Email;
     onClose: () => void;
+    onDeactivated: () => void;
     onSaved: (email: Email) => void;
 };
 

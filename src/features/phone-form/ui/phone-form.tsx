@@ -21,6 +21,7 @@ import {
     phoneEquipmentOptions,
     type Phone,
 } from '@/entities';
+import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type PhoneFormProps = {
     phone?: Phone;
@@ -42,15 +43,26 @@ export function PhoneForm({
     onClose,
     onSaved,
 }: PhoneFormProps): ReactElement {
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
+    const [formSaving, setSaving] = useState(false);
+    const [formError, setError] = useState('');
     const [hasChip, setHasChip] = useState(booleanDefault(phone?.has_chip));
     const [equipment, setEquipment] = useState(phone?.equipament ?? null);
     const requiresIdentification = requiresPhoneIdentification(equipment);
 
+    const deactivation = useRecordDeactivation({
+        id: phone?.id,
+        deactivate: phoneApi.deactivate,
+        onDeactivated() {
+            onSaved('Phone deactivated successfully.');
+        },
+    });
+    const isSaving = formSaving || deactivation.saving;
+    const error =
+        deactivation.error.length > 0 ? deactivation.error : formError;
+
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (saving) {
+        if (isSaving) {
             return;
         }
 
@@ -107,13 +119,17 @@ export function PhoneForm({
             size="xl"
             title={phone ? 'Edit phone' : 'New phone'}
             onClose={onClose}
-            closeOnClickOutside={!saving}
-            closeOnEscape={!saving}
-            withCloseButton={!saving}
+            closeOnClickOutside={!isSaving}
+            closeOnEscape={!isSaving}
+            withCloseButton={!isSaving}
         >
             <form
                 onSubmit={(event) => {
-                    void handleSubmit(event);
+                    if (deactivation.selected) {
+                        void deactivation.handleSubmit(event);
+                    } else {
+                        void handleSubmit(event);
+                    }
                 }}
             >
                 <Stack>
@@ -136,9 +152,11 @@ export function PhoneForm({
                             {error}
                         </Alert>
                     )}
-                    <fieldset
-                        disabled={saving}
-                        style={{border: 0, padding: 0, margin: 0, minWidth: 0}}
+                    <DeactivationFields
+                        editing={phone !== undefined}
+                        selected={deactivation.selected}
+                        saving={isSaving}
+                        onChange={deactivation.setSelected}
                     >
                         <SimpleGrid cols={{base: 1, sm: 2}}>
                             <TextInput
@@ -208,17 +226,21 @@ export function PhoneForm({
                                 placeholder="Not specified"
                             />
                         </SimpleGrid>
-                    </fieldset>
+                    </DeactivationFields>
                     <Group justify="flex-end" mt="sm">
                         <Button
                             variant="default"
-                            disabled={saving}
+                            disabled={isSaving}
                             onClick={onClose}
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" loading={saving}>
-                            {phone ? 'Save changes' : 'Create phone'}
+                        <Button type="submit" loading={isSaving}>
+                            {deactivation.selected
+                                ? 'Deactivate phone'
+                                : phone
+                                  ? 'Save changes'
+                                  : 'Create phone'}
                         </Button>
                     </Group>
                 </Stack>

@@ -17,6 +17,7 @@ import {
     monitorSituations,
     type Monitor,
 } from '@/entities';
+import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type MonitorFormProps = {
     monitor?: Monitor;
@@ -38,12 +39,23 @@ export function MonitorForm({
     onClose,
     onSaved,
 }: MonitorFormProps): ReactElement {
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
+    const [formSaving, setSaving] = useState(false);
+    const [formError, setError] = useState('');
+
+    const deactivation = useRecordDeactivation({
+        id: monitor?.id,
+        deactivate: monitorApi.deactivate,
+        onDeactivated() {
+            onSaved('Monitor deactivated successfully.');
+        },
+    });
+    const isSaving = formSaving || deactivation.saving;
+    const error =
+        deactivation.error.length > 0 ? deactivation.error : formError;
 
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (saving) {
+        if (isSaving) {
             return;
         }
 
@@ -101,13 +113,17 @@ export function MonitorForm({
             size="xl"
             title={monitor ? 'Edit monitor' : 'New monitor'}
             onClose={onClose}
-            closeOnClickOutside={!saving}
-            closeOnEscape={!saving}
-            withCloseButton={!saving}
+            closeOnClickOutside={!isSaving}
+            closeOnEscape={!isSaving}
+            withCloseButton={!isSaving}
         >
             <form
                 onSubmit={(event) => {
-                    void handleSubmit(event);
+                    if (deactivation.selected) {
+                        void deactivation.handleSubmit(event);
+                    } else {
+                        void handleSubmit(event);
+                    }
                 }}
             >
                 <Stack>
@@ -124,9 +140,11 @@ export function MonitorForm({
                             {error}
                         </Alert>
                     )}
-                    <fieldset
-                        disabled={saving}
-                        style={{border: 0, padding: 0, margin: 0, minWidth: 0}}
+                    <DeactivationFields
+                        editing={monitor !== undefined}
+                        selected={deactivation.selected}
+                        saving={isSaving}
+                        onChange={deactivation.setSelected}
                     >
                         <SimpleGrid cols={{base: 1, sm: 2}}>
                             <TextInput
@@ -196,17 +214,21 @@ export function MonitorForm({
                                 placeholder="Not specified"
                             />
                         </SimpleGrid>
-                    </fieldset>
+                    </DeactivationFields>
                     <Group justify="flex-end" mt="sm">
                         <Button
                             variant="default"
-                            disabled={saving}
+                            disabled={isSaving}
                             onClick={onClose}
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" loading={saving}>
-                            {monitor ? 'Save changes' : 'Create monitor'}
+                        <Button type="submit" loading={isSaving}>
+                            {deactivation.selected
+                                ? 'Deactivate monitor'
+                                : monitor
+                                  ? 'Save changes'
+                                  : 'Create monitor'}
                         </Button>
                     </Group>
                 </Stack>

@@ -235,6 +235,7 @@ export function EmailsPage(): ReactElement {
                     email={model.form.email}
                     onClose={model.closeForm}
                     onSaved={model.onSaved}
+                    onDeactivated={model.onDeactivated}
                 />
             )}
         </Container>

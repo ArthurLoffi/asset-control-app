@@ -108,3 +108,17 @@ API URLs are incompatible with the server's SameSite=Lax cookie.
 
 Auth model/API and routed UI tests use mocked responses; run `npm test`,
 `npm run check`, and `npm run build` before delivery.
+
+## Deactivating inventory
+
+Open an existing employee, machine, phone, monitor, printer, or email for editing
+and select **Deactivate record**. Other fields become disabled and lighter.
+Unselecting the option restores editing with entered values preserved. Submit the
+**Deactivate** button to save; closing or cancelling makes no change. Deactivation
+preserves existing details, records a timestamp on the server, and removes the
+record from active lists, searches, and dashboard totals. Failed requests keep the
+form open for retry. Assigned equipment remains active when an employee is deactivated.
+
+This requires the sibling API's `POST /api/<resource>/deactivate?id=<id>` endpoint.
+Historical IDs and timestamps are available separately via the API's paginated
+`GET /api/<resource>/inactive` endpoint and are not fetched by active screens.
