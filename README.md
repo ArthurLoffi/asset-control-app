@@ -40,6 +40,15 @@ the directory screen. Slices expose their public API through `index.ts`.
 
 Validate with `npm run check` and `npm run build`.
 
+## Company logo
+
+Set `VITE_COMPANY_LOGO` in `.env` to show a company logo in the application
+header. It accepts an external URL, a public path such as `/logo.png`, or a file
+stored in `src/widgets/header/assets`, such as
+`src/widgets/header/assets/logo.png`. Leave it unset or empty to omit the logo;
+an image that cannot be loaded is hidden automatically. Restart the development
+server after changing the value.
+
 ## Machine screen
 
 Open `/machines` or select **Machines** in the sidebar. The inventory supports

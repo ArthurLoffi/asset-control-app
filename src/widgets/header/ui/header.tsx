@@ -1,5 +1,6 @@
 import {Box, Burger, Group, Text} from '@mantine/core';
 import type {ReactElement} from 'react';
+import CompanyLogo from './company-logo';
 import {LogoutButton} from '@/features';
 import {useSession} from '@/entities';
 
@@ -28,6 +29,7 @@ const Header = ({opened, onClick}: HeaderProps): ReactElement => {
                     hiddenFrom="sm"
                     size="sm"
                 />
+                <CompanyLogo />
                 <Group ml="auto">
                     <Text size="sm">{session?.name}</Text>
                     <LogoutButton />
