@@ -11,19 +11,31 @@ import {
 } from '@mantine/core';
 import type {ReactElement} from 'react';
 import {usePrinterForm, type PrinterFormProps} from '../model/use-printer-form';
-import {printerConditions} from '@/entities';
+import {printerApi, printerConditions} from '@/entities';
+import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 export function PrinterForm(props: PrinterFormProps): ReactElement {
-    const {printer, onClose} = props;
+    const {printer, onClose, onSaved} = props;
     const {
-        saving,
-        error,
+        saving: formSaving,
+        error: formError,
         handleSubmit,
         organizationError,
         loadingOrganizations,
         branches,
         departments,
     } = usePrinterForm(props);
+
+    const deactivation = useRecordDeactivation({
+        id: printer?.id,
+        deactivate: printerApi.deactivate,
+        onDeactivated() {
+            onSaved('Printer deactivated successfully.');
+        },
+    });
+    const isSaving = formSaving || deactivation.saving;
+    const error =
+        deactivation.error.length > 0 ? deactivation.error : formError;
 
     return (
         <Modal
@@ -32,13 +44,17 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
             size="lg"
             title={printer ? 'Edit printer' : 'New printer'}
             onClose={onClose}
-            closeOnClickOutside={!saving}
-            closeOnEscape={!saving}
-            withCloseButton={!saving}
+            closeOnClickOutside={!isSaving}
+            closeOnEscape={!isSaving}
+            withCloseButton={!isSaving}
         >
             <form
                 onSubmit={(event) => {
-                    void handleSubmit(event);
+                    if (deactivation.selected) {
+                        void deactivation.handleSubmit(event);
+                    } else {
+                        void handleSubmit(event);
+                    }
                 }}
             >
                 <Stack>
@@ -65,9 +81,11 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                             retry.
                         </Alert>
                     )}
-                    <fieldset
-                        disabled={saving}
-                        style={{border: 0, padding: 0, margin: 0, minWidth: 0}}
+                    <DeactivationFields
+                        editing={printer !== undefined}
+                        selected={deactivation.selected}
+                        saving={isSaving}
+                        onChange={deactivation.setSelected}
                     >
                         <SimpleGrid cols={{base: 1, sm: 2}}>
                             <TextInput
@@ -115,7 +133,10 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                                 defaultValue={
                                     printer ? String(printer.branch_id) : null
                                 }
-                                disabled={loadingOrganizations}
+                                disabled={
+                                    !deactivation.selected &&
+                                    loadingOrganizations
+                                }
                                 placeholder={
                                     loadingOrganizations
                                         ? 'Loading branches…'
@@ -135,7 +156,10 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                                         ? String(printer.departments_id)
                                         : null
                                 }
-                                disabled={loadingOrganizations}
+                                disabled={
+                                    !deactivation.selected &&
+                                    loadingOrganizations
+                                }
                                 placeholder={
                                     loadingOrganizations
                                         ? 'Loading departments…'
@@ -144,21 +168,27 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                                 nothingFoundMessage="No departments found"
                             />
                         </SimpleGrid>
-                    </fieldset>
+                    </DeactivationFields>
                     <Group justify="flex-end" mt="sm">
                         <Button
                             variant="default"
-                            disabled={saving}
+                            disabled={isSaving}
                             onClick={onClose}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            loading={saving}
-                            disabled={loadingOrganizations}
+                            loading={isSaving}
+                            disabled={
+                                !deactivation.selected && loadingOrganizations
+                            }
                         >
-                            {printer ? 'Save changes' : 'Create printer'}
+                            {deactivation.selected
+                                ? 'Deactivate printer'
+                                : printer
+                                  ? 'Save changes'
+                                  : 'Create printer'}
                         </Button>
                     </Group>
                 </Stack>

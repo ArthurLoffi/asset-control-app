@@ -11,6 +11,7 @@ import {
     TextInput,
 } from '@mantine/core';
 import {employeeApi, type Employee, useOrganizations} from '@/entities';
+import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type EmployeeFormProps = {
     employee?: Employee;
@@ -23,8 +24,8 @@ export function EmployeeForm({
     onClose,
     onSaved,
 }: EmployeeFormProps): ReactElement {
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState('');
+    const [formSaving, setSaving] = useState(false);
+    const [formError, setError] = useState('');
     const {
         branches,
         departments,
@@ -34,9 +35,20 @@ export function EmployeeForm({
     const toSelectData = (items: typeof branches) =>
         items.map(({id, name}) => ({value: String(id), label: name}));
 
+    const deactivation = useRecordDeactivation({
+        id: employee?.id,
+        deactivate: employeeApi.deactivate,
+        onDeactivated() {
+            onSaved('Employee deactivated successfully.');
+        },
+    });
+    const isSaving = formSaving || deactivation.saving;
+    const error =
+        deactivation.error.length > 0 ? deactivation.error : formError;
+
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (saving) {
+        if (isSaving) {
             return;
         }
 
@@ -98,14 +110,18 @@ export function EmployeeForm({
             centered
             title={employee ? 'Edit employee' : 'New employee'}
             onClose={onClose}
-            closeOnClickOutside={!saving}
-            closeOnEscape={!saving}
-            withCloseButton={!saving}
+            closeOnClickOutside={!isSaving}
+            closeOnEscape={!isSaving}
+            withCloseButton={!isSaving}
             size="lg"
         >
             <form
                 onSubmit={(event) => {
-                    void handleSubmit(event);
+                    if (deactivation.selected) {
+                        void deactivation.handleSubmit(event);
+                    } else {
+                        void handleSubmit(event);
+                    }
                 }}
             >
                 <Stack>
@@ -126,9 +142,11 @@ export function EmployeeForm({
                             {organizationError}
                         </Alert>
                     )}
-                    <fieldset
-                        disabled={saving}
-                        style={{border: 0, padding: 0, margin: 0, minWidth: 0}}
+                    <DeactivationFields
+                        editing={employee !== undefined}
+                        selected={deactivation.selected}
+                        saving={isSaving}
+                        onChange={deactivation.setSelected}
                     >
                         <Stack>
                             <TextInput
@@ -172,7 +190,10 @@ export function EmployeeForm({
                                     }
                                     placeholder="Select a branch"
                                     nothingFoundMessage="No branches found"
-                                    disabled={loadingOrganizations}
+                                    disabled={
+                                        !deactivation.selected &&
+                                        loadingOrganizations
+                                    }
                                 />
                                 <Select
                                     required
@@ -188,28 +209,36 @@ export function EmployeeForm({
                                     }
                                     placeholder="Select a department"
                                     nothingFoundMessage="No departments found"
-                                    disabled={loadingOrganizations}
+                                    disabled={
+                                        !deactivation.selected &&
+                                        loadingOrganizations
+                                    }
                                 />
                             </SimpleGrid>
                         </Stack>
-                    </fieldset>
+                    </DeactivationFields>
                     <Group justify="flex-end" mt="sm">
                         <Button
                             variant="default"
-                            disabled={saving}
+                            disabled={isSaving}
                             onClick={onClose}
                         >
                             Cancel
                         </Button>
                         <Button
                             type="submit"
-                            loading={saving}
+                            loading={isSaving}
                             disabled={
-                                loadingOrganizations ||
-                                organizationError.length > 0
+                                !deactivation.selected &&
+                                (loadingOrganizations ||
+                                    organizationError.length > 0)
                             }
                         >
-                            {employee ? 'Save changes' : 'Create employee'}
+                            {deactivation.selected
+                                ? 'Deactivate employee'
+                                : employee
+                                  ? 'Save changes'
+                                  : 'Create employee'}
                         </Button>
                     </Group>
                 </Stack>

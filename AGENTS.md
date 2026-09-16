@@ -163,3 +163,21 @@ session restoration succeeds. On expiry, unmount inventory and redirect to login
 on unavailable session checks, show retry. Logout errors retain the active UI.
 Keep frontend/API on one origin or same site; configure exact allowed origins
 and secure cookies in production. Vite continues proxying all /api calls to 8080.
+
+## Deactivation
+
+Employees, machines, phones, monitors, printers, and emails support deactivation.
+POST /api/<resource>/deactivate?id=<id> sets the database timestamp once and
+preserves the record. Missing/null deactivated_at means active (including legacy
+imports). All ordinary lists, searches, assignment lookups, and updates use the
+active scope. Deactivating an employee does not cascade to assigned equipment.
+GET /api/<resource>/inactive?after=0&limit=50 returns only deactivation IDs and
+timestamps, with next_after cursor pagination (limit 1-100). Keep history requests
+separate from active inventory and dashboard reads. Never reset a timestamp on
+retry or let ordinary writes change lifecycle metadata.
+Edit forms use shared DeactivationFields and useRecordDeactivation. Selecting
+deactivation disables/fades the other fields while preserving unsaved values;
+submission bypasses normal field validation and sends only the deactivation
+request. Success closes the form and reloads active results, including resetting
+email searches instead of selecting the now-inactive ID. Errors retain the form.
+Creation forms do not offer deactivation.
