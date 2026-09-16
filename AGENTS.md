@@ -181,3 +181,10 @@ submission bypasses normal field validation and sends only the deactivation
 request. Success closes the form and reloads active results, including resetting
 email searches instead of selecting the now-inactive ID. Errors retain the form.
 Creation forms do not offer deactivation.
+
+## Company logo
+
+The header reads the optional `VITE_COMPANY_LOGO` build-time variable. It may
+point to an external URL, a public asset path, or a file in
+`src/widgets/header/assets`; missing or unloadable logos remain hidden. The
+logo is visible from the Mantine `sm` breakpoint upward and is hidden on phones.
