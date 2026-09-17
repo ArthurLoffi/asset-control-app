@@ -4,10 +4,12 @@ import {useTranslation} from 'react-i18next';
 import {companyLogoSource} from '../model/company-logo';
 
 type CompanyLogoProps = {
+    marginLeft?: number;
     source?: string;
 };
 
 const CompanyLogo = ({
+    marginLeft = 8,
     source = companyLogoSource,
 }: CompanyLogoProps): ReactElement => {
     const {t} = useTranslation();
@@ -28,7 +30,7 @@ const CompanyLogo = ({
                 fit="contain"
                 h={40}
                 maw={180}
-                ml={8}
+                ml={marginLeft}
                 onError={handleError}
                 src={source}
                 w="auto"

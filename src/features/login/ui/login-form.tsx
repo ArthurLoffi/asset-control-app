@@ -20,21 +20,39 @@ export function LoginForm(): ReactElement {
                     </Alert>
                 )}
                 <TextInput
+                    classNames={{
+                        input: 'login-form__control login-form__text-input',
+                        label: 'login-form__label',
+                    }}
                     label={t('login.username')}
                     name="user"
                     autoComplete="username"
+                    radius="sm"
+                    size="md"
                     required
                     maxLength={255}
                     disabled={submitting}
                 />
                 <PasswordInput
+                    classNames={{
+                        innerInput: 'login-form__password-input',
+                        input: 'login-form__control',
+                        label: 'login-form__label',
+                    }}
                     label={t('login.password')}
                     name="password"
                     autoComplete="current-password"
+                    radius="sm"
+                    size="md"
                     required
                     disabled={submitting}
                 />
-                <Button type="submit" loading={submitting} fullWidth>
+                <Button
+                    className="login-form__submit"
+                    type="submit"
+                    loading={submitting}
+                    fullWidth
+                >
                     {t('login.signIn')}
                 </Button>
             </Stack>

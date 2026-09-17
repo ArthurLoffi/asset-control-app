@@ -49,6 +49,13 @@ stored in `src/widgets/header/assets`, such as
 an image that cannot be loaded is hidden automatically. Restart the development
 server after changing the value.
 
+## Login background
+
+Set `VITE_LOGIN_BACKGROUND` to an external image URL or a public asset path such
+as `/login-background.jpg` to customize the login screen. When it is unset, the
+bundled `/login-hero.png` image is used. Restart the development server after
+changing the value.
+
 ## Machine screen
 
 Open `/machines` or select **Machines** in the sidebar. The inventory supports
