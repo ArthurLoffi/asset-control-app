@@ -102,6 +102,10 @@ and page headers/result states. Keep resource loaders stable at module scope;
 an undefined query means idle and must not fetch. Domain validation and payload
 conversion belong in feature models. Email and printer flows demonstrate reuse.
 
+List tables sort the complete filtered result set before pagination. Sortable
+headers toggle ascending/descending order, expose the active direction visually
+and through `aria-sort`, and keep missing values at the end in either direction.
+
 ## Phone form
 
 Model, IMEI, and serial number are optional for `Só chip` and `Sem chip`, but
@@ -119,6 +123,7 @@ Use bulk organization lookups and employee records without per-employee lookups.
 Count monitor/phone entries as records (phone entries may be SIM-only). Printers
 have no status, and `created_at` is not an assignment or update timestamp.
 Preserve raw statuses, missing values, and unresolved location IDs in summaries.
+Use separate branch and department labels when dashboard location data is missing.
 Summary cards use medium labels and 32px totals for readability, retaining the
 shared theme and responsive grid.
 

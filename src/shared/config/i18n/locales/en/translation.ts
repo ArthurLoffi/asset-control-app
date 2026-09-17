@@ -175,6 +175,10 @@ const translation = {
         switchTo: 'Change language to {{language}}',
     },
     common: {
+        sort: {
+            ascending: 'Sort {{column}} ascending',
+            descending: 'Sort {{column}} descending',
+        },
         actions: {
             toggleNavigation: 'Toggle navigation',
             firstPage: 'First page',
@@ -218,7 +222,8 @@ const translation = {
             user: 'User',
         },
         labels: {
-            locationNotRecorded: 'Location not recorded',
+            branchNotRecorded: 'Branch not recorded',
+            departmentNotRecorded: 'Department not recorded',
             branchId: 'Branch #{{id}}',
             departmentId: 'Department #{{id}}',
             employeeId: 'Employee #{{id}}',

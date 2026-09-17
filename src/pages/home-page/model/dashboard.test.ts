@@ -133,7 +133,8 @@ describe('dashboard aggregation', () => {
         });
         expect(summary.recentRecords[1]).toMatchObject({
             employee: 'Employee #99',
-            branch: 'Location not recorded',
+            branch: 'Branch not recorded',
+            department: 'Department not recorded',
         });
         expect(summary.recentRecords[2].employee).toBe('Unassigned');
         expect(

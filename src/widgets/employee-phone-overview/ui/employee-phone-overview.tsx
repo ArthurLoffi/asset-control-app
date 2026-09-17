@@ -1,4 +1,4 @@
-import {useMemo, useState, type ReactElement} from 'react';
+import {useCallback, useMemo, useState, type ReactElement} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     Alert,
@@ -22,8 +22,14 @@ import {
     matchesEmployeeName,
     provisionOptions,
     summarizeEmployeePhones,
+    type EmployeePhoneSummary,
 } from '../model/employee-phone-overview';
-import {translateMessage} from '@/shared';
+import {
+    i18n,
+    SortableTableHeader,
+    translateMessage,
+    useTableSort,
+} from '@/shared';
 import {type Employee, type Phone} from '@/entities';
 
 type EmployeePhoneOverviewProps = {
@@ -35,6 +41,7 @@ type EmployeePhoneOverviewProps = {
     onViewInventory: (employee: Employee) => void;
 };
 const pageSize = 10;
+type CoverageSortKey = 'employee' | 'organization' | 'equipment' | 'records';
 
 export function EmployeePhoneOverview({
     employees,
@@ -57,10 +64,39 @@ export function EmployeePhoneOverview({
             matchesEmployeeName(employee.name, query) &&
             (category === 'all' || category === provision),
     );
+    const getSortValue = useCallback(
+        (summary: EmployeePhoneSummary, key: CoverageSortKey) => {
+            switch (key) {
+                case 'employee': {
+                    return summary.employee.name;
+                }
+
+                case 'organization': {
+                    return summary.employee.branch_name.length > 0
+                        ? summary.employee.branch_name
+                        : summary.employee.department_name;
+                }
+
+                case 'equipment': {
+                    return t(`provision.${summary.provision}.label`);
+                }
+
+                case 'records': {
+                    return summary.phones.length;
+                }
+            }
+        },
+        [t],
+    );
+    const {sort, sortedRecords, toggleSort} = useTableSort(
+        filtered,
+        getSortValue,
+        i18n.language,
+    );
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstEmployeeIndex = (currentPage - 1) * pageSize;
-    const visible = filtered.slice(
+    const visible = sortedRecords.slice(
         (currentPage - 1) * pageSize,
         currentPage * pageSize,
     );
@@ -71,6 +107,11 @@ export function EmployeePhoneOverview({
     function clearFilters() {
         setQuery('');
         setCategory('all');
+        setPage(1);
+    }
+
+    function handleSort(key: CoverageSortKey): void {
+        toggleSort(key);
         setPage(1);
     }
 
@@ -290,20 +331,47 @@ export function EmployeePhoneOverview({
                                         >
                                             <Table.Thead>
                                                 <Table.Tr>
-                                                    <Table.Th>
-                                                        {t(
-                                                            'common.fields.employee',
-                                                        )}
-                                                    </Table.Th>
-                                                    <Table.Th>
-                                                        {t('organization')}
-                                                    </Table.Th>
-                                                    <Table.Th>
-                                                        {t('companyEquipment')}
-                                                    </Table.Th>
-                                                    <Table.Th>
-                                                        {t('assignedRecords')}
-                                                    </Table.Th>
+                                                    {(
+                                                        [
+                                                            [
+                                                                'employee',
+                                                                t(
+                                                                    'common.fields.employee',
+                                                                ),
+                                                            ],
+                                                            [
+                                                                'organization',
+                                                                t(
+                                                                    'organization',
+                                                                ),
+                                                            ],
+                                                            [
+                                                                'equipment',
+                                                                t(
+                                                                    'companyEquipment',
+                                                                ),
+                                                            ],
+                                                            [
+                                                                'records',
+                                                                t(
+                                                                    'assignedRecords',
+                                                                ),
+                                                            ],
+                                                        ] as Array<
+                                                            [
+                                                                CoverageSortKey,
+                                                                string,
+                                                            ]
+                                                        >
+                                                    ).map(([column, label]) => (
+                                                        <SortableTableHeader
+                                                            key={column}
+                                                            column={column}
+                                                            label={label}
+                                                            sort={sort}
+                                                            onSort={handleSort}
+                                                        />
+                                                    ))}
                                                     <Table.Th>
                                                         {t(
                                                             'common.fields.actions',

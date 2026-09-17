@@ -1,4 +1,10 @@
-import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
+import {
+    useCallback,
+    useMemo,
+    useState,
+    type ReactElement,
+    type SubmitEvent,
+} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     Alert,
@@ -24,7 +30,14 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {translateMessage, i18n, translateInventoryValue} from '@/shared';
+import {
+    translateMessage,
+    i18n,
+    translateInventoryValue,
+    SortableTableHeader,
+    sortableTimestamp,
+    useTableSort,
+} from '@/shared';
 import {
     useEmployees,
     useMonitors,
@@ -35,6 +48,13 @@ import {MonitorForm} from '@/features';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
+type MonitorSortKey =
+    | 'monitor'
+    | 'identification'
+    | 'employee'
+    | 'condition'
+    | 'situation'
+    | 'added';
 
 function formatDate(value: string): string {
     const date = new Date(value);
@@ -127,10 +147,59 @@ export function MonitorsPage(): ReactElement {
         () => new Map(employees.map(({id, name}) => [id, name])),
         [employees],
     );
+    const getSortValue = useCallback(
+        (monitor: Monitor, key: MonitorSortKey) => {
+            switch (key) {
+                case 'monitor': {
+                    return monitor.model.length > 0
+                        ? monitor.model
+                        : (monitor.brand ?? undefined);
+                }
+
+                case 'identification': {
+                    return (
+                        monitor.serial_number ??
+                        monitor.asset_number ??
+                        undefined
+                    );
+                }
+
+                case 'employee': {
+                    return monitor.employee_id === null
+                        ? ''
+                        : employeeNames.get(monitor.employee_id);
+                }
+
+                case 'condition': {
+                    return (
+                        translateInventoryValue(monitor.monitor_condition, t) ??
+                        undefined
+                    );
+                }
+
+                case 'situation': {
+                    return (
+                        translateInventoryValue(monitor.situation, t) ??
+                        undefined
+                    );
+                }
+
+                case 'added': {
+                    return sortableTimestamp(monitor.created_at);
+                }
+            }
+        },
+        [employeeNames, t],
+    );
+    const {sort, sortedRecords, toggleSort} = useTableSort(
+        monitors,
+        getSortValue,
+        i18n.language,
+    );
     const totalPages = Math.max(1, Math.ceil(monitors.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstMonitorIndex = (currentPage - 1) * pageSize;
-    const visibleMonitors = monitors.slice(
+    const visibleMonitors = sortedRecords.slice(
         firstMonitorIndex,
         currentPage * pageSize,
     );
@@ -162,6 +231,11 @@ export function MonitorsPage(): ReactElement {
 
         setSearchError('');
         setSearch({kind: searchKind, value});
+        setPage(1);
+    }
+
+    function handleSort(key: MonitorSortKey): void {
+        toggleSort(key);
         setPage(1);
     }
 
@@ -388,32 +462,54 @@ export function MonitorsPage(): ReactElement {
                                     >
                                         <Table.Thead>
                                             <Table.Tr>
-                                                <Table.Th>
-                                                    {t('monitor')}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.identification',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.employee',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.condition',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.situation',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('common.fields.added')}
-                                                </Table.Th>
+                                                {(
+                                                    [
+                                                        [
+                                                            'monitor',
+                                                            t('monitor'),
+                                                        ],
+                                                        [
+                                                            'identification',
+                                                            t(
+                                                                'common.fields.identification',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'employee',
+                                                            t(
+                                                                'common.fields.employee',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'condition',
+                                                            t(
+                                                                'common.fields.condition',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'situation',
+                                                            t(
+                                                                'common.fields.situation',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'added',
+                                                            t(
+                                                                'common.fields.added',
+                                                            ),
+                                                        ],
+                                                    ] as Array<
+                                                        [MonitorSortKey, string]
+                                                    >
+                                                ).map(([column, label]) => (
+                                                    <SortableTableHeader
+                                                        key={column}
+                                                        column={column}
+                                                        label={label}
+                                                        sort={sort}
+                                                        onSort={handleSort}
+                                                    />
+                                                ))}
                                                 <Table.Th>
                                                     {t('common.fields.actions')}
                                                 </Table.Th>

@@ -181,6 +181,10 @@ const translation = {
         switchTo: 'Mudar idioma para {{language}}',
     },
     common: {
+        sort: {
+            ascending: 'Ordenar {{column}} em ordem crescente',
+            descending: 'Ordenar {{column}} em ordem decrescente',
+        },
         actions: {
             toggleNavigation: 'Alternar menu de navegação',
             firstPage: 'Primeira página',
@@ -224,7 +228,8 @@ const translation = {
             user: 'Usuário',
         },
         labels: {
-            locationNotRecorded: 'Localização não informada',
+            branchNotRecorded: 'Filial não informada',
+            departmentNotRecorded: 'Departamento não informado',
             branchId: 'Filial #{{id}}',
             departmentId: 'Departamento #{{id}}',
             employeeId: 'Colaborador #{{id}}',

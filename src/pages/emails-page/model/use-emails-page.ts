@@ -1,4 +1,4 @@
-import {useState, type SubmitEvent} from 'react';
+import {useCallback, useState, type SubmitEvent} from 'react';
 import {validateEmailSearch} from './email-search';
 import {
     useEmails,
@@ -6,8 +6,10 @@ import {
     type EmailSearch,
     type EmailQuery,
 } from '@/entities';
+import {i18n, sortableTimestamp, useTableSort} from '@/shared';
 
 const pageSize = 10;
+export type EmailSortKey = 'user' | 'email' | 'password' | 'added';
 
 export function useEmailsPage() {
     const [kind, setKind] = useState<EmailSearch['kind']>('user');
@@ -18,6 +20,30 @@ export function useEmailsPage() {
     const [form, setForm] = useState<{email?: Email}>();
     const [notice, setNotice] = useState('');
     const results = useEmails(search);
+    const getSortValue = useCallback((email: Email, key: EmailSortKey) => {
+        switch (key) {
+            case 'user': {
+                return email.user;
+            }
+
+            case 'email': {
+                return email.email;
+            }
+
+            case 'password': {
+                return email.password_hash;
+            }
+
+            case 'added': {
+                return sortableTimestamp(email.created_at);
+            }
+        }
+    }, []);
+    const {
+        sort,
+        sortedRecords,
+        toggleSort: toggleTableSort,
+    } = useTableSort(results.emails, getSortValue, i18n.language);
     const totalPages = Math.max(1, Math.ceil(results.emails.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstIndex = (currentPage - 1) * pageSize;
@@ -56,7 +82,12 @@ export function useEmailsPage() {
         setPage,
         firstIndex,
         lastIndex,
-        visibleEmails: results.emails.slice(firstIndex, lastIndex),
+        visibleEmails: sortedRecords.slice(firstIndex, lastIndex),
+        sort,
+        toggleSort(key: EmailSortKey): void {
+            toggleTableSort(key);
+            setPage(1);
+        },
         kind,
         query,
         setQuery,

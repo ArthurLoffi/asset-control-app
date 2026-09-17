@@ -88,12 +88,12 @@ export function summarizeDashboard(
         departmentId,
         branch:
             branchId === undefined
-                ? t('common.labels.locationNotRecorded')
+                ? t('common.labels.branchNotRecorded')
                 : (branches.get(branchId) ??
                   t('common.labels.branchId', {id: branchId})),
         department:
             departmentId === undefined
-                ? t('common.labels.locationNotRecorded')
+                ? t('common.labels.departmentNotRecorded')
                 : (departments.get(departmentId) ??
                   t('common.labels.departmentId', {id: departmentId})),
     });
