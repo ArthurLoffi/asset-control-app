@@ -1,4 +1,5 @@
 import {useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Button,
@@ -12,13 +13,18 @@ import {
 } from '@mantine/core';
 import {parseMachineForm, type MachineFormValues} from '../model/machine-form';
 import {
+    translateMessage,
+    DeactivationFields,
+    translateInventoryValue,
+    useRecordDeactivation,
+} from '@/shared';
+import {
     machineApi,
     machineConditions,
     machineSituations,
     machineTypes,
     type Machine,
 } from '@/entities';
-import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type MachineFormProps = {
     machine?: Machine;
@@ -26,97 +32,108 @@ type MachineFormProps = {
     onSaved: (message: string) => void;
 };
 
-const booleanOptions = [
-    {value: 'true', label: 'Yes'},
-    {value: 'false', label: 'No'},
-];
-
 function booleanDefault(value: Machine['has_keyboard'] | undefined) {
     return value === null || value === undefined ? null : String(value);
 }
 
 function MachineFields({machine}: {machine?: Machine}): ReactElement {
+    const {t} = useTranslation();
+    const booleanOptions = [
+        {value: 'true', label: t('common.values.yes')},
+        {value: 'false', label: t('common.values.no')},
+    ];
+    const translateValue = (value: string): string =>
+        translateInventoryValue(value, t) ?? value;
     return (
         <SimpleGrid cols={{base: 1, sm: 2}}>
             <TextInput
                 autoFocus
                 required
-                label="User"
+                label={t('common.fields.user')}
                 name="user"
                 defaultValue={machine?.user}
-                placeholder="e.g. alex.morgan"
+                placeholder={t('forms.alexUser')}
             />
             <TextInput
-                label="Employee ID"
+                label={t('common.fields.employeeId')}
                 name="employee_id"
                 type="number"
                 min={1}
                 step={1}
                 defaultValue={machine?.employee_id ?? ''}
-                placeholder="Optional"
+                placeholder={t('common.labels.optional')}
             />
             <Select
                 required
                 allowDeselect={false}
-                label="Type"
+                label={t('type')}
                 name="type"
-                data={[...machineTypes]}
+                data={machineTypes.map((value) => ({
+                    value,
+                    label: translateValue(value),
+                }))}
                 defaultValue={machine?.type ?? null}
-                placeholder="Select a type"
+                placeholder={t('forms.selectType')}
             />
             <TextInput
                 required
-                label="Model"
+                label={t('common.fields.model')}
                 name="model"
                 defaultValue={machine?.model}
-                placeholder="e.g. Latitude 5450"
+                placeholder={t('forms.latitude')}
             />
             <TextInput
-                label="Serial number"
+                label={t('common.fields.serialNumber')}
                 name="serial_number"
                 defaultValue={machine?.serial_number ?? ''}
-                placeholder="Manufacturer serial number"
+                placeholder={t('forms.manufacturerSerial')}
             />
             <TextInput
-                label="Asset number"
+                label={t('common.fields.assetNumber')}
                 name="asset_number"
                 type="number"
                 min={1}
                 step={1}
                 defaultValue={machine?.asset_number ?? ''}
-                placeholder="Optional"
+                placeholder={t('common.labels.optional')}
             />
             <Select
                 clearable
-                label="Condition"
+                label={t('common.fields.condition')}
                 name="machine_condition"
-                data={[...machineConditions]}
+                data={machineConditions.map((value) => ({
+                    value,
+                    label: translateValue(value),
+                }))}
                 defaultValue={machine?.machine_condition ?? null}
-                placeholder="Not specified"
+                placeholder={t('common.labels.notSpecified')}
             />
             <Select
                 required
                 allowDeselect={false}
-                label="Situation"
+                label={t('common.fields.situation')}
                 name="situation"
-                data={[...machineSituations]}
+                data={machineSituations.map((value) => ({
+                    value,
+                    label: translateValue(value),
+                }))}
                 defaultValue={machine?.situation ?? 'Em uso'}
             />
             <Select
                 clearable
-                label="Keyboard included"
+                label={t('keyboardIncluded')}
                 name="has_keyboard"
                 data={booleanOptions}
                 defaultValue={booleanDefault(machine?.has_keyboard)}
-                placeholder="Not specified"
+                placeholder={t('common.labels.notSpecified')}
             />
             <Select
                 clearable
-                label="Mouse included"
+                label={t('mouseIncluded')}
                 name="has_mouse"
                 data={booleanOptions}
                 defaultValue={booleanDefault(machine?.has_mouse)}
-                placeholder="Not specified"
+                placeholder={t('common.labels.notSpecified')}
             />
         </SimpleGrid>
     );
@@ -127,6 +144,9 @@ export function MachineForm({
     onClose,
     onSaved,
 }: MachineFormProps): ReactElement {
+    const {t} = useTranslation();
+    const resource = t('machine').toLowerCase();
+    const resourceLabel = 'Machine';
     const [formSaving, setSaving] = useState(false);
     const [formError, setError] = useState('');
 
@@ -134,7 +154,7 @@ export function MachineForm({
         id: machine?.id,
         deactivate: machineApi.deactivate,
         onDeactivated() {
-            onSaved('Machine deactivated successfully.');
+            onSaved(`${resourceLabel} deactivated successfully.`);
         },
     });
     const isSaving = formSaving || deactivation.saving;
@@ -182,8 +202,8 @@ export function MachineForm({
 
             onSaved(
                 machine
-                    ? 'Machine updated successfully.'
-                    : 'Machine created successfully.',
+                    ? `${resourceLabel} updated successfully.`
+                    : `${resourceLabel} created successfully.`,
             );
         } catch (saveError) {
             setError(
@@ -200,7 +220,9 @@ export function MachineForm({
         <Modal
             opened
             centered
-            title={machine ? 'Edit machine' : 'New machine'}
+            title={t(machine ? 'forms.edit' : 'forms.new', {
+                resource,
+            })}
             onClose={onClose}
             closeOnClickOutside={!isSaving}
             closeOnEscape={!isSaving}
@@ -218,16 +240,19 @@ export function MachineForm({
             >
                 <Stack>
                     <Text size="sm" c="dimmed">
-                        Keep identification, assignment, and equipment status up
-                        to date.
+                        {t('forms.keepDetails', {
+                            details: t('machineDetails'),
+                        })}
                     </Text>
                     {error.length > 0 && (
                         <Alert
                             color="red"
-                            title="Could not save machine"
+                            title={t('forms.couldNotSave', {
+                                resource,
+                            })}
                             role="alert"
                         >
-                            {error}
+                            {translateMessage(error, t)}
                         </Alert>
                     )}
                     <DeactivationFields
@@ -244,14 +269,14 @@ export function MachineForm({
                             disabled={isSaving}
                             onClick={onClose}
                         >
-                            Cancel
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button type="submit" loading={isSaving}>
                             {deactivation.selected
-                                ? 'Deactivate machine'
+                                ? t('deactivate', {resource})
                                 : machine
-                                  ? 'Save changes'
-                                  : 'Create machine'}
+                                  ? t('common.actions.saveChanges')
+                                  : t('forms.create', {resource})}
                         </Button>
                     </Group>
                 </Stack>

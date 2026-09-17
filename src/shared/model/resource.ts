@@ -1,3 +1,5 @@
+import {i18n} from '../config/i18n';
+
 export type ResourceRecord = {id: number; created_at: string};
 export type ResourceInput<T extends ResourceRecord> = Omit<
     T,
@@ -30,5 +32,5 @@ export function formatRecordDate(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
-        : date.toLocaleDateString();
+        : date.toLocaleDateString(i18n.language);
 }

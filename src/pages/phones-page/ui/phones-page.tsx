@@ -1,4 +1,5 @@
 import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Badge,
@@ -24,23 +25,19 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {
-    usePhones,
-    phoneEquipmentOptions,
-    type Phone,
-    type PhoneSearch,
-} from '@/entities';
+import {translateMessage, i18n, translateInventoryValue} from '@/shared';
+import {usePhones, type Phone, type PhoneSearch} from '@/entities';
 import {PhoneForm} from '@/features';
 import {EmployeePhoneOverview, useEmployeeDirectory} from '@/widgets';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
 
-function formatDate(value: string) {
+function formatDate(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
-        : date.toLocaleDateString();
+        : date.toLocaleDateString(i18n.language);
 }
 
 function PhoneRow({
@@ -51,7 +48,8 @@ function PhoneRow({
     phone: Phone;
     employeeName?: string;
     onEdit: (phone: Phone) => void;
-}) {
+}): ReactElement {
+    const {t} = useTranslation();
     return (
         <Table.Tr>
             <Table.Td>
@@ -59,9 +57,8 @@ function PhoneRow({
                     {phone.model === '' ? '—' : phone.model}
                 </Text>
                 <Text size="xs" c="dimmed">
-                    {phoneEquipmentOptions.find(
-                        ({value}) => value === phone.equipament,
-                    )?.label ?? 'Equipment not specified'}{' '}
+                    {translateInventoryValue(phone.equipament, t) ??
+                        t('common.labels.notSpecified')}{' '}
                     · ID #{phone.id}
                 </Text>
             </Table.Td>
@@ -71,28 +68,33 @@ function PhoneRow({
                 </Text>
                 <Text size="xs" c="dimmed">
                     {phone.imei === ''
-                        ? 'No imei number'
-                        : `Imei: ${phone.imei}`}
+                        ? t('common.labels.noImei')
+                        : `${t('common.fields.imei')}: ${phone.imei}`}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Text size="sm">
                     {phone.employee_id === null
-                        ? 'Unassigned'
-                        : (employeeName ?? 'Employee not found')}
+                        ? t('common.labels.unassigned')
+                        : (employeeName ?? t('common.labels.noEmployee'))}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Badge variant="outline" color="gray">
                     {phone.has_chip === null
-                        ? 'Not specified'
-                        : phone.has_chip
-                          ? 'Included'
-                          : 'Not included'}
+                        ? t('common.labels.notSpecified')
+                        : t(
+                              phone.has_chip
+                                  ? 'common.values.included'
+                                  : 'common.labels.notIncluded',
+                          )}
                 </Badge>
             </Table.Td>
             <Table.Td>
-                <Badge variant="light">{phone.situation}</Badge>
+                <Badge variant="light">
+                    {translateInventoryValue(phone.situation, t) ??
+                        phone.situation}
+                </Badge>
             </Table.Td>
             <Table.Td>
                 <Text size="sm" c="dimmed">
@@ -103,12 +105,12 @@ function PhoneRow({
                 <Button
                     variant="subtle"
                     size="xs"
-                    aria-label={`Edit ${phone.model}`}
+                    aria-label={t('editRecord', {record: phone.model})}
                     onClick={() => {
                         onEdit(phone);
                     }}
                 >
-                    Edit
+                    {t('common.actions.edit')}
                 </Button>
             </Table.Td>
         </Table.Tr>
@@ -116,6 +118,7 @@ function PhoneRow({
 }
 
 export function PhonesPage(): ReactElement {
+    const {t} = useTranslation();
     const [view, setView] = useState('employees');
     const [search, setSearch] = useState<PhoneSearch>({kind: 'all'});
     const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
@@ -182,10 +185,10 @@ export function PhonesPage(): ReactElement {
                         </ThemeIcon>
                         <div>
                             <Title order={1} size="h2">
-                                Phones
+                                {t('resources.phones.title')}
                             </Title>
                             <Text c="dimmed" size="sm">
-                                Track company phones and SIM cards by employee.
+                                {t('resources.phones.description')}
                             </Text>
                         </div>
                     </Group>
@@ -196,7 +199,7 @@ export function PhonesPage(): ReactElement {
                             setForm({});
                         }}
                     >
-                        New phone
+                        {t('resources.phones.new')}
                     </Button>
                 </Group>
 
@@ -209,7 +212,7 @@ export function PhonesPage(): ReactElement {
                             setNotice('');
                         }}
                     >
-                        {notice}
+                        {translateMessage(notice, t)}
                     </Alert>
                 )}
 
@@ -224,8 +227,12 @@ export function PhonesPage(): ReactElement {
                     keepMounted={false}
                 >
                     <Tabs.List mb="lg">
-                        <Tabs.Tab value="employees">Employee overview</Tabs.Tab>
-                        <Tabs.Tab value="inventory">Phone inventory</Tabs.Tab>
+                        <Tabs.Tab value="employees">
+                            {t('resources.phones.overview')}
+                        </Tabs.Tab>
+                        <Tabs.Tab value="inventory">
+                            {t('resources.phones.inventory')}
+                        </Tabs.Tab>
                     </Tabs.List>
                     <Tabs.Panel value="employees">
                         <EmployeePhoneOverview
@@ -256,14 +263,17 @@ export function PhonesPage(): ReactElement {
                                 <Group justify="space-between">
                                     <Group gap="sm">
                                         <Title order={2} size="h4">
-                                            Phone inventory
+                                            {t('resources.phones.inventory')}
                                         </Title>
                                         {!loading && error.length === 0 && (
                                             <Badge variant="light">
                                                 {phones.length}{' '}
-                                                {search.kind === 'all'
-                                                    ? 'total'
-                                                    : 'found'}
+                                                {t(
+                                                    search.kind === 'all'
+                                                        ? 'common.labels.total'
+                                                        : 'common.labels.found',
+                                                    {count: phones.length},
+                                                )}
                                             </Badge>
                                         )}
                                     </Group>
@@ -274,7 +284,7 @@ export function PhonesPage(): ReactElement {
                                         disabled={loading}
                                         onClick={reload}
                                     >
-                                        Refresh
+                                        {t('common.actions.refresh')}
                                     </Button>
                                 </Group>
 
@@ -282,18 +292,20 @@ export function PhonesPage(): ReactElement {
                                     <Stack gap="xs">
                                         <Group align="flex-end">
                                             <Select
-                                                label="Search by"
+                                                label={t('searchBy')}
                                                 w={180}
                                                 value={searchKind}
                                                 allowDeselect={false}
                                                 data={[
                                                     {
                                                         value: 'id',
-                                                        label: 'Phone ID',
+                                                        label: t('phoneId'),
                                                     },
                                                     {
                                                         value: 'employee_name',
-                                                        label: 'Employee name',
+                                                        label: t(
+                                                            'common.fields.employeeName',
+                                                        ),
                                                     },
                                                 ]}
                                                 onChange={(value) => {
@@ -308,16 +320,16 @@ export function PhonesPage(): ReactElement {
                                                 }}
                                             />
                                             <TextInput
-                                                label={
+                                                label={t(
                                                     searchKind === 'id'
-                                                        ? 'Phone ID'
-                                                        : 'Employee name'
-                                                }
-                                                placeholder={
+                                                        ? 'phoneId'
+                                                        : 'common.fields.employeeName',
+                                                )}
+                                                placeholder={t(
                                                     searchKind === 'id'
-                                                        ? 'Enter a positive ID'
-                                                        : 'Enter an employee name'
-                                                }
+                                                        ? 'enterPositiveId'
+                                                        : 'enterEmployeeName',
+                                                )}
                                                 leftSection={
                                                     <IconSearch size={16} />
                                                 }
@@ -331,7 +343,7 @@ export function PhonesPage(): ReactElement {
                                                 style={{flex: 1, minWidth: 180}}
                                             />
                                             <Button type="submit">
-                                                Search
+                                                {t('common.actions.search')}
                                             </Button>
                                             {(search.kind !== 'all' ||
                                                 query.length > 0) && (
@@ -339,7 +351,7 @@ export function PhonesPage(): ReactElement {
                                                     variant="default"
                                                     onClick={resetSearch}
                                                 >
-                                                    Clear
+                                                    {t('common.actions.clear')}
                                                 </Button>
                                             )}
                                         </Group>
@@ -349,7 +361,10 @@ export function PhonesPage(): ReactElement {
                                                 size="sm"
                                                 role="alert"
                                             >
-                                                {searchError}
+                                                {translateMessage(
+                                                    searchError,
+                                                    t,
+                                                )}
                                             </Text>
                                         )}
                                     </Stack>
@@ -364,18 +379,22 @@ export function PhonesPage(): ReactElement {
                                                 c="dimmed"
                                                 role="status"
                                             >
-                                                Loading phones…
+                                                {t('resources.phones.loading')}
                                             </Text>
                                         </Stack>
                                     </Center>
                                 ) : error.length > 0 ? (
                                     <Alert
                                         color="red"
-                                        title="Unable to load phones"
+                                        title={t(
+                                            'resources.phones.unavailable',
+                                        )}
                                         role="alert"
                                     >
                                         <Stack gap="sm">
-                                            <Text size="sm">{error}</Text>
+                                            <Text size="sm">
+                                                {translateMessage(error, t)}
+                                            </Text>
                                             <Button
                                                 variant="light"
                                                 color="red"
@@ -385,7 +404,7 @@ export function PhonesPage(): ReactElement {
                                                     alignSelf: 'flex-start',
                                                 }}
                                             >
-                                                Try again
+                                                {t('common.actions.retry')}
                                             </Button>
                                         </Stack>
                                     </Alert>
@@ -400,14 +419,18 @@ export function PhonesPage(): ReactElement {
                                             <IconDeviceMobile size={28} />
                                         </ThemeIcon>
                                         <Title order={3} size="h4">
-                                            {search.kind === 'all'
-                                                ? 'No phones yet'
-                                                : 'No phone found'}
+                                            {t(
+                                                search.kind === 'all'
+                                                    ? 'resources.phones.empty'
+                                                    : 'resources.phones.notFound',
+                                            )}
                                         </Title>
                                         <Text c="dimmed" size="sm" ta="center">
-                                            {search.kind === 'all'
-                                                ? 'Add your first phone to start the inventory.'
-                                                : 'Check the search value and try again.'}
+                                            {t(
+                                                search.kind === 'all'
+                                                    ? 'resources.phones.emptyDescription'
+                                                    : 'resources.phones.notFoundDescription',
+                                            )}
                                         </Text>
                                         <Button
                                             variant="light"
@@ -420,8 +443,11 @@ export function PhonesPage(): ReactElement {
                                             }
                                         >
                                             {search.kind === 'all'
-                                                ? 'New phone'
-                                                : 'Show all phones'}
+                                                ? t('resources.phones.new')
+                                                : t('common.messages.showAll', {
+                                                      resource:
+                                                          t('phonesLower'),
+                                                  })}
                                         </Button>
                                     </Stack>
                                 ) : (
@@ -430,30 +456,42 @@ export function PhonesPage(): ReactElement {
                                             <Table
                                                 verticalSpacing="md"
                                                 highlightOnHover
-                                                aria-label="Phone inventory"
+                                                aria-label={t(
+                                                    'resources.phones.results',
+                                                )}
                                             >
                                                 <Table.Thead>
                                                     <Table.Tr>
                                                         <Table.Th>
-                                                            Phone
+                                                            {t('phone')}
                                                         </Table.Th>
                                                         <Table.Th>
-                                                            Identification
+                                                            {t(
+                                                                'common.fields.identification',
+                                                            )}
                                                         </Table.Th>
                                                         <Table.Th>
-                                                            Employee
+                                                            {t(
+                                                                'common.fields.employee',
+                                                            )}
                                                         </Table.Th>
                                                         <Table.Th>
-                                                            SIM card
+                                                            {t('simCard')}
                                                         </Table.Th>
                                                         <Table.Th>
-                                                            Situation
+                                                            {t(
+                                                                'common.fields.situation',
+                                                            )}
                                                         </Table.Th>
                                                         <Table.Th>
-                                                            Added
+                                                            {t(
+                                                                'common.fields.added',
+                                                            )}
                                                         </Table.Th>
                                                         <Table.Th>
-                                                            Actions
+                                                            {t(
+                                                                'common.fields.actions',
+                                                            )}
                                                         </Table.Th>
                                                     </Table.Tr>
                                                 </Table.Thead>
@@ -489,12 +527,15 @@ export function PhonesPage(): ReactElement {
                                         </Table.ScrollContainer>
                                         <Group justify="space-between">
                                             <Text size="sm" c="dimmed">
-                                                Showing {firstPhoneIndex + 1}–
-                                                {Math.min(
-                                                    currentPage * pageSize,
-                                                    phones.length,
-                                                )}{' '}
-                                                of {phones.length} phones
+                                                {t('common.pagination', {
+                                                    from: firstPhoneIndex + 1,
+                                                    to: Math.min(
+                                                        currentPage * pageSize,
+                                                        phones.length,
+                                                    ),
+                                                    count: phones.length,
+                                                    resource: t('phonesLower'),
+                                                })}
                                             </Text>
                                             {totalPages > 1 && (
                                                 <Pagination

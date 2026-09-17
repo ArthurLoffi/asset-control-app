@@ -16,27 +16,34 @@ import {
 } from '@mantine/core';
 import {IconMail, IconRefresh, IconSearch} from '@tabler/icons-react';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {useEmailsPage} from '../model/use-emails-page';
+import {
+    translateMessage,
+    formatRecordDate,
+    ResourcePageHeader,
+    ResourceResults,
+} from '@/shared';
 import {EmailForm} from '@/features';
-import {formatRecordDate, ResourcePageHeader, ResourceResults} from '@/shared';
 
 export function EmailsPage(): ReactElement {
+    const {t} = useTranslation();
     const model = useEmailsPage();
     return (
         <Container size="xl" py="xl">
             <Stack gap="lg">
                 <ResourcePageHeader
-                    title="Emails"
-                    description="Find email accounts and keep their details up to date."
+                    title={t('resources.emails.title')}
+                    description={t('resources.emails.description')}
                     icon={<IconMail size={26} />}
-                    newLabel="New email"
+                    newLabel={t('resources.emails.new')}
                     onCreate={() => {
                         model.openForm();
                     }}
                 />
                 {model.notice.length > 0 && (
-                    <Alert color="green" title="Success" role="status">
-                        {model.notice}
+                    <Alert color="green" title={t('success')} role="status">
+                        {translateMessage(model.notice, t)}
                     </Alert>
                 )}
                 <Paper withBorder p="lg">
@@ -44,14 +51,17 @@ export function EmailsPage(): ReactElement {
                         <Group justify="space-between">
                             <Group gap="sm">
                                 <Title order={2} size="h4">
-                                    Email accounts
+                                    {t('resources.emails.inventory')}
                                 </Title>
                                 {!model.loading && model.error.length === 0 && (
                                     <Badge variant="light">
                                         {model.emails.length}{' '}
-                                        {model.search.kind === 'all'
-                                            ? 'total'
-                                            : 'found'}
+                                        {t(
+                                            model.search.kind === 'all'
+                                                ? 'common.labels.total'
+                                                : 'common.labels.found',
+                                            {count: model.emails.length},
+                                        )}
                                     </Badge>
                                 )}
                             </Group>
@@ -62,16 +72,19 @@ export function EmailsPage(): ReactElement {
                                 disabled={model.loading}
                                 onClick={model.reload}
                             >
-                                Refresh
+                                {t('common.actions.refresh')}
                             </Button>
                         </Group>
                         <form onSubmit={model.handleSearch}>
                             <Stack gap="xs">
                                 <Group align="flex-end">
                                     <Select
-                                        label="Search by"
+                                        label={t('searchBy')}
                                         data={[
-                                            {value: 'user', label: 'User'},
+                                            {
+                                                value: 'user',
+                                                label: t('common.fields.user'),
+                                            },
                                             {value: 'id', label: 'ID'},
                                         ]}
                                         value={model.kind}
@@ -80,16 +93,16 @@ export function EmailsPage(): ReactElement {
                                         style={{width: 140}}
                                     />
                                     <TextInput
-                                        label={
+                                        label={t(
                                             model.kind === 'id'
-                                                ? 'Email ID'
-                                                : 'User'
-                                        }
-                                        placeholder={
+                                                ? 'emailId'
+                                                : 'common.fields.user',
+                                        )}
+                                        placeholder={t(
                                             model.kind === 'id'
-                                                ? 'Enter an email ID'
-                                                : 'Enter a user'
-                                        }
+                                                ? 'enterEmailId'
+                                                : 'enterUser',
+                                        )}
                                         value={model.query}
                                         onChange={(event) => {
                                             model.setQuery(
@@ -98,61 +111,76 @@ export function EmailsPage(): ReactElement {
                                         }}
                                         error={
                                             model.searchError.length > 0
-                                                ? model.searchError
+                                                ? translateMessage(
+                                                      model.searchError,
+                                                      t,
+                                                  )
                                                 : undefined
                                         }
                                         leftSection={<IconSearch size={16} />}
                                         style={{flex: 1, minWidth: 180}}
                                     />
-                                    <Button type="submit">Search</Button>
+                                    <Button type="submit">
+                                        {t('common.actions.search')}
+                                    </Button>
                                     {(model.search.kind !== 'all' ||
                                         model.query.length > 0) && (
                                         <Button
                                             variant="default"
                                             onClick={model.resetSearch}
                                         >
-                                            Clear
+                                            {t('common.actions.clear')}
                                         </Button>
                                     )}
                                 </Group>
                                 <Text size="xs" c="dimmed">
-                                    User search ignores case and matches part of
-                                    a name. If several accounts match, the first
-                                    by ID is shown.
+                                    {t('resources.emails.searchHelp')}
                                 </Text>
                             </Stack>
                         </form>
                         <ResourceResults
                             loading={model.loading}
                             error={model.error}
-                            loadingLabel="Loading emails…"
-                            errorTitle="Unable to load emails"
+                            loadingLabel={t('resources.emails.loading')}
+                            errorTitle={t('resources.emails.unavailable')}
                             onRetry={model.reload}
                             empty={model.emails.length === 0}
-                            emptyTitle={
+                            emptyTitle={t(
                                 model.search.kind === 'all'
-                                    ? 'No emails yet'
-                                    : 'No email found'
-                            }
-                            emptyDescription={
+                                    ? 'resources.emails.empty'
+                                    : 'resources.emails.notFound',
+                            )}
+                            emptyDescription={t(
                                 model.search.kind === 'all'
-                                    ? 'Create your first email account to get started.'
-                                    : 'Check the user or ID and try again.'
-                            }
+                                    ? 'resources.emails.emptyDescription'
+                                    : 'resources.emails.notFoundDescription',
+                            )}
                         >
                             <Table.ScrollContainer minWidth={760}>
                                 <Table
                                     verticalSpacing="md"
                                     highlightOnHover
-                                    aria-label="Email search results"
+                                    aria-label={t('resources.emails.results')}
                                 >
                                     <Table.Thead>
                                         <Table.Tr>
-                                            <Table.Th>User</Table.Th>
-                                            <Table.Th>Email address</Table.Th>
-                                            <Table.Th>Password</Table.Th>
-                                            <Table.Th>Added</Table.Th>
-                                            <Table.Th>Actions</Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.user')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t(
+                                                    'common.fields.emailAddress',
+                                                )}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.password')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.added')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.actions')}
+                                            </Table.Th>
                                         </Table.Tr>
                                     </Table.Thead>
                                     <Table.Tbody>
@@ -178,9 +206,19 @@ export function EmailsPage(): ReactElement {
                                                         value={
                                                             email.password_hash
                                                         }
-                                                        aria-label={`Password for ${email.email}`}
+                                                        aria-label={t(
+                                                            'passwordFor',
+                                                            {
+                                                                email: email.email,
+                                                            },
+                                                        )}
                                                         visibilityToggleButtonProps={{
-                                                            'aria-label': `Toggle password for ${email.email}`,
+                                                            'aria-label': t(
+                                                                'togglePasswordFor',
+                                                                {
+                                                                    email: email.email,
+                                                                },
+                                                            ),
                                                         }}
                                                         style={{minWidth: 190}}
                                                     />
@@ -196,14 +234,21 @@ export function EmailsPage(): ReactElement {
                                                     <Button
                                                         variant="subtle"
                                                         size="xs"
-                                                        aria-label={`Edit ${email.email}`}
+                                                        aria-label={t(
+                                                            'editRecord',
+                                                            {
+                                                                record: email.email,
+                                                            },
+                                                        )}
                                                         onClick={() => {
                                                             model.openForm(
                                                                 email,
                                                             );
                                                         }}
                                                     >
-                                                        Edit
+                                                        {t(
+                                                            'common.actions.edit',
+                                                        )}
                                                     </Button>
                                                 </Table.Td>
                                             </Table.Tr>
@@ -213,9 +258,12 @@ export function EmailsPage(): ReactElement {
                             </Table.ScrollContainer>
                             <Group justify="space-between">
                                 <Text size="sm" c="dimmed">
-                                    Showing {model.firstIndex + 1}–
-                                    {model.lastIndex} of {model.emails.length}{' '}
-                                    emails
+                                    {t('common.pagination', {
+                                        from: model.firstIndex + 1,
+                                        to: model.lastIndex,
+                                        count: model.emails.length,
+                                        resource: t('emailsLower'),
+                                    })}
                                 </Text>
                                 {model.totalPages > 1 && (
                                     <Pagination

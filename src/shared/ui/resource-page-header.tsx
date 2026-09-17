@@ -19,11 +19,11 @@ export function ResourcePageHeader({
 }: ResourcePageHeaderProps): ReactElement {
     return (
         <Group justify="space-between">
-            <Group wrap="nowrap">
+            <Group wrap="nowrap" style={{minWidth: 0, flex: '1 1 260px'}}>
                 <ThemeIcon size={48} radius="md" variant="light">
                     {icon}
                 </ThemeIcon>
-                <div>
+                <div style={{minWidth: 0}}>
                     <Title order={1} size="h2">
                         {title}
                     </Title>

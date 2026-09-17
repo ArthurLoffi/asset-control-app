@@ -1,8 +1,11 @@
 import type {ReactElement} from 'react';
 import {Alert, Button, PasswordInput, Stack, TextInput} from '@mantine/core';
+import {useTranslation} from 'react-i18next';
 import {useLogin} from '../model/use-login';
+import {translateMessage} from '@/shared';
 
 export function LoginForm(): ReactElement {
+    const {t} = useTranslation();
     const {submit, submitting, error} = useLogin();
     return (
         <form
@@ -13,11 +16,11 @@ export function LoginForm(): ReactElement {
             <Stack>
                 {error !== undefined && (
                     <Alert color="red" role="alert">
-                        {error}
+                        {translateMessage(error, t)}
                     </Alert>
                 )}
                 <TextInput
-                    label="Username"
+                    label={t('login.username')}
                     name="user"
                     autoComplete="username"
                     required
@@ -25,14 +28,14 @@ export function LoginForm(): ReactElement {
                     disabled={submitting}
                 />
                 <PasswordInput
-                    label="Password"
+                    label={t('login.password')}
                     name="password"
                     autoComplete="current-password"
                     required
                     disabled={submitting}
                 />
                 <Button type="submit" loading={submitting} fullWidth>
-                    Sign in
+                    {t('login.signIn')}
                 </Button>
             </Stack>
         </form>

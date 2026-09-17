@@ -1,7 +1,9 @@
 import {Anchor, Badge, Group, Paper, Stack, Text, Title} from '@mantine/core';
 import {IconArrowUpRight} from '@tabler/icons-react';
 import type {ReactElement, ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
+import {translateInventoryValue} from '@/shared';
 
 export function MetricCard({
     label,
@@ -12,17 +14,29 @@ export function MetricCard({
     value: number;
     href: string;
 }): ReactElement {
+    const {t} = useTranslation();
+    const metricKey = {
+        'Registered employees': 'registeredEmployees',
+        Machines: 'machines',
+        'Monitor records': 'monitorRecords',
+        'Phone records': 'phoneRecords',
+        Printers: 'printers',
+    }[label];
+    const localizedLabel =
+        metricKey === undefined ? label : t(`dashboard.${metricKey}`);
     return (
         <Paper withBorder p="lg">
             <Stack gap="sm">
                 <Group justify="space-between" wrap="nowrap">
                     <Text size="md" c="dimmed" fw={500}>
-                        {label}
+                        {localizedLabel}
                     </Text>
                     <Anchor
                         component={Link}
                         to={href}
-                        aria-label={`View ${label.toLowerCase()}`}
+                        aria-label={t('viewRecord', {
+                            record: localizedLabel.toLowerCase(),
+                        })}
                         style={{display: 'inline-flex'}}
                     >
                         <IconArrowUpRight size={18} />
@@ -65,13 +79,16 @@ export function ChartPanel({
 }
 
 export function StatusBadge({status}: {status?: string}): ReactElement {
+    const {t} = useTranslation();
     return status === undefined ? (
         <Text c="dimmed" size="sm">
-            Not applicable
+            {t('common.labels.notApplicable')}
         </Text>
     ) : (
         <Badge variant="light">
-            {status.length > 0 ? status : 'Not recorded'}
+            {status.length > 0
+                ? (translateInventoryValue(status, t) ?? status)
+                : t('common.labels.notRecorded')}
         </Badge>
     );
 }

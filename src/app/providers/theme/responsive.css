@@ -1,0 +1,25 @@
+/* Translated content may be longer than its English equivalent. */
+.mantine-AppShell-main,
+.mantine-Stack-root,
+.mantine-Group-root > div,
+.mantine-InputWrapper-root {
+    min-width: 0;
+}
+
+.mantine-Text-root,
+.mantine-Title-root,
+.mantine-Alert-message {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 48em) {
+    .mantine-AppShell-main form .mantine-Group-root > .mantine-InputWrapper-root {
+        flex: 1 1 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .mantine-AppShell-main .mantine-Tabs-tab {
+        flex: 1 1 100%;
+    }
+}

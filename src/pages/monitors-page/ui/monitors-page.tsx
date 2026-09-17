@@ -1,4 +1,5 @@
-import {useMemo, useState, type SubmitEvent} from 'react';
+import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Badge,
@@ -23,6 +24,7 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
+import {translateMessage, i18n, translateInventoryValue} from '@/shared';
 import {
     useEmployees,
     useMonitors,
@@ -34,11 +36,11 @@ import {MonitorForm} from '@/features';
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
 
-function formatDate(value: string) {
+function formatDate(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
-        : date.toLocaleDateString();
+        : date.toLocaleDateString(i18n.language);
 }
 
 function MonitorRow({
@@ -49,7 +51,8 @@ function MonitorRow({
     monitor: Monitor;
     employeeName?: string;
     onEdit: (monitor: Monitor) => void;
-}) {
+}): ReactElement {
+    const {t} = useTranslation();
     return (
         <Table.Tr>
             <Table.Td>
@@ -57,31 +60,34 @@ function MonitorRow({
                     {monitor.model}
                 </Text>
                 <Text size="xs" c="dimmed">
-                    {monitor.brand ?? 'Brand not specified'} · ID #{monitor.id}
+                    {monitor.brand ?? t('brandNotSpecified')} · ID #{monitor.id}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Text size="sm">{monitor.serial_number ?? '—'}</Text>
                 <Text size="xs" c="dimmed">
                     {monitor.asset_number === null
-                        ? 'No asset number'
-                        : `Asset #${monitor.asset_number}`}
+                        ? t('common.labels.noAssetNumber')
+                        : `${t('common.fields.asset')} #${monitor.asset_number}`}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Text size="sm">
                     {monitor.employee_id === null
-                        ? 'Unassigned'
-                        : (employeeName ?? 'Employee not found')}
+                        ? t('common.labels.unassigned')
+                        : (employeeName ?? t('common.labels.noEmployee'))}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Badge variant="outline" color="gray">
-                    {monitor.monitor_condition ?? 'Not specified'}
+                    {translateInventoryValue(monitor.monitor_condition, t) ??
+                        t('common.labels.notSpecified')}
                 </Badge>
             </Table.Td>
             <Table.Td>
-                <Badge variant="light">{monitor.situation}</Badge>
+                <Badge variant="light">
+                    {translateInventoryValue(monitor.situation, t)}
+                </Badge>
             </Table.Td>
             <Table.Td>
                 <Text size="sm" c="dimmed">
@@ -92,19 +98,20 @@ function MonitorRow({
                 <Button
                     variant="subtle"
                     size="xs"
-                    aria-label={`Edit ${monitor.model}`}
+                    aria-label={t('editRecord', {record: monitor.model})}
                     onClick={() => {
                         onEdit(monitor);
                     }}
                 >
-                    Edit
+                    {t('common.actions.edit')}
                 </Button>
             </Table.Td>
         </Table.Tr>
     );
 }
 
-export function MonitorsPage() {
+export function MonitorsPage(): ReactElement {
+    const {t} = useTranslation();
     const [search, setSearch] = useState<MonitorSearch>({kind: 'all'});
     const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
         'employee_name',
@@ -168,11 +175,10 @@ export function MonitorsPage() {
                         </ThemeIcon>
                         <div>
                             <Title order={1} size="h2">
-                                Monitors
+                                {t('resources.monitors.title')}
                             </Title>
                             <Text c="dimmed" size="sm">
-                                Manage displays, assignments, and equipment
-                                status.
+                                {t('resources.monitors.description')}
                             </Text>
                         </div>
                     </Group>
@@ -183,7 +189,7 @@ export function MonitorsPage() {
                             setForm({});
                         }}
                     >
-                        New monitor
+                        {t('resources.monitors.new')}
                     </Button>
                 </Group>
 
@@ -196,7 +202,7 @@ export function MonitorsPage() {
                             setNotice('');
                         }}
                     >
-                        {notice}
+                        {translateMessage(notice, t)}
                     </Alert>
                 )}
 
@@ -205,14 +211,17 @@ export function MonitorsPage() {
                         <Group justify="space-between">
                             <Group gap="sm">
                                 <Title order={2} size="h4">
-                                    Monitor inventory
+                                    {t('resources.monitors.inventory')}
                                 </Title>
                                 {!loading && error.length === 0 && (
                                     <Badge variant="light">
                                         {monitors.length}{' '}
-                                        {search.kind === 'all'
-                                            ? 'total'
-                                            : 'found'}
+                                        {t(
+                                            search.kind === 'all'
+                                                ? 'common.labels.total'
+                                                : 'common.labels.found',
+                                            {count: monitors.length},
+                                        )}
                                     </Badge>
                                 )}
                             </Group>
@@ -223,7 +232,7 @@ export function MonitorsPage() {
                                 disabled={loading}
                                 onClick={reload}
                             >
-                                Refresh
+                                {t('common.actions.refresh')}
                             </Button>
                         </Group>
 
@@ -231,18 +240,20 @@ export function MonitorsPage() {
                             <Stack gap="xs">
                                 <Group align="flex-end">
                                     <Select
-                                        label="Search by"
+                                        label={t('searchBy')}
                                         w={180}
                                         value={searchKind}
                                         allowDeselect={false}
                                         data={[
                                             {
                                                 value: 'id',
-                                                label: 'Monitor ID',
+                                                label: t('monitorId'),
                                             },
                                             {
                                                 value: 'employee_name',
-                                                label: 'Employee name',
+                                                label: t(
+                                                    'common.fields.employeeName',
+                                                ),
                                             },
                                         ]}
                                         onChange={(value) => {
@@ -256,16 +267,16 @@ export function MonitorsPage() {
                                         }}
                                     />
                                     <TextInput
-                                        label={
+                                        label={t(
                                             searchKind === 'id'
-                                                ? 'Monitor ID'
-                                                : 'Employee name'
-                                        }
-                                        placeholder={
+                                                ? 'monitorId'
+                                                : 'common.fields.employeeName',
+                                        )}
+                                        placeholder={t(
                                             searchKind === 'id'
-                                                ? 'Enter a positive ID'
-                                                : 'Enter an employee name'
-                                        }
+                                                ? 'enterPositiveId'
+                                                : 'enterEmployeeName',
+                                        )}
                                         leftSection={<IconSearch size={16} />}
                                         value={query}
                                         onChange={(event) => {
@@ -273,20 +284,22 @@ export function MonitorsPage() {
                                         }}
                                         style={{flex: 1, minWidth: 180}}
                                     />
-                                    <Button type="submit">Search</Button>
+                                    <Button type="submit">
+                                        {t('common.actions.search')}
+                                    </Button>
                                     {(search.kind !== 'all' ||
                                         query.length > 0) && (
                                         <Button
                                             variant="default"
                                             onClick={resetSearch}
                                         >
-                                            Clear
+                                            {t('common.actions.clear')}
                                         </Button>
                                     )}
                                 </Group>
                                 {searchError.length > 0 && (
                                     <Text c="red" size="sm" role="alert">
-                                        {searchError}
+                                        {translateMessage(searchError, t)}
                                     </Text>
                                 )}
                             </Stack>
@@ -297,18 +310,20 @@ export function MonitorsPage() {
                                 <Stack align="center">
                                     <Loader size="sm" />
                                     <Text size="sm" c="dimmed" role="status">
-                                        Loading monitors…
+                                        {t('resources.monitors.loading')}
                                     </Text>
                                 </Stack>
                             </Center>
                         ) : error.length > 0 ? (
                             <Alert
                                 color="red"
-                                title="Unable to load monitors"
+                                title={t('resources.monitors.unavailable')}
                                 role="alert"
                             >
                                 <Stack gap="sm">
-                                    <Text size="sm">{error}</Text>
+                                    <Text size="sm">
+                                        {translateMessage(error, t)}
+                                    </Text>
                                     <Button
                                         variant="light"
                                         color="red"
@@ -316,7 +331,7 @@ export function MonitorsPage() {
                                         onClick={reload}
                                         style={{alignSelf: 'flex-start'}}
                                     >
-                                        Try again
+                                        {t('common.actions.retry')}
                                     </Button>
                                 </Stack>
                             </Alert>
@@ -331,14 +346,18 @@ export function MonitorsPage() {
                                     <IconDeviceDesktop size={28} />
                                 </ThemeIcon>
                                 <Title order={3} size="h4">
-                                    {search.kind === 'all'
-                                        ? 'No monitors yet'
-                                        : 'No monitor found'}
+                                    {t(
+                                        search.kind === 'all'
+                                            ? 'resources.monitors.empty'
+                                            : 'resources.monitors.notFound',
+                                    )}
                                 </Title>
                                 <Text c="dimmed" size="sm" ta="center">
-                                    {search.kind === 'all'
-                                        ? 'Add your first monitor to start the inventory.'
-                                        : 'Check the search value and try again.'}
+                                    {t(
+                                        search.kind === 'all'
+                                            ? 'resources.monitors.emptyDescription'
+                                            : 'resources.monitors.notFoundDescription',
+                                    )}
                                 </Text>
                                 <Button
                                     variant="light"
@@ -351,8 +370,10 @@ export function MonitorsPage() {
                                     }
                                 >
                                     {search.kind === 'all'
-                                        ? 'New monitor'
-                                        : 'Show all monitors'}
+                                        ? t('resources.monitors.new')
+                                        : t('common.messages.showAll', {
+                                              resource: t('monitorsLower'),
+                                          })}
                                 </Button>
                             </Stack>
                         ) : (
@@ -361,19 +382,41 @@ export function MonitorsPage() {
                                     <Table
                                         verticalSpacing="md"
                                         highlightOnHover
-                                        aria-label="Monitor inventory"
+                                        aria-label={t(
+                                            'resources.monitors.results',
+                                        )}
                                     >
                                         <Table.Thead>
                                             <Table.Tr>
-                                                <Table.Th>Monitor</Table.Th>
                                                 <Table.Th>
-                                                    Identification
+                                                    {t('monitor')}
                                                 </Table.Th>
-                                                <Table.Th>Employee</Table.Th>
-                                                <Table.Th>Condition</Table.Th>
-                                                <Table.Th>Situation</Table.Th>
-                                                <Table.Th>Added</Table.Th>
-                                                <Table.Th>Actions</Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.identification',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.employee',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.condition',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.situation',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.added')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.actions')}
+                                                </Table.Th>
                                             </Table.Tr>
                                         </Table.Thead>
                                         <Table.Tbody>
@@ -405,12 +448,15 @@ export function MonitorsPage() {
                                 </Table.ScrollContainer>
                                 <Group justify="space-between">
                                     <Text size="sm" c="dimmed">
-                                        Showing {firstMonitorIndex + 1}–
-                                        {Math.min(
-                                            currentPage * pageSize,
-                                            monitors.length,
-                                        )}{' '}
-                                        of {monitors.length} monitors
+                                        {t('common.pagination', {
+                                            from: firstMonitorIndex + 1,
+                                            to: Math.min(
+                                                currentPage * pageSize,
+                                                monitors.length,
+                                            ),
+                                            count: monitors.length,
+                                            resource: t('monitorsLower'),
+                                        })}
                                     </Text>
                                     {totalPages > 1 && (
                                         <Pagination

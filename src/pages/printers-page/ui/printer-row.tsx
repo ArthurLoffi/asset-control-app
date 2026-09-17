@@ -1,6 +1,7 @@
 import {Badge, Button, Table, Text} from '@mantine/core';
 import type {ReactElement} from 'react';
-import {formatRecordDate} from '@/shared';
+import {useTranslation} from 'react-i18next';
+import {translateInventoryValue, formatRecordDate} from '@/shared';
 import type {Printer} from '@/entities';
 
 type PrinterRowProps = {
@@ -16,6 +17,7 @@ export function PrinterRow({
     departmentName,
     onEdit,
 }: PrinterRowProps): ReactElement {
+    const {t} = useTranslation();
     return (
         <Table.Tr>
             <Table.Td>
@@ -32,13 +34,18 @@ export function PrinterRow({
                     {printer.ip}
                 </Text>
             </Table.Td>
-            <Table.Td>{branchName ?? `Branch #${printer.branch_id}`}</Table.Td>
             <Table.Td>
-                {departmentName ?? `Department #${printer.departments_id}`}
+                {branchName ??
+                    `${t('common.fields.branch')} #${printer.branch_id}`}
+            </Table.Td>
+            <Table.Td>
+                {departmentName ??
+                    `${t('common.fields.department')} #${printer.departments_id}`}
             </Table.Td>
             <Table.Td>
                 <Badge variant="outline" color="gray">
-                    {printer.machine_condition ?? 'Not specified'}
+                    {translateInventoryValue(printer.machine_condition, t) ??
+                        t('common.labels.notSpecified')}
                 </Badge>
             </Table.Td>
             <Table.Td>
@@ -50,12 +57,15 @@ export function PrinterRow({
                 <Button
                     variant="subtle"
                     size="xs"
-                    aria-label={`Edit ${printer.model} (ID ${printer.id})`}
+                    aria-label={t('editRecordWithId', {
+                        record: printer.model,
+                        id: printer.id,
+                    })}
                     onClick={() => {
                         onEdit(printer);
                     }}
                 >
-                    Edit
+                    {t('common.actions.edit')}
                 </Button>
             </Table.Td>
         </Table.Tr>

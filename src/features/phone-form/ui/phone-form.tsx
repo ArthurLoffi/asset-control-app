@@ -1,4 +1,5 @@
 import {useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Button,
@@ -16,23 +17,23 @@ import {
     type PhoneFormValues,
 } from '../model/phone-form';
 import {
+    translateMessage,
+    DeactivationFields,
+    translateInventoryValue,
+    useRecordDeactivation,
+} from '@/shared';
+import {
     phoneApi,
     phoneSituations,
     phoneEquipmentOptions,
     type Phone,
 } from '@/entities';
-import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type PhoneFormProps = {
     phone?: Phone;
     onClose: () => void;
     onSaved: (message: string) => void;
 };
-
-const booleanOptions = [
-    {value: 'true', label: 'Yes'},
-    {value: 'false', label: 'No'},
-];
 
 function booleanDefault(value: Phone['has_chip'] | undefined) {
     return value === null || value === undefined ? null : String(value);
@@ -43,6 +44,15 @@ export function PhoneForm({
     onClose,
     onSaved,
 }: PhoneFormProps): ReactElement {
+    const {t} = useTranslation();
+    const resource = t('phone').toLowerCase();
+    const resourceLabel = 'Phone';
+    const booleanOptions = [
+        {value: 'true', label: t('common.values.yes')},
+        {value: 'false', label: t('common.values.no')},
+    ];
+    const translateValue = (value: string): string =>
+        translateInventoryValue(value, t) ?? value;
     const [formSaving, setSaving] = useState(false);
     const [formError, setError] = useState('');
     const [hasChip, setHasChip] = useState(booleanDefault(phone?.has_chip));
@@ -53,7 +63,7 @@ export function PhoneForm({
         id: phone?.id,
         deactivate: phoneApi.deactivate,
         onDeactivated() {
-            onSaved('Phone deactivated successfully.');
+            onSaved(`${resourceLabel} deactivated successfully.`);
         },
     });
     const isSaving = formSaving || deactivation.saving;
@@ -98,8 +108,8 @@ export function PhoneForm({
 
             onSaved(
                 phone
-                    ? 'Phone updated successfully.'
-                    : 'Phone created successfully.',
+                    ? `${resourceLabel} updated successfully.`
+                    : `${resourceLabel} created successfully.`,
             );
         } catch (saveError) {
             setError(
@@ -117,7 +127,9 @@ export function PhoneForm({
             opened
             centered
             size="xl"
-            title={phone ? 'Edit phone' : 'New phone'}
+            title={t(phone ? 'forms.edit' : 'forms.new', {
+                resource,
+            })}
             onClose={onClose}
             closeOnClickOutside={!isSaving}
             closeOnEscape={!isSaving}
@@ -134,22 +146,24 @@ export function PhoneForm({
             >
                 <Stack>
                     <Text size="sm" c="dimmed">
-                        Keep identification, assignment, and phone status up to
-                        date.
+                        {t('forms.keepDetails', {
+                            details: t('phoneDetails'),
+                        })}
                     </Text>
                     {!requiresIdentification && (
                         <Text size="sm" c="dimmed">
-                            Model, IMEI, and serial number are optional for
-                            SIM-only and no-SIM records.
+                            {t('forms.phoneOptional')}
                         </Text>
                     )}
                     {error.length > 0 && (
                         <Alert
                             color="red"
-                            title="Could not save phone"
+                            title={t('forms.couldNotSave', {
+                                resource,
+                            })}
                             role="alert"
                         >
-                            {error}
+                            {translateMessage(error, t)}
                         </Alert>
                     )}
                     <DeactivationFields
@@ -161,30 +175,31 @@ export function PhoneForm({
                         <SimpleGrid cols={{base: 1, sm: 2}}>
                             <TextInput
                                 autoFocus
-                                label="Employee ID"
+                                label={t('common.fields.employeeId')}
                                 name="employee_id"
                                 type="number"
                                 min={1}
                                 step={1}
                                 defaultValue={phone?.employee_id ?? ''}
-                                placeholder="Optional"
+                                placeholder={t('common.labels.optional')}
                             />
                             <TextInput
                                 required={requiresIdentification}
-                                label="Model"
+                                label={t('common.fields.model')}
                                 name="model"
                                 defaultValue={phone?.model}
-                                placeholder="e.g. Galaxy A55"
+                                placeholder={t('forms.galaxy')}
                             />
                             <Select
                                 clearable
-                                label="Company equipment"
+                                label={t('companyEquipment')}
                                 name="equipament"
-                                data={phoneEquipmentOptions.map(
-                                    ({value, label}) => ({value, label}),
-                                )}
+                                data={phoneEquipmentOptions.map(({value}) => ({
+                                    value,
+                                    label: translateValue(value),
+                                }))}
                                 value={equipment}
-                                placeholder="Not specified"
+                                placeholder={t('common.labels.notSpecified')}
                                 onChange={(value) => {
                                     setEquipment(value);
                                     if (value === 'Só chip') {
@@ -199,31 +214,34 @@ export function PhoneForm({
                                 label="IMEI"
                                 name="imei"
                                 defaultValue={phone?.imei}
-                                placeholder="Device IMEI"
+                                placeholder={t('forms.deviceImei')}
                             />
                             <TextInput
                                 required={requiresIdentification}
-                                label="Serial number"
+                                label={t('common.fields.serialNumber')}
                                 name="serial_number"
                                 defaultValue={phone?.serial_number ?? ''}
-                                placeholder="Manufacturer serial number"
+                                placeholder={t('forms.manufacturerSerial')}
                             />
                             <Select
                                 required
                                 allowDeselect={false}
-                                label="Situation"
+                                label={t('common.fields.situation')}
                                 name="situation"
-                                data={[...phoneSituations]}
+                                data={phoneSituations.map((value) => ({
+                                    value,
+                                    label: translateValue(value),
+                                }))}
                                 defaultValue={phone?.situation ?? 'Em uso'}
                             />
                             <Select
                                 clearable
-                                label="SIM card included"
+                                label={t('simIncluded')}
                                 name="has_chip"
                                 data={booleanOptions}
                                 value={hasChip}
                                 onChange={setHasChip}
-                                placeholder="Not specified"
+                                placeholder={t('common.labels.notSpecified')}
                             />
                         </SimpleGrid>
                     </DeactivationFields>
@@ -233,14 +251,14 @@ export function PhoneForm({
                             disabled={isSaving}
                             onClick={onClose}
                         >
-                            Cancel
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button type="submit" loading={isSaving}>
                             {deactivation.selected
-                                ? 'Deactivate phone'
+                                ? t('deactivate', {resource})
                                 : phone
-                                  ? 'Save changes'
-                                  : 'Create phone'}
+                                  ? t('common.actions.saveChanges')
+                                  : t('forms.create', {resource})}
                         </Button>
                     </Group>
                 </Stack>

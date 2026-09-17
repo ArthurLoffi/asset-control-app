@@ -1,3 +1,4 @@
+import type {TFunction} from 'i18next';
 import type {
     EmployeeRecord,
     Machine,
@@ -6,7 +7,7 @@ import type {
     Printer,
     OrganizationOption,
 } from '@/entities';
-import {ROUTES} from '@/shared';
+import {ROUTES, i18n} from '@/shared';
 
 export type DashboardSnapshot = {
     employees: EmployeeRecord[];
@@ -66,7 +67,10 @@ function creationTime(value: string): number {
         : date.getTime();
 }
 
-export function summarizeDashboard(snapshot: DashboardSnapshot) {
+export function summarizeDashboard(
+    snapshot: DashboardSnapshot,
+    t: TFunction = i18n.getFixedT('en'),
+) {
     const employees = new Map(
         snapshot.employees.map((employee) => [employee.id, employee]),
     );
@@ -84,13 +88,14 @@ export function summarizeDashboard(snapshot: DashboardSnapshot) {
         departmentId,
         branch:
             branchId === undefined
-                ? 'Location not recorded'
-                : (branches.get(branchId) ?? `Branch #${branchId}`),
+                ? t('common.labels.locationNotRecorded')
+                : (branches.get(branchId) ??
+                  t('common.labels.branchId', {id: branchId})),
         department:
             departmentId === undefined
-                ? 'Location not recorded'
+                ? t('common.labels.locationNotRecorded')
                 : (departments.get(departmentId) ??
-                  `Department #${departmentId}`),
+                  t('common.labels.departmentId', {id: departmentId})),
     });
     const assignedRecords = (
         records: Array<Machine | Monitor | Phone>,
@@ -108,8 +113,11 @@ export function summarizeDashboard(snapshot: DashboardSnapshot) {
                 model: record.model,
                 employee:
                     record.employee_id === null
-                        ? 'Unassigned'
-                        : (employee?.name ?? `Employee #${record.employee_id}`),
+                        ? t('common.labels.unassigned')
+                        : (employee?.name ??
+                          t('common.labels.employeeId', {
+                              id: record.employee_id,
+                          })),
                 ...location(employee?.branch_id, employee?.department_id),
                 situation: record.situation,
                 createdAt: record.created_at,
@@ -128,7 +136,7 @@ export function summarizeDashboard(snapshot: DashboardSnapshot) {
             key: `Printer-${printer.id}`,
             type: 'Printer',
             model: printer.model,
-            employee: 'Not applicable',
+            employee: t('common.labels.notApplicable'),
             ...location(printer.branch_id, printer.departments_id),
             createdAt: printer.created_at,
             href: ROUTES.PRINTERS,

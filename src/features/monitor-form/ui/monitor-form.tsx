@@ -1,4 +1,5 @@
 import {useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Button,
@@ -12,23 +13,23 @@ import {
 } from '@mantine/core';
 import {parseMonitorForm, type MonitorFormValues} from '../model/monitor-form';
 import {
+    translateMessage,
+    DeactivationFields,
+    translateInventoryValue,
+    useRecordDeactivation,
+} from '@/shared';
+import {
     monitorApi,
     monitorConditions,
     monitorSituations,
     type Monitor,
 } from '@/entities';
-import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type MonitorFormProps = {
     monitor?: Monitor;
     onClose: () => void;
     onSaved: (message: string) => void;
 };
-
-const booleanOptions = [
-    {value: 'true', label: 'Yes'},
-    {value: 'false', label: 'No'},
-];
 
 function booleanDefault(value: Monitor['has_monitor'] | undefined) {
     return value === null || value === undefined ? null : String(value);
@@ -39,6 +40,15 @@ export function MonitorForm({
     onClose,
     onSaved,
 }: MonitorFormProps): ReactElement {
+    const {t} = useTranslation();
+    const resource = t('monitor').toLowerCase();
+    const resourceLabel = 'Monitor';
+    const booleanOptions = [
+        {value: 'true', label: t('common.values.yes')},
+        {value: 'false', label: t('common.values.no')},
+    ];
+    const translateValue = (value: string): string =>
+        translateInventoryValue(value, t) ?? value;
     const [formSaving, setSaving] = useState(false);
     const [formError, setError] = useState('');
 
@@ -46,7 +56,7 @@ export function MonitorForm({
         id: monitor?.id,
         deactivate: monitorApi.deactivate,
         onDeactivated() {
-            onSaved('Monitor deactivated successfully.');
+            onSaved(`${resourceLabel} deactivated successfully.`);
         },
     });
     const isSaving = formSaving || deactivation.saving;
@@ -92,8 +102,8 @@ export function MonitorForm({
 
             onSaved(
                 monitor
-                    ? 'Monitor updated successfully.'
-                    : 'Monitor created successfully.',
+                    ? `${resourceLabel} updated successfully.`
+                    : `${resourceLabel} created successfully.`,
             );
         } catch (saveError) {
             setError(
@@ -111,7 +121,9 @@ export function MonitorForm({
             opened
             centered
             size="xl"
-            title={monitor ? 'Edit monitor' : 'New monitor'}
+            title={t(monitor ? 'forms.edit' : 'forms.new', {
+                resource,
+            })}
             onClose={onClose}
             closeOnClickOutside={!isSaving}
             closeOnEscape={!isSaving}
@@ -128,16 +140,19 @@ export function MonitorForm({
             >
                 <Stack>
                     <Text size="sm" c="dimmed">
-                        Keep identification, assignment, and monitor status up
-                        to date.
+                        {t('forms.keepDetails', {
+                            details: t('monitorDetails'),
+                        })}
                     </Text>
                     {error.length > 0 && (
                         <Alert
                             color="red"
-                            title="Could not save monitor"
+                            title={t('forms.couldNotSave', {
+                                resource,
+                            })}
                             role="alert"
                         >
-                            {error}
+                            {translateMessage(error, t)}
                         </Alert>
                     )}
                     <DeactivationFields
@@ -149,69 +164,75 @@ export function MonitorForm({
                         <SimpleGrid cols={{base: 1, sm: 2}}>
                             <TextInput
                                 autoFocus
-                                label="Employee ID"
+                                label={t('common.fields.employeeId')}
                                 name="employee_id"
                                 type="number"
                                 min={1}
                                 step={1}
                                 defaultValue={monitor?.employee_id ?? ''}
-                                placeholder="Optional"
+                                placeholder={t('common.labels.optional')}
                             />
                             <TextInput
                                 required
-                                label="Model"
+                                label={t('common.fields.model')}
                                 name="model"
                                 defaultValue={monitor?.model}
-                                placeholder="e.g. P2422H"
+                                placeholder={t('forms.p2422h')}
                             />
                             <TextInput
-                                label="Brand"
+                                label={t('common.fields.brand')}
                                 name="brand"
                                 defaultValue={monitor?.brand ?? ''}
-                                placeholder="e.g. Dell"
+                                placeholder={t('forms.dell')}
                             />
                             <TextInput
-                                label="Serial number"
+                                label={t('common.fields.serialNumber')}
                                 name="serial_number"
                                 defaultValue={monitor?.serial_number ?? ''}
-                                placeholder="Manufacturer serial number"
+                                placeholder={t('forms.manufacturerSerial')}
                             />
                             <TextInput
-                                label="Asset number"
+                                label={t('common.fields.assetNumber')}
                                 name="asset_number"
                                 type="number"
                                 min={1}
                                 step={1}
                                 defaultValue={monitor?.asset_number ?? ''}
-                                placeholder="Optional"
+                                placeholder={t('common.labels.optional')}
                             />
                             <Select
                                 clearable
-                                label="Condition"
+                                label={t('common.fields.condition')}
                                 name="monitor_condition"
-                                data={[...monitorConditions]}
+                                data={monitorConditions.map((value) => ({
+                                    value,
+                                    label: translateValue(value),
+                                }))}
                                 defaultValue={
                                     monitor?.monitor_condition ?? null
                                 }
-                                placeholder="Not specified"
+                                placeholder={t('common.labels.notSpecified')}
                             />
                             <Select
                                 required
                                 allowDeselect={false}
-                                label="Situation"
+                                label={t('common.fields.situation')}
                                 name="situation"
-                                data={[...monitorSituations]}
+                                data={monitorSituations.map((value) => ({
+                                    value,
+                                    label: translateValue(value),
+                                }))}
                                 defaultValue={monitor?.situation ?? 'Em uso'}
                             />
                             <Select
                                 clearable
-                                label="Monitor provided"
+                                label={t('monitorProvided')}
                                 name="has_monitor"
                                 data={booleanOptions}
                                 defaultValue={booleanDefault(
                                     monitor?.has_monitor,
                                 )}
-                                placeholder="Not specified"
+                                placeholder={t('common.labels.notSpecified')}
                             />
                         </SimpleGrid>
                     </DeactivationFields>
@@ -221,14 +242,14 @@ export function MonitorForm({
                             disabled={isSaving}
                             onClick={onClose}
                         >
-                            Cancel
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button type="submit" loading={isSaving}>
                             {deactivation.selected
-                                ? 'Deactivate monitor'
+                                ? t('deactivate', {resource})
                                 : monitor
-                                  ? 'Save changes'
-                                  : 'Create monitor'}
+                                  ? t('common.actions.saveChanges')
+                                  : t('forms.create', {resource})}
                         </Button>
                     </Group>
                 </Stack>

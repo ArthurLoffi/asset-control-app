@@ -14,39 +14,42 @@ import {
 } from '@mantine/core';
 import {IconPrinter, IconRefresh, IconSearch} from '@tabler/icons-react';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {usePrintersPage} from '../model/use-printers-page';
 import {PrinterRow} from './printer-row';
+import {translateMessage, ResourcePageHeader, ResourceResults} from '@/shared';
 import {PrinterForm} from '@/features';
-import {ResourcePageHeader, ResourceResults} from '@/shared';
 
 export function PrintersPage(): ReactElement {
+    const {t} = useTranslation();
     const model = usePrintersPage();
 
     return (
         <Container size="xl" py="xl">
             <Stack gap="lg">
                 <ResourcePageHeader
-                    title="Printers"
-                    description="Manage printers, network addresses, and locations."
+                    title={t('resources.printers.title')}
+                    description={t('resources.printers.description')}
                     icon={<IconPrinter size={26} />}
-                    newLabel="New printer"
+                    newLabel={t('resources.printers.new')}
                     onCreate={() => {
                         model.openForm();
                     }}
                 />
                 {model.notice.length > 0 && (
-                    <Alert color="green" title="Success" role="status">
-                        {model.notice}
+                    <Alert color="green" title={t('success')} role="status">
+                        {translateMessage(model.notice, t)}
                     </Alert>
                 )}
                 {(model.organizationError?.length ?? 0) > 0 && (
                     <Alert
                         color="yellow"
-                        title="Location names unavailable"
+                        title={t('locationNamesUnavailable')}
                         role="alert"
                     >
-                        {model.organizationError} Branch and department IDs are
-                        shown instead.
+                        {t('locationIdsFallback', {
+                            error: translateMessage(model.organizationError, t),
+                        })}
                     </Alert>
                 )}
                 <Paper withBorder p="lg">
@@ -54,15 +57,18 @@ export function PrintersPage(): ReactElement {
                         <Group justify="space-between">
                             <Group gap="sm">
                                 <Title order={2} size="h4">
-                                    Printer inventory
+                                    {t('resources.printers.inventory')}
                                 </Title>
                                 {!model.loading &&
                                     (model.error?.length ?? 0) === 0 && (
                                         <Badge variant="light">
                                             {model.printers.length}{' '}
-                                            {model.search.kind === 'all'
-                                                ? 'total'
-                                                : 'found'}
+                                            {t(
+                                                model.search.kind === 'all'
+                                                    ? 'common.labels.total'
+                                                    : 'common.labels.found',
+                                                {count: model.printers.length},
+                                            )}
                                         </Badge>
                                     )}
                             </Group>
@@ -73,14 +79,14 @@ export function PrintersPage(): ReactElement {
                                 disabled={model.loading}
                                 onClick={model.reload}
                             >
-                                Refresh
+                                {t('common.actions.refresh')}
                             </Button>
                         </Group>
                         <form onSubmit={model.handleSearch}>
                             <Group align="flex-end">
                                 <TextInput
-                                    label="Printer ID"
-                                    placeholder="Enter a positive ID"
+                                    label={t('printerId')}
+                                    placeholder={t('enterPositiveId')}
                                     leftSection={<IconSearch size={16} />}
                                     value={model.query}
                                     onChange={(event) => {
@@ -90,19 +96,24 @@ export function PrintersPage(): ReactElement {
                                     }}
                                     error={
                                         model.searchError.length > 0
-                                            ? model.searchError
+                                            ? translateMessage(
+                                                  model.searchError,
+                                                  t,
+                                              )
                                             : undefined
                                     }
                                     style={{flex: 1, minWidth: 180}}
                                 />
-                                <Button type="submit">Search</Button>
+                                <Button type="submit">
+                                    {t('common.actions.search')}
+                                </Button>
                                 {(model.search.kind !== 'all' ||
                                     model.query.length > 0) && (
                                     <Button
                                         variant="default"
                                         onClick={model.resetSearch}
                                     >
-                                        Clear
+                                        {t('common.actions.clear')}
                                     </Button>
                                 )}
                             </Group>
@@ -110,20 +121,20 @@ export function PrintersPage(): ReactElement {
                         <ResourceResults
                             loading={model.loading}
                             error={model.error}
-                            loadingLabel="Loading printers…"
-                            errorTitle="Unable to load printers"
+                            loadingLabel={t('resources.printers.loading')}
+                            errorTitle={t('resources.printers.unavailable')}
                             onRetry={model.reload}
                             empty={model.printers.length === 0}
-                            emptyTitle={
+                            emptyTitle={t(
                                 model.search.kind === 'all'
-                                    ? 'No printers yet'
-                                    : 'No printer found'
-                            }
-                            emptyDescription={
+                                    ? 'resources.printers.empty'
+                                    : 'resources.printers.notFound',
+                            )}
+                            emptyDescription={t(
                                 model.search.kind === 'all'
-                                    ? 'Add your first printer to start the inventory.'
-                                    : 'Check the printer ID and try again.'
-                            }
+                                    ? 'resources.printers.emptyDescription'
+                                    : 'resources.printers.notFoundDescription',
+                            )}
                             emptyAction={
                                 <Button
                                     variant="light"
@@ -136,8 +147,10 @@ export function PrintersPage(): ReactElement {
                                     }
                                 >
                                     {model.search.kind === 'all'
-                                        ? 'New printer'
-                                        : 'Show all printers'}
+                                        ? t('resources.printers.new')
+                                        : t('common.messages.showAll', {
+                                              resource: t('printersLower'),
+                                          })}
                                 </Button>
                             }
                         >
@@ -145,18 +158,32 @@ export function PrintersPage(): ReactElement {
                                 <Table
                                     verticalSpacing="md"
                                     highlightOnHover
-                                    aria-label="Printer inventory"
+                                    aria-label={t('resources.printers.results')}
                                 >
                                     <Table.Thead>
                                         <Table.Tr>
-                                            <Table.Th>Printer</Table.Th>
-                                            <Table.Th>Asset number</Table.Th>
-                                            <Table.Th>IP address</Table.Th>
-                                            <Table.Th>Branch</Table.Th>
-                                            <Table.Th>Department</Table.Th>
-                                            <Table.Th>Condition</Table.Th>
-                                            <Table.Th>Added</Table.Th>
-                                            <Table.Th>Actions</Table.Th>
+                                            <Table.Th>{t('printer')}</Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.assetNumber')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.ipAddress')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.branch')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.department')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.condition')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.added')}
+                                            </Table.Th>
+                                            <Table.Th>
+                                                {t('common.fields.actions')}
+                                            </Table.Th>
                                         </Table.Tr>
                                     </Table.Thead>
                                     <Table.Tbody>
@@ -180,9 +207,12 @@ export function PrintersPage(): ReactElement {
                             </Table.ScrollContainer>
                             <Group justify="space-between">
                                 <Text size="sm" c="dimmed">
-                                    Showing {model.firstIndex + 1}–
-                                    {model.lastIndex} of {model.printers.length}{' '}
-                                    printers
+                                    {t('common.pagination', {
+                                        from: model.firstIndex + 1,
+                                        to: model.lastIndex,
+                                        count: model.printers.length,
+                                        resource: t('printersLower'),
+                                    })}
                                 </Text>
                                 {model.totalPages > 1 && (
                                     <Pagination

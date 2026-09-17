@@ -1,4 +1,5 @@
-import {useMemo, useState, type SubmitEvent} from 'react';
+import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Badge,
@@ -23,6 +24,7 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
+import {translateMessage, i18n, translateInventoryValue} from '@/shared';
 import {
     useEmployees,
     useMachines,
@@ -34,19 +36,22 @@ import {MachineForm} from '@/features';
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
 
-function formatDate(value: string) {
+function formatDate(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
-        : date.toLocaleDateString();
+        : date.toLocaleDateString(i18n.language);
 }
 
-function includedLabel(value: Machine['has_keyboard']) {
+function includedLabel(
+    value: Machine['has_keyboard'],
+    t: (key: string) => string,
+) {
     if (value === null) {
-        return 'Unknown';
+        return t('common.labels.unknown');
     }
 
-    return value ? 'Included' : 'Not included';
+    return t(value ? 'common.values.included' : 'common.labels.notIncluded');
 }
 
 function MachineRow({
@@ -57,7 +62,8 @@ function MachineRow({
     machine: Machine;
     employeeName?: string;
     onEdit: (machine: Machine) => void;
-}) {
+}): ReactElement {
+    const {t} = useTranslation();
     return (
         <Table.Tr>
             <Table.Td>
@@ -65,7 +71,8 @@ function MachineRow({
                     {machine.model}
                 </Text>
                 <Text size="xs" c="dimmed">
-                    {machine.type} · ID #{machine.id}
+                    {translateInventoryValue(machine.type, t)} · ID #
+                    {machine.id}
                 </Text>
             </Table.Td>
             <Table.Td>
@@ -74,31 +81,36 @@ function MachineRow({
                 </Text>
                 <Text size="xs" c="dimmed">
                     {machine.asset_number === null
-                        ? 'No asset number'
-                        : `Asset #${machine.asset_number}`}
+                        ? t('common.labels.noAssetNumber')
+                        : `${t('common.fields.asset')} #${machine.asset_number}`}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Text size="sm">{machine.user}</Text>
                 <Text size="xs" c="dimmed">
                     {machine.employee_id === null
-                        ? 'Unassigned'
-                        : (employeeName ?? 'Employee not found')}
+                        ? t('common.labels.unassigned')
+                        : (employeeName ?? t('common.labels.noEmployee'))}
                 </Text>
             </Table.Td>
             <Table.Td>
                 <Badge variant="outline" color="gray">
-                    {machine.machine_condition ?? 'Not specified'}
+                    {translateInventoryValue(machine.machine_condition, t) ??
+                        t('common.labels.notSpecified')}
                 </Badge>
             </Table.Td>
             <Table.Td>
                 <Text size="xs">
-                    Keyboard: {includedLabel(machine.has_keyboard)}
+                    {t('keyboard')}: {includedLabel(machine.has_keyboard, t)}
                 </Text>
-                <Text size="xs">Mouse: {includedLabel(machine.has_mouse)}</Text>
+                <Text size="xs">
+                    {t('mouse')}: {includedLabel(machine.has_mouse, t)}
+                </Text>
             </Table.Td>
             <Table.Td>
-                <Badge variant="light">{machine.situation}</Badge>
+                <Badge variant="light">
+                    {translateInventoryValue(machine.situation, t)}
+                </Badge>
             </Table.Td>
             <Table.Td>
                 <Text size="sm" c="dimmed">
@@ -109,19 +121,20 @@ function MachineRow({
                 <Button
                     variant="subtle"
                     size="xs"
-                    aria-label={`Edit ${machine.model}`}
+                    aria-label={t('editRecord', {record: machine.model})}
                     onClick={() => {
                         onEdit(machine);
                     }}
                 >
-                    Edit
+                    {t('common.actions.edit')}
                 </Button>
             </Table.Td>
         </Table.Tr>
     );
 }
 
-export function MachinesPage() {
+export function MachinesPage(): ReactElement {
+    const {t} = useTranslation();
     const [search, setSearch] = useState<MachineSearch>({kind: 'all'});
     const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
         'employee_name',
@@ -185,11 +198,10 @@ export function MachinesPage() {
                         </ThemeIcon>
                         <div>
                             <Title order={1} size="h2">
-                                Machines
+                                {t('resources.machines.title')}
                             </Title>
                             <Text c="dimmed" size="sm">
-                                Manage computers, assignments, and equipment
-                                status.
+                                {t('resources.machines.description')}
                             </Text>
                         </div>
                     </Group>
@@ -200,7 +212,7 @@ export function MachinesPage() {
                             setForm({});
                         }}
                     >
-                        New machine
+                        {t('resources.machines.new')}
                     </Button>
                 </Group>
 
@@ -213,7 +225,7 @@ export function MachinesPage() {
                             setNotice('');
                         }}
                     >
-                        {notice}
+                        {translateMessage(notice, t)}
                     </Alert>
                 )}
 
@@ -222,14 +234,17 @@ export function MachinesPage() {
                         <Group justify="space-between">
                             <Group gap="sm">
                                 <Title order={2} size="h4">
-                                    Machine inventory
+                                    {t('resources.machines.inventory')}
                                 </Title>
                                 {!loading && error.length === 0 && (
                                     <Badge variant="light">
                                         {machines.length}{' '}
-                                        {search.kind === 'all'
-                                            ? 'total'
-                                            : 'found'}
+                                        {t(
+                                            search.kind === 'all'
+                                                ? 'common.labels.total'
+                                                : 'common.labels.found',
+                                            {count: machines.length},
+                                        )}
                                     </Badge>
                                 )}
                             </Group>
@@ -240,7 +255,7 @@ export function MachinesPage() {
                                 disabled={loading}
                                 onClick={reload}
                             >
-                                Refresh
+                                {t('common.actions.refresh')}
                             </Button>
                         </Group>
 
@@ -248,15 +263,20 @@ export function MachinesPage() {
                             <Stack gap="xs">
                                 <Group align="flex-end">
                                     <Select
-                                        label="Search by"
+                                        label={t('searchBy')}
                                         w={180}
                                         value={searchKind}
                                         allowDeselect={false}
                                         data={[
-                                            {value: 'id', label: 'Machine ID'},
+                                            {
+                                                value: 'id',
+                                                label: t('machineId'),
+                                            },
                                             {
                                                 value: 'employee_name',
-                                                label: 'Employee name',
+                                                label: t(
+                                                    'common.fields.employeeName',
+                                                ),
                                             },
                                         ]}
                                         onChange={(value) => {
@@ -270,16 +290,16 @@ export function MachinesPage() {
                                         }}
                                     />
                                     <TextInput
-                                        label={
+                                        label={t(
                                             searchKind === 'id'
-                                                ? 'Machine ID'
-                                                : 'Employee name'
-                                        }
-                                        placeholder={
+                                                ? 'machineId'
+                                                : 'common.fields.employeeName',
+                                        )}
+                                        placeholder={t(
                                             searchKind === 'id'
-                                                ? 'Enter a machine ID'
-                                                : 'Enter an employee name'
-                                        }
+                                                ? 'enterMachineId'
+                                                : 'enterEmployeeName',
+                                        )}
                                         leftSection={<IconSearch size={16} />}
                                         value={query}
                                         onChange={(event) => {
@@ -287,20 +307,22 @@ export function MachinesPage() {
                                         }}
                                         style={{flex: 1, minWidth: 180}}
                                     />
-                                    <Button type="submit">Search</Button>
+                                    <Button type="submit">
+                                        {t('common.actions.search')}
+                                    </Button>
                                     {(search.kind !== 'all' ||
                                         query.length > 0) && (
                                         <Button
                                             variant="default"
                                             onClick={resetSearch}
                                         >
-                                            Clear
+                                            {t('common.actions.clear')}
                                         </Button>
                                     )}
                                 </Group>
                                 {searchError.length > 0 && (
                                     <Text c="red" size="sm" role="alert">
-                                        {searchError}
+                                        {translateMessage(searchError, t)}
                                     </Text>
                                 )}
                             </Stack>
@@ -311,18 +333,20 @@ export function MachinesPage() {
                                 <Stack align="center">
                                     <Loader size="sm" />
                                     <Text size="sm" c="dimmed" role="status">
-                                        Loading machines…
+                                        {t('resources.machines.loading')}
                                     </Text>
                                 </Stack>
                             </Center>
                         ) : error.length > 0 ? (
                             <Alert
                                 color="red"
-                                title="Unable to load machines"
+                                title={t('resources.machines.unavailable')}
                                 role="alert"
                             >
                                 <Stack gap="sm">
-                                    <Text size="sm">{error}</Text>
+                                    <Text size="sm">
+                                        {translateMessage(error, t)}
+                                    </Text>
                                     <Button
                                         variant="light"
                                         color="red"
@@ -330,7 +354,7 @@ export function MachinesPage() {
                                         onClick={reload}
                                         style={{alignSelf: 'flex-start'}}
                                     >
-                                        Try again
+                                        {t('common.actions.retry')}
                                     </Button>
                                 </Stack>
                             </Alert>
@@ -345,14 +369,18 @@ export function MachinesPage() {
                                     <IconDeviceLaptop size={28} />
                                 </ThemeIcon>
                                 <Title order={3} size="h4">
-                                    {search.kind === 'all'
-                                        ? 'No machines yet'
-                                        : 'No machine found'}
+                                    {t(
+                                        search.kind === 'all'
+                                            ? 'resources.machines.empty'
+                                            : 'resources.machines.notFound',
+                                    )}
                                 </Title>
                                 <Text c="dimmed" size="sm" ta="center">
-                                    {search.kind === 'all'
-                                        ? 'Add your first machine to start the inventory.'
-                                        : 'Check the machine ID or employee name and try again.'}
+                                    {t(
+                                        search.kind === 'all'
+                                            ? 'resources.machines.emptyDescription'
+                                            : 'resources.machines.notFoundDescription',
+                                    )}
                                 </Text>
                                 <Button
                                     variant="light"
@@ -365,8 +393,10 @@ export function MachinesPage() {
                                     }
                                 >
                                     {search.kind === 'all'
-                                        ? 'New machine'
-                                        : 'Show all machines'}
+                                        ? t('resources.machines.new')
+                                        : t('common.messages.showAll', {
+                                              resource: t('machinesLower'),
+                                          })}
                                 </Button>
                             </Stack>
                         ) : (
@@ -375,20 +405,42 @@ export function MachinesPage() {
                                     <Table
                                         verticalSpacing="md"
                                         highlightOnHover
-                                        aria-label="Machine inventory"
+                                        aria-label={t(
+                                            'resources.machines.results',
+                                        )}
                                     >
                                         <Table.Thead>
                                             <Table.Tr>
-                                                <Table.Th>Machine</Table.Th>
                                                 <Table.Th>
-                                                    Identification
+                                                    {t('machine')}
                                                 </Table.Th>
-                                                <Table.Th>Assignment</Table.Th>
-                                                <Table.Th>Condition</Table.Th>
-                                                <Table.Th>Peripherals</Table.Th>
-                                                <Table.Th>Situation</Table.Th>
-                                                <Table.Th>Added</Table.Th>
-                                                <Table.Th>Actions</Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.identification',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('assignment')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.condition',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('peripherals')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.situation',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.added')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.actions')}
+                                                </Table.Th>
                                             </Table.Tr>
                                         </Table.Thead>
                                         <Table.Tbody>
@@ -420,12 +472,15 @@ export function MachinesPage() {
                                 </Table.ScrollContainer>
                                 <Group justify="space-between">
                                     <Text size="sm" c="dimmed">
-                                        Showing {firstMachineIndex + 1}–
-                                        {Math.min(
-                                            currentPage * pageSize,
-                                            machines.length,
-                                        )}{' '}
-                                        of {machines.length} machines
+                                        {t('common.pagination', {
+                                            from: firstMachineIndex + 1,
+                                            to: Math.min(
+                                                currentPage * pageSize,
+                                                machines.length,
+                                            ),
+                                            count: machines.length,
+                                            resource: t('machinesLower'),
+                                        })}
                                     </Text>
                                     {totalPages > 1 && (
                                         <Pagination

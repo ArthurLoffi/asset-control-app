@@ -1,4 +1,5 @@
 import {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     useEmployees,
     useOrganizations,
@@ -12,6 +13,7 @@ export function useEmployeeDirectory(search: EmployeeSearch): {
     error: string;
     reload: () => void;
 } {
+    const {t} = useTranslation();
     const records = useEmployees(search);
     const organizations = useOrganizations();
     const {branchNames, departmentNames} = organizations;
@@ -21,12 +23,14 @@ export function useEmployeeDirectory(search: EmployeeSearch): {
                 ...employee,
                 branch_name:
                     branchNames.get(employee.branch_id) ??
-                    `Branch #${employee.branch_id}`,
+                    t('common.labels.branchId', {id: employee.branch_id}),
                 department_name:
                     departmentNames.get(employee.department_id) ??
-                    `Department #${employee.department_id}`,
+                    t('common.labels.departmentId', {
+                        id: employee.department_id,
+                    }),
             })),
-        [records.employees, branchNames, departmentNames],
+        [records.employees, branchNames, departmentNames, t],
     );
     return {
         employees,

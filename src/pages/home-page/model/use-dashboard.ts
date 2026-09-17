@@ -1,4 +1,5 @@
 import {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {summarizeDashboard, type DashboardSnapshot} from './dashboard';
 import {
     employeeApi,
@@ -31,6 +32,7 @@ export async function loadDashboard(
 }
 
 export function useDashboard() {
+    const {t} = useTranslation();
     const {data, ...query} = useResourceQuery(
         'all',
         loadDashboard,
@@ -39,8 +41,10 @@ export function useDashboard() {
     const snapshot = data[0];
     const summary = useMemo(
         () =>
-            snapshot === undefined ? undefined : summarizeDashboard(snapshot),
-        [snapshot],
+            snapshot === undefined
+                ? undefined
+                : summarizeDashboard(snapshot, t),
+        [snapshot, t],
     );
     return {...query, summary};
 }

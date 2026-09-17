@@ -6,3 +6,4 @@ export * from './printer-form';
 export * from './email-form';
 export * from './login';
 export * from './logout';
+export * from './language-switcher';

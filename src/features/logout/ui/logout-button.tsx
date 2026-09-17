@@ -1,15 +1,28 @@
 import type {ReactElement} from 'react';
 import {Alert, Button, Group} from '@mantine/core';
 import {IconLogout} from '@tabler/icons-react';
+import {useTranslation} from 'react-i18next';
 import {useLogout} from '../model/use-logout';
+import {translateMessage} from '@/shared';
 
 export function LogoutButton(): ReactElement {
+    const {t} = useTranslation();
     const {logout, submitting, error} = useLogout();
     return (
-        <Group>
+        <Group wrap="nowrap" style={{flexShrink: 0}}>
             {error !== undefined && (
-                <Alert color="red" role="alert">
-                    {error}
+                <Alert
+                    color="red"
+                    role="alert"
+                    style={{
+                        position: 'fixed',
+                        top: 64,
+                        right: 14,
+                        maxWidth: 'calc(100vw - 28px)',
+                        zIndex: 300,
+                    }}
+                >
+                    {translateMessage(error, t)}
                 </Alert>
             )}
             <Button
@@ -20,7 +33,7 @@ export function LogoutButton(): ReactElement {
                     void logout();
                 }}
             >
-                Sign out
+                {t('logout')}
             </Button>
         </Group>
     );
