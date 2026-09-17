@@ -17,12 +17,13 @@ import {
 import {IconMail, IconRefresh, IconSearch} from '@tabler/icons-react';
 import type {ReactElement} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useEmailsPage} from '../model/use-emails-page';
+import {useEmailsPage, type EmailSortKey} from '../model/use-emails-page';
 import {
     translateMessage,
     formatRecordDate,
     ResourcePageHeader,
     ResourceResults,
+    SortableTableHeader,
 } from '@/shared';
 import {EmailForm} from '@/features';
 
@@ -164,20 +165,42 @@ export function EmailsPage(): ReactElement {
                                 >
                                     <Table.Thead>
                                         <Table.Tr>
-                                            <Table.Th>
-                                                {t('common.fields.user')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t(
-                                                    'common.fields.emailAddress',
-                                                )}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.password')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.added')}
-                                            </Table.Th>
+                                            {(
+                                                [
+                                                    [
+                                                        'user',
+                                                        t('common.fields.user'),
+                                                    ],
+                                                    [
+                                                        'email',
+                                                        t(
+                                                            'common.fields.emailAddress',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'password',
+                                                        t(
+                                                            'common.fields.password',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'added',
+                                                        t(
+                                                            'common.fields.added',
+                                                        ),
+                                                    ],
+                                                ] as Array<
+                                                    [EmailSortKey, string]
+                                                >
+                                            ).map(([column, label]) => (
+                                                <SortableTableHeader
+                                                    key={column}
+                                                    column={column}
+                                                    label={label}
+                                                    sort={model.sort}
+                                                    onSort={model.toggleSort}
+                                                />
+                                            ))}
                                             <Table.Th>
                                                 {t('common.fields.actions')}
                                             </Table.Th>

@@ -1,4 +1,10 @@
-import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
+import {
+    useCallback,
+    useMemo,
+    useState,
+    type ReactElement,
+    type SubmitEvent,
+} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     Alert,
@@ -25,13 +31,22 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {translateMessage, i18n, translateInventoryValue} from '@/shared';
+import {
+    translateMessage,
+    i18n,
+    translateInventoryValue,
+    SortableTableHeader,
+    sortableTimestamp,
+    useTableSort,
+} from '@/shared';
 import {usePhones, type Phone, type PhoneSearch} from '@/entities';
 import {PhoneForm} from '@/features';
 import {EmployeePhoneOverview, useEmployeeDirectory} from '@/widgets';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
+type PhoneSortKey =
+    'phone' | 'identification' | 'employee' | 'sim' | 'situation' | 'added';
 
 function formatDate(value: string): string {
     const date = new Date(value);
@@ -140,10 +155,56 @@ export function PhonesPage(): ReactElement {
         () => new Map(employees.map(({id, name}) => [id, name])),
         [employees],
     );
+    const getSortValue = useCallback(
+        (phone: Phone, key: PhoneSortKey) => {
+            switch (key) {
+                case 'phone': {
+                    return phone.model.length > 0
+                        ? phone.model
+                        : translateInventoryValue(phone.equipament, t);
+                }
+
+                case 'identification': {
+                    return phone.serial_number.length > 0
+                        ? phone.serial_number
+                        : phone.imei;
+                }
+
+                case 'employee': {
+                    return phone.employee_id === null
+                        ? ''
+                        : employeeNames.get(phone.employee_id);
+                }
+
+                case 'sim': {
+                    return phone.has_chip ?? undefined;
+                }
+
+                case 'situation': {
+                    return (
+                        translateInventoryValue(phone.situation, t) ?? undefined
+                    );
+                }
+
+                case 'added': {
+                    return sortableTimestamp(phone.created_at);
+                }
+            }
+        },
+        [employeeNames, t],
+    );
+    const {sort, sortedRecords, toggleSort} = useTableSort(
+        phones,
+        getSortValue,
+        i18n.language,
+    );
     const totalPages = Math.max(1, Math.ceil(phones.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstPhoneIndex = (currentPage - 1) * pageSize;
-    const visiblePhones = phones.slice(firstPhoneIndex, currentPage * pageSize);
+    const visiblePhones = sortedRecords.slice(
+        firstPhoneIndex,
+        currentPage * pageSize,
+    );
 
     function resetSearch() {
         setQuery('');
@@ -172,6 +233,11 @@ export function PhonesPage(): ReactElement {
 
         setSearchError('');
         setSearch({kind: searchKind, value});
+        setPage(1);
+    }
+
+    function handleSort(key: PhoneSortKey): void {
+        toggleSort(key);
         setPage(1);
     }
 
@@ -462,32 +528,68 @@ export function PhonesPage(): ReactElement {
                                             >
                                                 <Table.Thead>
                                                     <Table.Tr>
-                                                        <Table.Th>
-                                                            {t('phone')}
-                                                        </Table.Th>
-                                                        <Table.Th>
-                                                            {t(
-                                                                'common.fields.identification',
-                                                            )}
-                                                        </Table.Th>
-                                                        <Table.Th>
-                                                            {t(
-                                                                'common.fields.employee',
-                                                            )}
-                                                        </Table.Th>
-                                                        <Table.Th>
-                                                            {t('simCard')}
-                                                        </Table.Th>
-                                                        <Table.Th>
-                                                            {t(
-                                                                'common.fields.situation',
-                                                            )}
-                                                        </Table.Th>
-                                                        <Table.Th>
-                                                            {t(
-                                                                'common.fields.added',
-                                                            )}
-                                                        </Table.Th>
+                                                        {(
+                                                            [
+                                                                [
+                                                                    'phone',
+                                                                    t('phone'),
+                                                                ],
+                                                                [
+                                                                    'identification',
+                                                                    t(
+                                                                        'common.fields.identification',
+                                                                    ),
+                                                                ],
+                                                                [
+                                                                    'employee',
+                                                                    t(
+                                                                        'common.fields.employee',
+                                                                    ),
+                                                                ],
+                                                                [
+                                                                    'sim',
+                                                                    t(
+                                                                        'simCard',
+                                                                    ),
+                                                                ],
+                                                                [
+                                                                    'situation',
+                                                                    t(
+                                                                        'common.fields.situation',
+                                                                    ),
+                                                                ],
+                                                                [
+                                                                    'added',
+                                                                    t(
+                                                                        'common.fields.added',
+                                                                    ),
+                                                                ],
+                                                            ] as Array<
+                                                                [
+                                                                    PhoneSortKey,
+                                                                    string,
+                                                                ]
+                                                            >
+                                                        ).map(
+                                                            ([
+                                                                column,
+                                                                label,
+                                                            ]) => (
+                                                                <SortableTableHeader
+                                                                    key={column}
+                                                                    column={
+                                                                        column
+                                                                    }
+                                                                    label={
+                                                                        label
+                                                                    }
+                                                                    sort={sort}
+                                                                    onSort={
+                                                                        handleSort
+                                                                    }
+                                                                />
+                                                            ),
+                                                        )}
                                                         <Table.Th>
                                                             {t(
                                                                 'common.fields.actions',

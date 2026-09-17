@@ -1,4 +1,10 @@
-import {useMemo, useState, type ReactElement, type SubmitEvent} from 'react';
+import {
+    useCallback,
+    useMemo,
+    useState,
+    type ReactElement,
+    type SubmitEvent,
+} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     Alert,
@@ -24,7 +30,14 @@ import {
     IconRefresh,
     IconSearch,
 } from '@tabler/icons-react';
-import {translateMessage, i18n, translateInventoryValue} from '@/shared';
+import {
+    translateMessage,
+    i18n,
+    translateInventoryValue,
+    SortableTableHeader,
+    sortableTimestamp,
+    useTableSort,
+} from '@/shared';
 import {
     useEmployees,
     useMachines,
@@ -35,6 +48,14 @@ import {MachineForm} from '@/features';
 
 const pageSize = 10;
 const allEmployeesSearch = {kind: 'all'} as const;
+type MachineSortKey =
+    | 'machine'
+    | 'identification'
+    | 'assignment'
+    | 'condition'
+    | 'peripherals'
+    | 'situation'
+    | 'added';
 
 function formatDate(value: string): string {
     const date = new Date(value);
@@ -150,10 +171,62 @@ export function MachinesPage(): ReactElement {
         () => new Map(employees.map(({id, name}) => [id, name])),
         [employees],
     );
+    const getSortValue = useCallback(
+        (machine: Machine, key: MachineSortKey) => {
+            switch (key) {
+                case 'machine': {
+                    return machine.model;
+                }
+
+                case 'identification': {
+                    return machine.serial_number !== null &&
+                        machine.serial_number.length > 0
+                        ? machine.serial_number
+                        : (machine.asset_number ?? undefined);
+                }
+
+                case 'assignment': {
+                    return machine.user.length > 0
+                        ? machine.user
+                        : machine.employee_id === null
+                          ? ''
+                          : employeeNames.get(machine.employee_id);
+                }
+
+                case 'condition': {
+                    return (
+                        translateInventoryValue(machine.machine_condition, t) ??
+                        undefined
+                    );
+                }
+
+                case 'peripherals': {
+                    return `${String(machine.has_keyboard)}-${String(machine.has_mouse)}`;
+                }
+
+                case 'situation': {
+                    return (
+                        translateInventoryValue(machine.situation, t) ??
+                        undefined
+                    );
+                }
+
+                case 'added': {
+                    return sortableTimestamp(machine.created_at);
+                }
+            }
+        },
+        [employeeNames, t],
+    );
+    const {sort, sortedRecords, toggleSort} = useTableSort(
+        machines,
+        getSortValue,
+        i18n.language,
+    );
     const totalPages = Math.max(1, Math.ceil(machines.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstMachineIndex = (currentPage - 1) * pageSize;
-    const visibleMachines = machines.slice(
+    const visibleMachines = sortedRecords.slice(
         firstMachineIndex,
         currentPage * pageSize,
     );
@@ -185,6 +258,11 @@ export function MachinesPage(): ReactElement {
 
         setSearchError('');
         setSearch({kind: searchKind, value});
+        setPage(1);
+    }
+
+    function handleSort(key: MachineSortKey): void {
+        toggleSort(key);
         setPage(1);
     }
 
@@ -411,33 +489,56 @@ export function MachinesPage(): ReactElement {
                                     >
                                         <Table.Thead>
                                             <Table.Tr>
-                                                <Table.Th>
-                                                    {t('machine')}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.identification',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('assignment')}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.condition',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('peripherals')}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.situation',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('common.fields.added')}
-                                                </Table.Th>
+                                                {(
+                                                    [
+                                                        [
+                                                            'machine',
+                                                            t('machine'),
+                                                        ],
+                                                        [
+                                                            'identification',
+                                                            t(
+                                                                'common.fields.identification',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'assignment',
+                                                            t('assignment'),
+                                                        ],
+                                                        [
+                                                            'condition',
+                                                            t(
+                                                                'common.fields.condition',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'peripherals',
+                                                            t('peripherals'),
+                                                        ],
+                                                        [
+                                                            'situation',
+                                                            t(
+                                                                'common.fields.situation',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'added',
+                                                            t(
+                                                                'common.fields.added',
+                                                            ),
+                                                        ],
+                                                    ] as Array<
+                                                        [MachineSortKey, string]
+                                                    >
+                                                ).map(([column, label]) => (
+                                                    <SortableTableHeader
+                                                        key={column}
+                                                        column={column}
+                                                        label={label}
+                                                        sort={sort}
+                                                        onSort={handleSort}
+                                                    />
+                                                ))}
                                                 <Table.Th>
                                                     {t('common.fields.actions')}
                                                 </Table.Th>

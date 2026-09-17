@@ -15,9 +15,14 @@ import {
 import {IconPrinter, IconRefresh, IconSearch} from '@tabler/icons-react';
 import type {ReactElement} from 'react';
 import {useTranslation} from 'react-i18next';
-import {usePrintersPage} from '../model/use-printers-page';
+import {usePrintersPage, type PrinterSortKey} from '../model/use-printers-page';
 import {PrinterRow} from './printer-row';
-import {translateMessage, ResourcePageHeader, ResourceResults} from '@/shared';
+import {
+    translateMessage,
+    ResourcePageHeader,
+    ResourceResults,
+    SortableTableHeader,
+} from '@/shared';
 import {PrinterForm} from '@/features';
 
 export function PrintersPage(): ReactElement {
@@ -162,25 +167,57 @@ export function PrintersPage(): ReactElement {
                                 >
                                     <Table.Thead>
                                         <Table.Tr>
-                                            <Table.Th>{t('printer')}</Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.assetNumber')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.ipAddress')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.branch')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.department')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.condition')}
-                                            </Table.Th>
-                                            <Table.Th>
-                                                {t('common.fields.added')}
-                                            </Table.Th>
+                                            {(
+                                                [
+                                                    ['printer', t('printer')],
+                                                    [
+                                                        'assetNumber',
+                                                        t(
+                                                            'common.fields.assetNumber',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'ip',
+                                                        t(
+                                                            'common.fields.ipAddress',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'branch',
+                                                        t(
+                                                            'common.fields.branch',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'department',
+                                                        t(
+                                                            'common.fields.department',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'condition',
+                                                        t(
+                                                            'common.fields.condition',
+                                                        ),
+                                                    ],
+                                                    [
+                                                        'added',
+                                                        t(
+                                                            'common.fields.added',
+                                                        ),
+                                                    ],
+                                                ] as Array<
+                                                    [PrinterSortKey, string]
+                                                >
+                                            ).map(([column, label]) => (
+                                                <SortableTableHeader
+                                                    key={column}
+                                                    column={column}
+                                                    label={label}
+                                                    sort={model.sort}
+                                                    onSort={model.toggleSort}
+                                                />
+                                            ))}
                                             <Table.Th>
                                                 {t('common.fields.actions')}
                                             </Table.Th>

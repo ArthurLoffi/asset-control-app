@@ -102,6 +102,10 @@ and page headers/result states. Keep resource loaders stable at module scope;
 an undefined query means idle and must not fetch. Domain validation and payload
 conversion belong in feature models. Email and printer flows demonstrate reuse.
 
+List tables sort the complete filtered result set before pagination. Sortable
+headers toggle ascending/descending order, expose the active direction visually
+and through `aria-sort`, and keep missing values at the end in either direction.
+
 ## Phone form
 
 Model, IMEI, and serial number are optional for `Só chip` and `Sem chip`, but

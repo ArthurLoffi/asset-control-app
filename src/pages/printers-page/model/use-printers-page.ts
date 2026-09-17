@@ -1,13 +1,21 @@
-import {useState, type SubmitEvent} from 'react';
+import {useCallback, useState, type SubmitEvent} from 'react';
 import {
     useOrganizations,
     usePrinters,
     type Printer,
     type PrinterSearch,
 } from '@/entities';
-import {isPositiveId} from '@/shared';
+import {i18n, isPositiveId, sortableTimestamp, useTableSort} from '@/shared';
 
 const pageSize = 10;
+export type PrinterSortKey =
+    | 'printer'
+    | 'assetNumber'
+    | 'ip'
+    | 'branch'
+    | 'department'
+    | 'condition'
+    | 'added';
 
 type UsePrintersPageReturn = {
     printers: Printer[];
@@ -27,6 +35,8 @@ type UsePrintersPageReturn = {
     lastIndex: number;
 
     visiblePrinters: Printer[];
+    sort: ReturnType<typeof useTableSort<Printer, PrinterSortKey>>['sort'];
+    toggleSort: (key: PrinterSortKey) => void;
 
     branchNames: Map<number, string>;
     departmentNames: Map<number, string>;
@@ -54,6 +64,50 @@ export function usePrintersPage(): UsePrintersPageReturn {
     const {printers, loading, error, reload} = usePrinters(search);
     const organizations = useOrganizations();
     const {branchNames, departmentNames} = organizations;
+    const getSortValue = useCallback(
+        (printer: Printer, key: PrinterSortKey) => {
+            switch (key) {
+                case 'printer': {
+                    return printer.model;
+                }
+
+                case 'assetNumber': {
+                    return printer.asset_number;
+                }
+
+                case 'ip': {
+                    return printer.ip;
+                }
+
+                case 'branch': {
+                    return (
+                        branchNames.get(printer.branch_id) ?? printer.branch_id
+                    );
+                }
+
+                case 'department': {
+                    return (
+                        departmentNames.get(printer.departments_id) ??
+                        printer.departments_id
+                    );
+                }
+
+                case 'condition': {
+                    return printer.machine_condition ?? undefined;
+                }
+
+                case 'added': {
+                    return sortableTimestamp(printer.created_at);
+                }
+            }
+        },
+        [branchNames, departmentNames],
+    );
+    const {
+        sort,
+        sortedRecords,
+        toggleSort: toggleTableSort,
+    } = useTableSort(printers, getSortValue, i18n.language);
     const totalPages = Math.max(1, Math.ceil(printers.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstIndex = (currentPage - 1) * pageSize;
@@ -101,7 +155,12 @@ export function usePrintersPage(): UsePrintersPageReturn {
         setPage,
         firstIndex,
         lastIndex,
-        visiblePrinters: printers.slice(firstIndex, lastIndex),
+        visiblePrinters: sortedRecords.slice(firstIndex, lastIndex),
+        sort,
+        toggleSort(key: PrinterSortKey): void {
+            toggleTableSort(key);
+            setPage(1);
+        },
         branchNames,
         departmentNames,
         organizationError: organizations.error,

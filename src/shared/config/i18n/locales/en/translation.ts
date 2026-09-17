@@ -175,6 +175,10 @@ const translation = {
         switchTo: 'Change language to {{language}}',
     },
     common: {
+        sort: {
+            ascending: 'Sort {{column}} ascending',
+            descending: 'Sort {{column}} descending',
+        },
         actions: {
             toggleNavigation: 'Toggle navigation',
             firstPage: 'First page',

@@ -181,6 +181,10 @@ const translation = {
         switchTo: 'Mudar idioma para {{language}}',
     },
     common: {
+        sort: {
+            ascending: 'Ordenar {{column}} em ordem crescente',
+            descending: 'Ordenar {{column}} em ordem decrescente',
+        },
         actions: {
             toggleNavigation: 'Alternar menu de navegação',
             firstPage: 'Primeira página',

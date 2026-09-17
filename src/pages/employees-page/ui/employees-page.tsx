@@ -1,4 +1,9 @@
-import {useState, type ReactElement, type SubmitEvent} from 'react';
+import {
+    useCallback,
+    useState,
+    type ReactElement,
+    type SubmitEvent,
+} from 'react';
 import {useTranslation} from 'react-i18next';
 import {
     Alert,
@@ -25,12 +30,20 @@ import {
     IconSearch,
     IconUsers,
 } from '@tabler/icons-react';
-import {translateMessage, i18n} from '@/shared';
+import {
+    translateMessage,
+    i18n,
+    SortableTableHeader,
+    sortableTimestamp,
+    useTableSort,
+} from '@/shared';
 import {type Employee, type EmployeeSearch} from '@/entities';
 import {EmployeeForm} from '@/features';
 import {useEmployeeDirectory} from '@/widgets';
 
 const pageSize = 10;
+type EmployeeSortKey =
+    'employee' | 'contact' | 'branch' | 'department' | 'added';
 
 function formatDate(value: string): string {
     const date = new Date(value);
@@ -49,10 +62,43 @@ export function EmployeesPage(): ReactElement {
     const [form, setForm] = useState<{employee?: Employee} | undefined>();
     const [notice, setNotice] = useState('');
     const {employees, loading, error, reload} = useEmployeeDirectory(search);
+    const getSortValue = useCallback(
+        (employee: Employee, key: EmployeeSortKey) => {
+            switch (key) {
+                case 'employee': {
+                    return employee.name;
+                }
+
+                case 'contact': {
+                    return employee.email.length > 0
+                        ? employee.email
+                        : employee.phone;
+                }
+
+                case 'branch': {
+                    return employee.branch_name;
+                }
+
+                case 'department': {
+                    return employee.department_name;
+                }
+
+                case 'added': {
+                    return sortableTimestamp(employee.created_at);
+                }
+            }
+        },
+        [],
+    );
+    const {sort, sortedRecords, toggleSort} = useTableSort(
+        employees,
+        getSortValue,
+        i18n.language,
+    );
     const totalPages = Math.max(1, Math.ceil(employees.length / pageSize));
     const currentPage = Math.min(page, totalPages);
     const firstEmployeeIndex = (currentPage - 1) * pageSize;
-    const visibleEmployees = employees.slice(
+    const visibleEmployees = sortedRecords.slice(
         firstEmployeeIndex,
         currentPage * pageSize,
     );
@@ -84,6 +130,11 @@ export function EmployeesPage(): ReactElement {
 
         setSearchError('');
         setSearch({kind: searchKind === 'id' ? 'id' : 'name', value});
+        setPage(1);
+    }
+
+    function handleSort(key: EmployeeSortKey): void {
+        toggleSort(key);
         setPage(1);
     }
 
@@ -304,25 +355,51 @@ export function EmployeesPage(): ReactElement {
                                     >
                                         <Table.Thead>
                                             <Table.Tr>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.employee',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('contact')}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('common.fields.branch')}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t(
-                                                        'common.fields.department',
-                                                    )}
-                                                </Table.Th>
-                                                <Table.Th>
-                                                    {t('common.fields.added')}
-                                                </Table.Th>
+                                                {(
+                                                    [
+                                                        [
+                                                            'employee',
+                                                            t(
+                                                                'common.fields.employee',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'contact',
+                                                            t('contact'),
+                                                        ],
+                                                        [
+                                                            'branch',
+                                                            t(
+                                                                'common.fields.branch',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'department',
+                                                            t(
+                                                                'common.fields.department',
+                                                            ),
+                                                        ],
+                                                        [
+                                                            'added',
+                                                            t(
+                                                                'common.fields.added',
+                                                            ),
+                                                        ],
+                                                    ] as Array<
+                                                        [
+                                                            EmployeeSortKey,
+                                                            string,
+                                                        ]
+                                                    >
+                                                ).map(([column, label]) => (
+                                                    <SortableTableHeader
+                                                        key={column}
+                                                        column={column}
+                                                        label={label}
+                                                        sort={sort}
+                                                        onSort={handleSort}
+                                                    />
+                                                ))}
                                                 <Table.Th>
                                                     {t('common.fields.actions')}
                                                 </Table.Th>
