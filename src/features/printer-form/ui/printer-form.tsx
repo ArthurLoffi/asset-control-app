@@ -10,11 +10,20 @@ import {
     TextInput,
 } from '@mantine/core';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {usePrinterForm, type PrinterFormProps} from '../model/use-printer-form';
+import {
+    translateMessage,
+    DeactivationFields,
+    translateInventoryValue,
+    useRecordDeactivation,
+} from '@/shared';
 import {printerApi, printerConditions} from '@/entities';
-import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 export function PrinterForm(props: PrinterFormProps): ReactElement {
+    const {t} = useTranslation();
+    const resource = t('printer').toLowerCase();
+    const resourceLabel = 'Printer';
     const {printer, onClose, onSaved} = props;
     const {
         saving: formSaving,
@@ -30,10 +39,12 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
         id: printer?.id,
         deactivate: printerApi.deactivate,
         onDeactivated() {
-            onSaved('Printer deactivated successfully.');
+            onSaved(`${resourceLabel} deactivated successfully.`);
         },
     });
     const isSaving = formSaving || deactivation.saving;
+    const translateValue = (value: string): string =>
+        translateInventoryValue(value, t) ?? value;
     const error =
         deactivation.error.length > 0 ? deactivation.error : formError;
 
@@ -42,7 +53,11 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
             opened
             centered
             size="lg"
-            title={printer ? 'Edit printer' : 'New printer'}
+            title={
+                printer
+                    ? t('forms.edit', {resource})
+                    : t('resources.printers.new')
+            }
             onClose={onClose}
             closeOnClickOutside={!isSaving}
             closeOnEscape={!isSaving}
@@ -59,26 +74,30 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
             >
                 <Stack>
                     <Text size="sm" c="dimmed">
-                        Keep printer identification, network address, and
-                        location up to date.
+                        {t('forms.keepDetails', {
+                            details: t('printerDetails'),
+                        })}
                     </Text>
                     {error.length > 0 && (
                         <Alert
                             color="red"
-                            title="Could not save printer"
+                            title={t('forms.couldNotSave', {
+                                resource,
+                            })}
                             role="alert"
                         >
-                            {error}
+                            {translateMessage(error, t)}
                         </Alert>
                     )}
                     {organizationError.length > 0 && (
                         <Alert
                             color="yellow"
-                            title="Location options unavailable"
+                            title={t('forms.locationUnavailable')}
                             role="alert"
                         >
-                            {organizationError} Close and reopen the form to
-                            retry.
+                            {t('forms.closeAndRetry', {
+                                message: translateMessage(organizationError, t),
+                            })}
                         </Alert>
                     )}
                     <DeactivationFields
@@ -91,14 +110,14 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                             <TextInput
                                 autoFocus
                                 required
-                                label="Model"
+                                label={t('common.fields.model')}
                                 name="model"
                                 defaultValue={printer?.model}
-                                placeholder="e.g. LaserJet Pro M404"
+                                placeholder={t('forms.laserJet')}
                             />
                             <TextInput
                                 required
-                                label="Asset number"
+                                label={t('common.fields.assetNumber')}
                                 name="asset_number"
                                 type="number"
                                 min={1}
@@ -108,28 +127,40 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                             />
                             <TextInput
                                 required
-                                label="IP address"
+                                label={t('common.fields.ipAddress')}
                                 name="ip"
                                 defaultValue={printer?.ip}
-                                placeholder="e.g. 192.168.1.100 or 2001:db8::1"
+                                placeholder={t('forms.ipAddress')}
                             />
                             <Select
                                 clearable
-                                label="Condition"
+                                label={t('common.fields.condition')}
                                 name="machine_condition"
-                                data={[...printerConditions]}
+                                data={printerConditions.map((value) => ({
+                                    value,
+                                    label: translateValue(value),
+                                }))}
                                 defaultValue={
                                     printer?.machine_condition ?? null
                                 }
-                                placeholder="Not specified"
+                                placeholder={t('common.labels.notSpecified')}
                             />
                             <Select
                                 required
                                 searchable
                                 allowDeselect={false}
-                                label="Branch"
+                                label={t('common.fields.branch')}
                                 name="branch_id"
-                                data={branches}
+                                data={branches.map((option) => ({
+                                    ...option,
+                                    label:
+                                        option.label ===
+                                        `ID #${option.value} (unavailable)`
+                                            ? t('common.labels.unavailableId', {
+                                                  id: option.value,
+                                              })
+                                            : option.label,
+                                }))}
                                 defaultValue={
                                     printer ? String(printer.branch_id) : null
                                 }
@@ -137,20 +168,31 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                                     !deactivation.selected &&
                                     loadingOrganizations
                                 }
-                                placeholder={
+                                placeholder={t(
                                     loadingOrganizations
-                                        ? 'Loading branches…'
-                                        : 'Select a branch'
-                                }
-                                nothingFoundMessage="No branches found"
+                                        ? 'loadingBranches'
+                                        : 'common.messages.selectBranch',
+                                )}
+                                nothingFoundMessage={t(
+                                    'common.messages.noBranches',
+                                )}
                             />
                             <Select
                                 required
                                 searchable
                                 allowDeselect={false}
-                                label="Department"
+                                label={t('common.fields.department')}
                                 name="departments_id"
-                                data={departments}
+                                data={departments.map((option) => ({
+                                    ...option,
+                                    label:
+                                        option.label ===
+                                        `ID #${option.value} (unavailable)`
+                                            ? t('common.labels.unavailableId', {
+                                                  id: option.value,
+                                              })
+                                            : option.label,
+                                }))}
                                 defaultValue={
                                     printer
                                         ? String(printer.departments_id)
@@ -160,12 +202,14 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                                     !deactivation.selected &&
                                     loadingOrganizations
                                 }
-                                placeholder={
+                                placeholder={t(
                                     loadingOrganizations
-                                        ? 'Loading departments…'
-                                        : 'Select a department'
-                                }
-                                nothingFoundMessage="No departments found"
+                                        ? 'loadingDepartments'
+                                        : 'common.messages.selectDepartment',
+                                )}
+                                nothingFoundMessage={t(
+                                    'common.messages.noDepartments',
+                                )}
                             />
                         </SimpleGrid>
                     </DeactivationFields>
@@ -175,7 +219,7 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                             disabled={isSaving}
                             onClick={onClose}
                         >
-                            Cancel
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button
                             type="submit"
@@ -185,10 +229,10 @@ export function PrinterForm(props: PrinterFormProps): ReactElement {
                             }
                         >
                             {deactivation.selected
-                                ? 'Deactivate printer'
+                                ? t('deactivate', {resource})
                                 : printer
-                                  ? 'Save changes'
-                                  : 'Create printer'}
+                                  ? t('common.actions.saveChanges')
+                                  : t('forms.create', {resource})}
                         </Button>
                     </Group>
                 </Stack>

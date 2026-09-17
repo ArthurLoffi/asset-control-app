@@ -1,5 +1,6 @@
 import {Anchor, Table, Text} from '@mantine/core';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
 import type {InventoryRecord} from '../model/dashboard';
 import {ChartPanel, StatusBadge} from './dashboard-components';
@@ -10,31 +11,32 @@ export function InventoryTable({
 }: {
     records: InventoryRecord[];
 }): ReactElement {
+    const {t} = useTranslation();
     return (
         <ChartPanel
-            title="Latest inventory records"
-            description="Up to 10 records sorted by creation date."
+            title={t('dashboard.latestRecords')}
+            description={t('dashboard.latestRecordsDescription')}
         >
             {records.length === 0 ? (
                 <Text c="dimmed" size="sm">
-                    No inventory records.
+                    {t('dashboard.noInventory')}
                 </Text>
             ) : (
                 <Table.ScrollContainer minWidth={900}>
                     <Table
                         verticalSpacing="md"
                         highlightOnHover
-                        aria-label="Latest inventory records"
+                        aria-label={t('dashboard.latestRecords')}
                     >
                         <Table.Thead>
                             <Table.Tr>
                                 {[
-                                    'Record',
-                                    'Employee',
-                                    'Department',
-                                    'Branch',
-                                    'Status',
-                                    'Created',
+                                    t('record'),
+                                    t('common.fields.employee'),
+                                    t('common.fields.department'),
+                                    t('common.fields.branch'),
+                                    t('status'),
+                                    t('created'),
                                 ].map((label) => (
                                     <Table.Th key={label} scope="col">
                                         {label}
@@ -53,10 +55,19 @@ export function InventoryTable({
                                         >
                                             {record.model.length > 0
                                                 ? record.model
-                                                : 'Model not recorded'}
+                                                : t('modelNotRecorded')}
                                         </Anchor>
                                         <Text size="xs" c="dimmed">
-                                            {record.type}
+                                            {t(
+                                                {
+                                                    Machine: 'machine',
+                                                    'Monitor record':
+                                                        'dashboard.monitorRecord',
+                                                    'Phone record':
+                                                        'dashboard.phoneRecord',
+                                                    Printer: 'printer',
+                                                }[record.type] ?? record.type,
+                                            )}
                                         </Text>
                                     </Table.Td>
                                     <Table.Td>

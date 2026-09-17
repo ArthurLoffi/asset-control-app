@@ -1,5 +1,7 @@
 import {Alert, Button, Center, Loader, Stack, Text, Title} from '@mantine/core';
 import type {ReactElement, ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
+import {translateMessage} from '../config/i18n';
 
 type ResourceResultsProps = {
     loading: boolean;
@@ -26,6 +28,7 @@ export function ResourceResults({
     emptyAction,
     children,
 }: ResourceResultsProps): ReactElement {
+    const {t} = useTranslation();
     if (loading) {
         return (
             <Center py={70}>
@@ -43,7 +46,7 @@ export function ResourceResults({
         return (
             <Alert color="red" title={errorTitle} role="alert">
                 <Stack gap="sm">
-                    <Text size="sm">{error}</Text>
+                    <Text size="sm">{translateMessage(error, t)}</Text>
                     <Button
                         variant="light"
                         color="red"
@@ -51,7 +54,7 @@ export function ResourceResults({
                         onClick={onRetry}
                         style={{alignSelf: 'flex-start'}}
                     >
-                        Try again
+                        {t('common.actions.retry')}
                     </Button>
                 </Stack>
             </Alert>

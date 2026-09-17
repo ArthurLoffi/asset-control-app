@@ -1,4 +1,5 @@
 import {useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Button,
@@ -10,8 +11,12 @@ import {
     Text,
     TextInput,
 } from '@mantine/core';
+import {
+    translateMessage,
+    DeactivationFields,
+    useRecordDeactivation,
+} from '@/shared';
 import {employeeApi, type Employee, useOrganizations} from '@/entities';
-import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 type EmployeeFormProps = {
     employee?: Employee;
@@ -24,6 +29,9 @@ export function EmployeeForm({
     onClose,
     onSaved,
 }: EmployeeFormProps): ReactElement {
+    const {t} = useTranslation();
+    const resource = t('employee').toLowerCase();
+    const resourceLabel = 'Employee';
     const [formSaving, setSaving] = useState(false);
     const [formError, setError] = useState('');
     const {
@@ -39,7 +47,7 @@ export function EmployeeForm({
         id: employee?.id,
         deactivate: employeeApi.deactivate,
         onDeactivated() {
-            onSaved('Employee deactivated successfully.');
+            onSaved(`${resourceLabel} deactivated successfully.`);
         },
     });
     const isSaving = formSaving || deactivation.saving;
@@ -89,9 +97,7 @@ export function EmployeeForm({
             }
 
             onSaved(
-                employee
-                    ? 'Employee updated successfully.'
-                    : 'Employee created successfully.',
+                `${resourceLabel} ${employee ? 'updated' : 'created'} successfully.`,
             );
         } catch (saveError) {
             setError(
@@ -108,7 +114,9 @@ export function EmployeeForm({
         <Modal
             opened
             centered
-            title={employee ? 'Edit employee' : 'New employee'}
+            title={t(employee ? 'forms.edit' : 'forms.new', {
+                resource,
+            })}
             onClose={onClose}
             closeOnClickOutside={!isSaving}
             closeOnEscape={!isSaving}
@@ -126,20 +134,27 @@ export function EmployeeForm({
             >
                 <Stack>
                     <Text size="sm" c="dimmed">
-                        Keep contact and organization details up to date.
+                        {t('forms.keepDetails', {
+                            details: t('employeeDetails'),
+                        })}
                     </Text>
                     {error.length > 0 && (
                         <Alert
                             color="red"
-                            title="Could not save employee"
+                            title={t('forms.couldNotSave', {
+                                resource,
+                            })}
                             role="alert"
                         >
-                            {error}
+                            {translateMessage(error, t)}
                         </Alert>
                     )}
                     {organizationError.length > 0 && (
-                        <Alert color="red" title="Could not load form options">
-                            {organizationError}
+                        <Alert
+                            color="red"
+                            title={t('forms.couldNotLoadOptions')}
+                        >
+                            {translateMessage(organizationError, t)}
                         </Alert>
                     )}
                     <DeactivationFields
@@ -152,35 +167,35 @@ export function EmployeeForm({
                             <TextInput
                                 autoFocus
                                 required
-                                label="Full name"
+                                label={t('common.fields.fullName')}
                                 name="name"
                                 autoComplete="name"
                                 defaultValue={employee?.name}
-                                placeholder="e.g. Alex Morgan"
+                                placeholder={t('forms.alexMorgan')}
                             />
                             <TextInput
                                 required
                                 type="email"
-                                label="Email"
+                                label={t('common.fields.email')}
                                 name="email"
                                 autoComplete="email"
                                 defaultValue={employee?.email}
-                                placeholder="alex@company.com"
+                                placeholder={t('forms.emailPlaceholder')}
                             />
                             <TextInput
                                 type="tel"
-                                label="Phone"
+                                label={t('common.fields.contactPhone')}
                                 name="phone"
                                 autoComplete="tel"
                                 defaultValue={employee?.phone}
-                                placeholder="Optional"
+                                placeholder={t('common.labels.optional')}
                             />
                             <SimpleGrid cols={{base: 1, sm: 2}}>
                                 <Select
                                     required
                                     searchable
                                     allowDeselect={false}
-                                    label="Branch"
+                                    label={t('common.fields.branch')}
                                     name="branch_id"
                                     data={toSelectData(branches)}
                                     defaultValue={
@@ -188,8 +203,12 @@ export function EmployeeForm({
                                             ? String(employee.branch_id)
                                             : null
                                     }
-                                    placeholder="Select a branch"
-                                    nothingFoundMessage="No branches found"
+                                    placeholder={t(
+                                        'common.messages.selectBranch',
+                                    )}
+                                    nothingFoundMessage={t(
+                                        'common.messages.noBranches',
+                                    )}
                                     disabled={
                                         !deactivation.selected &&
                                         loadingOrganizations
@@ -199,7 +218,7 @@ export function EmployeeForm({
                                     required
                                     searchable
                                     allowDeselect={false}
-                                    label="Department"
+                                    label={t('common.fields.department')}
                                     name="department_id"
                                     data={toSelectData(departments)}
                                     defaultValue={
@@ -207,8 +226,12 @@ export function EmployeeForm({
                                             ? String(employee.department_id)
                                             : null
                                     }
-                                    placeholder="Select a department"
-                                    nothingFoundMessage="No departments found"
+                                    placeholder={t(
+                                        'common.messages.selectDepartment',
+                                    )}
+                                    nothingFoundMessage={t(
+                                        'common.messages.noDepartments',
+                                    )}
                                     disabled={
                                         !deactivation.selected &&
                                         loadingOrganizations
@@ -223,7 +246,7 @@ export function EmployeeForm({
                             disabled={isSaving}
                             onClick={onClose}
                         >
-                            Cancel
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button
                             type="submit"
@@ -235,10 +258,10 @@ export function EmployeeForm({
                             }
                         >
                             {deactivation.selected
-                                ? 'Deactivate employee'
+                                ? t('deactivate', {resource})
                                 : employee
-                                  ? 'Save changes'
-                                  : 'Create employee'}
+                                  ? t('common.actions.saveChanges')
+                                  : t('forms.create', {resource})}
                         </Button>
                     </Group>
                 </Stack>

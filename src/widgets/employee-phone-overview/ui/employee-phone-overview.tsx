@@ -1,4 +1,5 @@
-import {useMemo, useState} from 'react';
+import {useMemo, useState, type ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Badge,
@@ -22,6 +23,7 @@ import {
     provisionOptions,
     summarizeEmployeePhones,
 } from '../model/employee-phone-overview';
+import {translateMessage} from '@/shared';
 import {type Employee, type Phone} from '@/entities';
 
 type EmployeePhoneOverviewProps = {
@@ -41,7 +43,8 @@ export function EmployeePhoneOverview({
     error,
     onRefresh,
     onViewInventory,
-}: EmployeePhoneOverviewProps) {
+}: EmployeePhoneOverviewProps): ReactElement {
+    const {t} = useTranslation();
     const [query, setQuery] = useState('');
     const [category, setCategory] = useState('all');
     const [page, setPage] = useState(1);
@@ -76,11 +79,10 @@ export function EmployeePhoneOverview({
             <Group justify="space-between">
                 <div>
                     <Title order={2} size="h4">
-                        Employee coverage
+                        {t('employeeCoverage')}
                     </Title>
                     <Text size="sm" c="dimmed">
-                        See who has a company phone and SIM, a SIM only, or no
-                        SIM.
+                        {t('employeeCoverageDescription')}
                     </Text>
                 </div>
                 <Button
@@ -89,7 +91,7 @@ export function EmployeePhoneOverview({
                     disabled={loading}
                     onClick={onRefresh}
                 >
-                    Refresh
+                    {t('common.actions.refresh')}
                 </Button>
             </Group>
             {loading ? (
@@ -97,25 +99,25 @@ export function EmployeePhoneOverview({
                     <Stack align="center">
                         <Loader size="sm" />
                         <Text role="status" size="sm" c="dimmed">
-                            Loading employee coverage…
+                            {t('loadingEmployeeCoverage')}
                         </Text>
                     </Stack>
                 </Center>
             ) : error.length > 0 ? (
                 <Alert
                     color="red"
-                    title="Unable to load employee coverage"
+                    title={t('unableToLoadEmployeeCoverage')}
                     role="alert"
                 >
                     <Stack gap="sm">
-                        <Text size="sm">{error}</Text>
+                        <Text size="sm">{translateMessage(error, t)}</Text>
                         <Button
                             variant="light"
                             color="red"
                             onClick={onRefresh}
                             style={{alignSelf: 'flex-start'}}
                         >
-                            Try again
+                            {t('common.actions.retry')}
                         </Button>
                     </Stack>
                 </Alert>
@@ -137,7 +139,7 @@ export function EmployeePhoneOverview({
                             >
                                 <Stack gap="xs">
                                     <Badge variant="light" color={option.color}>
-                                        {option.label}
+                                        {t(`provision.${option.value}.label`)}
                                     </Badge>
                                     <Text size="32px" fw={700}>
                                         {
@@ -148,7 +150,9 @@ export function EmployeePhoneOverview({
                                         }
                                     </Text>
                                     <Text size="sm" c="dimmed" mih={42}>
-                                        {option.description}
+                                        {t(
+                                            `provision.${option.value}.description`,
+                                        )}
                                     </Text>
                                     <Button
                                         variant={
@@ -158,7 +162,11 @@ export function EmployeePhoneOverview({
                                         }
                                         color={option.color}
                                         aria-pressed={category === option.value}
-                                        aria-label={`Show employees: ${option.label}`}
+                                        aria-label={t('showEmployees', {
+                                            category: t(
+                                                `provision.${option.value}.label`,
+                                            ),
+                                        })}
                                         onClick={() => {
                                             setCategory(
                                                 category === option.value
@@ -168,7 +176,7 @@ export function EmployeePhoneOverview({
                                             setPage(1);
                                         }}
                                     >
-                                        View employees
+                                        {t('viewEmployees')}
                                     </Button>
                                 </Stack>
                             </Paper>
@@ -179,20 +187,20 @@ export function EmployeePhoneOverview({
                             <Group justify="space-between">
                                 <Group gap="sm">
                                     <Title order={3} size="h4">
-                                        Employee assignments
+                                        {t('employeeAssignments')}
                                     </Title>
                                     <Badge variant="light">
-                                        {employees.length} employees
+                                        {employees.length} {t('employeesLower')}
                                     </Badge>
                                 </Group>
                                 <Text size="xs" c="dimmed">
-                                    Each employee is counted once.
+                                    {t('eachEmployeeOnce')}
                                 </Text>
                             </Group>
                             <Group align="flex-end">
                                 <TextInput
-                                    label="Employee name"
-                                    placeholder="Search by employee name"
+                                    label={t('common.fields.employeeName')}
+                                    placeholder={t('searchEmployeeName')}
                                     leftSection={<IconSearch size={16} />}
                                     value={query}
                                     onChange={(event) => {
@@ -202,17 +210,20 @@ export function EmployeePhoneOverview({
                                     style={{flex: 1, minWidth: 180}}
                                 />
                                 <Select
-                                    label="Company equipment"
+                                    label={t('companyEquipment')}
                                     value={category}
                                     allowDeselect={false}
                                     data={[
-                                        {value: 'all', label: 'All employees'},
-                                        ...provisionOptions.map(
-                                            ({value, label}) => ({
-                                                value,
-                                                label,
-                                            }),
-                                        ),
+                                        {
+                                            value: 'all',
+                                            label: t('allEmployees'),
+                                        },
+                                        ...provisionOptions.map(({value}) => ({
+                                            value,
+                                            label: t(
+                                                `provision.${value}.label`,
+                                            ),
+                                        })),
                                     ]}
                                     onChange={(value) => {
                                         setCategory(value ?? 'all');
@@ -225,35 +236,35 @@ export function EmployeePhoneOverview({
                                         variant="default"
                                         onClick={clearFilters}
                                     >
-                                        Clear filters
+                                        {t('clearFilters')}
                                     </Button>
                                 )}
                             </Group>
                             <Text size="xs" c="dimmed">
-                                Counts cover all employees. Employees with no
-                                assignment or incomplete SIM details are marked
-                                “Not recorded”.
+                                {t('employeeCoverageNote')}
                             </Text>
                             {unassignedCount > 0 && (
                                 <Text size="sm" c="dimmed">
-                                    {unassignedCount} unassigned inventory{' '}
-                                    {unassignedCount === 1
-                                        ? 'record is'
-                                        : 'records are'}{' '}
-                                    excluded from employee counts.
+                                    {t('excludedInventory', {
+                                        count: unassignedCount,
+                                    })}
                                 </Text>
                             )}
                             {filtered.length === 0 ? (
                                 <Stack align="center" py={40}>
                                     <Text fw={500}>
-                                        {employees.length === 0
-                                            ? 'No employees yet'
-                                            : 'No employees match these filters'}
+                                        {t(
+                                            employees.length === 0
+                                                ? 'resources.employees.empty'
+                                                : 'noEmployeesMatch',
+                                        )}
                                     </Text>
                                     <Text size="sm" c="dimmed">
-                                        {employees.length === 0
-                                            ? 'Add employees to see their company phone and SIM assignments.'
-                                            : 'Try another employee name or equipment category.'}
+                                        {t(
+                                            employees.length === 0
+                                                ? 'addEmployeesForCoverage'
+                                                : 'tryAnotherEmployeeFilter',
+                                        )}
                                     </Text>
                                     {(query.length > 0 ||
                                         category !== 'all') && (
@@ -261,7 +272,9 @@ export function EmployeePhoneOverview({
                                             variant="light"
                                             onClick={clearFilters}
                                         >
-                                            Show all employees
+                                            {t('common.messages.showAll', {
+                                                resource: t('employeesLower'),
+                                            })}
                                         </Button>
                                     )}
                                 </Stack>
@@ -271,23 +284,31 @@ export function EmployeePhoneOverview({
                                         <Table
                                             verticalSpacing="md"
                                             highlightOnHover
-                                            aria-label="Employee phone and SIM assignments"
+                                            aria-label={t(
+                                                'employeePhoneAssignments',
+                                            )}
                                         >
                                             <Table.Thead>
                                                 <Table.Tr>
                                                     <Table.Th>
-                                                        Employee
+                                                        {t(
+                                                            'common.fields.employee',
+                                                        )}
                                                     </Table.Th>
                                                     <Table.Th>
-                                                        Organization
+                                                        {t('organization')}
                                                     </Table.Th>
                                                     <Table.Th>
-                                                        Company equipment
+                                                        {t('companyEquipment')}
                                                     </Table.Th>
                                                     <Table.Th>
-                                                        Assigned records
+                                                        {t('assignedRecords')}
                                                     </Table.Th>
-                                                    <Table.Th>Actions</Table.Th>
+                                                    <Table.Th>
+                                                        {t(
+                                                            'common.fields.actions',
+                                                        )}
+                                                    </Table.Th>
                                                 </Table.Tr>
                                             </Table.Thead>
                                             <Table.Tbody>
@@ -357,9 +378,9 @@ export function EmployeePhoneOverview({
                                                                         }
                                                                         variant="light"
                                                                     >
-                                                                        {
-                                                                            option.label
-                                                                        }
+                                                                        {t(
+                                                                            `provision.${option.value}.label`,
+                                                                        )}
                                                                     </Badge>
                                                                 </Table.Td>
                                                                 <Table.Td>
@@ -369,9 +390,9 @@ export function EmployeePhoneOverview({
                                                                             size="sm"
                                                                             c="dimmed"
                                                                         >
-                                                                            No
-                                                                            assignment
-                                                                            recorded
+                                                                            {t(
+                                                                                'noAssignmentRecorded',
+                                                                            )}
                                                                         </Text>
                                                                     ) : (
                                                                         assigned.map(
@@ -386,10 +407,14 @@ export function EmployeePhoneOverview({
                                                                                 >
                                                                                     {phone.equipament ===
                                                                                     'Só chip'
-                                                                                        ? 'SIM card'
+                                                                                        ? t(
+                                                                                              'common.values.simOnly',
+                                                                                          )
                                                                                         : phone.equipament ===
                                                                                             'Sem chip'
-                                                                                          ? 'No SIM card'
+                                                                                          ? t(
+                                                                                                'common.values.noSim',
+                                                                                            )
                                                                                           : phone.model}{' '}
                                                                                     ·
                                                                                     #
@@ -409,15 +434,21 @@ export function EmployeePhoneOverview({
                                                                             assigned.length ===
                                                                             0
                                                                         }
-                                                                        aria-label={`View equipment for ${employee.name}`}
+                                                                        aria-label={t(
+                                                                            'viewEquipmentFor',
+                                                                            {
+                                                                                name: employee.name,
+                                                                            },
+                                                                        )}
                                                                         onClick={() => {
                                                                             onViewInventory(
                                                                                 employee,
                                                                             );
                                                                         }}
                                                                     >
-                                                                        View
-                                                                        equipment
+                                                                        {t(
+                                                                            'viewEquipment',
+                                                                        )}
                                                                     </Button>
                                                                 </Table.Td>
                                                             </Table.Tr>
@@ -429,12 +460,15 @@ export function EmployeePhoneOverview({
                                     </Table.ScrollContainer>
                                     <Group justify="space-between">
                                         <Text size="sm" c="dimmed">
-                                            Showing {firstEmployeeIndex + 1}–
-                                            {Math.min(
-                                                currentPage * pageSize,
-                                                filtered.length,
-                                            )}{' '}
-                                            of {filtered.length} employees
+                                            {t('common.pagination', {
+                                                from: firstEmployeeIndex + 1,
+                                                to: Math.min(
+                                                    currentPage * pageSize,
+                                                    filtered.length,
+                                                ),
+                                                count: filtered.length,
+                                                resource: t('employeesLower'),
+                                            })}
                                         </Text>
                                         {totalPages > 1 && (
                                             <Pagination

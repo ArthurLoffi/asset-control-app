@@ -182,6 +182,17 @@ request. Success closes the form and reloads active results, including resetting
 email searches instead of selecting the now-inactive ID. Errors retain the form.
 Creation forms do not offer deactivation.
 
+## Internationalization
+
+Use the shared i18next instance and pt-BR/en catalogs for all interface text,
+including login, validation, notices, empty states, and accessibility labels.
+Translate application messages at display time so an active language change also
+updates existing errors. Preserve user-entered data, unknown API details, and raw
+backend enum values; translate known enum labels only for presentation. The globe
+switcher is a feature composed by the header and login page. Keep long translated
+labels wrapping and header controls accessible on small screens. Translation tests
+check catalog parity, literal key coverage, and language switching across routes.
+
 ## Company logo
 
 The header reads the optional `VITE_COMPANY_LOGO` build-time variable. It may

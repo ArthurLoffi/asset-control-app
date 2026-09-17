@@ -1,4 +1,5 @@
 import {useState, type ReactElement, type SubmitEvent} from 'react';
+import {useTranslation} from 'react-i18next';
 import {
     Alert,
     Avatar,
@@ -24,20 +25,22 @@ import {
     IconSearch,
     IconUsers,
 } from '@tabler/icons-react';
+import {translateMessage, i18n} from '@/shared';
 import {type Employee, type EmployeeSearch} from '@/entities';
 import {EmployeeForm} from '@/features';
 import {useEmployeeDirectory} from '@/widgets';
 
 const pageSize = 10;
 
-function formatDate(value: string) {
+function formatDate(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
-        : date.toLocaleDateString();
+        : date.toLocaleDateString(i18n.language);
 }
 
 export function EmployeesPage(): ReactElement {
+    const {t} = useTranslation();
     const [search, setSearch] = useState<EmployeeSearch>({kind: 'all'});
     const [searchKind, setSearchKind] = useState('name');
     const [query, setQuery] = useState('');
@@ -94,11 +97,10 @@ export function EmployeesPage(): ReactElement {
                         </ThemeIcon>
                         <div>
                             <Title order={1} size="h2">
-                                Employees
+                                {t('resources.employees.title')}
                             </Title>
                             <Text c="dimmed" size="sm">
-                                Manage your team’s contact and organization
-                                details.
+                                {t('resources.employees.description')}
                             </Text>
                         </div>
                     </Group>
@@ -109,7 +111,7 @@ export function EmployeesPage(): ReactElement {
                             setForm({});
                         }}
                     >
-                        New employee
+                        {t('resources.employees.new')}
                     </Button>
                 </Group>
 
@@ -122,7 +124,7 @@ export function EmployeesPage(): ReactElement {
                             setNotice('');
                         }}
                     >
-                        {notice}
+                        {translateMessage(notice, t)}
                     </Alert>
                 )}
 
@@ -131,14 +133,17 @@ export function EmployeesPage(): ReactElement {
                         <Group justify="space-between">
                             <Group gap="sm">
                                 <Title order={2} size="h4">
-                                    Employee directory
+                                    {t('resources.employees.inventory')}
                                 </Title>
                                 {!loading && error.length === 0 && (
                                     <Badge variant="light">
                                         {employees.length}{' '}
-                                        {search.kind === 'all'
-                                            ? 'total'
-                                            : 'found'}
+                                        {t(
+                                            search.kind === 'all'
+                                                ? 'common.labels.total'
+                                                : 'common.labels.found',
+                                            {count: employees.length},
+                                        )}
                                     </Badge>
                                 )}
                             </Group>
@@ -149,23 +154,28 @@ export function EmployeesPage(): ReactElement {
                                 disabled={loading}
                                 onClick={reload}
                             >
-                                Refresh
+                                {t('common.actions.refresh')}
                             </Button>
                         </Group>
                         <form onSubmit={handleSearch}>
                             <Stack gap="xs">
                                 <Group align="flex-end">
                                     <Select
-                                        label="Search by"
+                                        label={t('searchBy')}
                                         w={160}
                                         value={searchKind}
                                         allowDeselect={false}
                                         data={[
                                             {
                                                 value: 'name',
-                                                label: 'Name',
+                                                label: t('name'),
                                             },
-                                            {value: 'id', label: 'Employee ID'},
+                                            {
+                                                value: 'id',
+                                                label: t(
+                                                    'common.fields.employeeId',
+                                                ),
+                                            },
                                         ]}
                                         onChange={(value) => {
                                             setSearchKind(value ?? 'name');
@@ -173,16 +183,16 @@ export function EmployeesPage(): ReactElement {
                                         }}
                                     />
                                     <TextInput
-                                        label={
+                                        label={t(
                                             searchKind === 'id'
-                                                ? 'Employee ID'
-                                                : 'Employee name'
-                                        }
-                                        placeholder={
+                                                ? 'common.fields.employeeId'
+                                                : 'common.fields.employeeName',
+                                        )}
+                                        placeholder={t(
                                             searchKind === 'id'
-                                                ? 'Enter an employee ID'
-                                                : 'Enter an employee name'
-                                        }
+                                                ? 'enterEmployeeId'
+                                                : 'enterEmployeeName',
+                                        )}
                                         leftSection={<IconSearch size={16} />}
                                         value={query}
                                         onChange={(event) => {
@@ -190,20 +200,22 @@ export function EmployeesPage(): ReactElement {
                                         }}
                                         style={{flex: 1, minWidth: 180}}
                                     />
-                                    <Button type="submit">Search</Button>
+                                    <Button type="submit">
+                                        {t('common.actions.search')}
+                                    </Button>
                                     {(search.kind !== 'all' ||
                                         query.length > 0) && (
                                         <Button
                                             variant="default"
                                             onClick={resetSearch}
                                         >
-                                            Clear
+                                            {t('common.actions.clear')}
                                         </Button>
                                     )}
                                 </Group>
                                 {searchError.length > 0 && (
                                     <Text c="red" size="sm" role="alert">
-                                        {searchError}
+                                        {translateMessage(searchError, t)}
                                     </Text>
                                 )}
                             </Stack>
@@ -214,18 +226,20 @@ export function EmployeesPage(): ReactElement {
                                 <Stack align="center">
                                     <Loader size="sm" />
                                     <Text size="sm" c="dimmed" role="status">
-                                        Loading employees…
+                                        {t('resources.employees.loading')}
                                     </Text>
                                 </Stack>
                             </Center>
                         ) : error.length > 0 ? (
                             <Alert
                                 color="red"
-                                title="Unable to load employees"
+                                title={t('resources.employees.unavailable')}
                                 role="alert"
                             >
                                 <Stack gap="sm">
-                                    <Text size="sm">{error}</Text>
+                                    <Text size="sm">
+                                        {translateMessage(error, t)}
+                                    </Text>
                                     <Button
                                         variant="light"
                                         color="red"
@@ -233,7 +247,7 @@ export function EmployeesPage(): ReactElement {
                                         onClick={reload}
                                         style={{alignSelf: 'flex-start'}}
                                     >
-                                        Try again
+                                        {t('common.actions.retry')}
                                     </Button>
                                 </Stack>
                             </Alert>
@@ -248,14 +262,18 @@ export function EmployeesPage(): ReactElement {
                                     <IconUsers size={28} />
                                 </ThemeIcon>
                                 <Title order={3} size="h4">
-                                    {search.kind === 'all'
-                                        ? 'No employees yet'
-                                        : 'No employee found'}
+                                    {t(
+                                        search.kind === 'all'
+                                            ? 'resources.employees.empty'
+                                            : 'resources.employees.notFound',
+                                    )}
                                 </Title>
                                 <Text c="dimmed" size="sm" ta="center">
-                                    {search.kind === 'all'
-                                        ? 'Add your first employee to start building your directory.'
-                                        : 'Check the name or employee ID and try again.'}
+                                    {t(
+                                        search.kind === 'all'
+                                            ? 'resources.employees.emptyDescription'
+                                            : 'resources.employees.notFoundDescription',
+                                    )}
                                 </Text>
                                 <Button
                                     variant="light"
@@ -268,8 +286,10 @@ export function EmployeesPage(): ReactElement {
                                     }
                                 >
                                     {search.kind === 'all'
-                                        ? 'New employee'
-                                        : 'Show all employees'}
+                                        ? t('resources.employees.new')
+                                        : t('common.messages.showAll', {
+                                              resource: t('employeesLower'),
+                                          })}
                                 </Button>
                             </Stack>
                         ) : (
@@ -278,16 +298,34 @@ export function EmployeesPage(): ReactElement {
                                     <Table
                                         verticalSpacing="md"
                                         highlightOnHover
-                                        aria-label="Employee directory"
+                                        aria-label={t(
+                                            'resources.employees.results',
+                                        )}
                                     >
                                         <Table.Thead>
                                             <Table.Tr>
-                                                <Table.Th>Employee</Table.Th>
-                                                <Table.Th>Contact</Table.Th>
-                                                <Table.Th>Branch</Table.Th>
-                                                <Table.Th>Department</Table.Th>
-                                                <Table.Th>Added</Table.Th>
-                                                <Table.Th>Actions</Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.employee',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('contact')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.branch')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t(
+                                                        'common.fields.department',
+                                                    )}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.added')}
+                                                </Table.Th>
+                                                <Table.Th>
+                                                    {t('common.fields.actions')}
+                                                </Table.Th>
                                             </Table.Tr>
                                         </Table.Thead>
                                         <Table.Tbody>
@@ -358,7 +396,9 @@ export function EmployeesPage(): ReactElement {
                                                                 {employee.phone
                                                                     .length > 0
                                                                     ? employee.phone
-                                                                    : 'No phone added'}
+                                                                    : t(
+                                                                          'noPhoneAdded',
+                                                                      )}
                                                             </Text>
                                                         </Table.Td>
                                                         <Table.Td>
@@ -395,7 +435,12 @@ export function EmployeesPage(): ReactElement {
                                                             <Button
                                                                 variant="subtle"
                                                                 size="xs"
-                                                                aria-label={`Edit ${employee.name}`}
+                                                                aria-label={t(
+                                                                    'editRecord',
+                                                                    {
+                                                                        record: employee.name,
+                                                                    },
+                                                                )}
                                                                 onClick={() => {
                                                                     setNotice(
                                                                         '',
@@ -405,7 +450,9 @@ export function EmployeesPage(): ReactElement {
                                                                     });
                                                                 }}
                                                             >
-                                                                Edit
+                                                                {t(
+                                                                    'common.actions.edit',
+                                                                )}
                                                             </Button>
                                                         </Table.Td>
                                                     </Table.Tr>
@@ -416,12 +463,15 @@ export function EmployeesPage(): ReactElement {
                                 </Table.ScrollContainer>
                                 <Group justify="space-between">
                                     <Text size="sm" c="dimmed">
-                                        Showing {firstEmployeeIndex + 1}–
-                                        {Math.min(
-                                            currentPage * pageSize,
-                                            employees.length,
-                                        )}{' '}
-                                        of {employees.length} employees
+                                        {t('common.pagination', {
+                                            from: firstEmployeeIndex + 1,
+                                            to: Math.min(
+                                                currentPage * pageSize,
+                                                employees.length,
+                                            ),
+                                            count: employees.length,
+                                            resource: t('employeesLower'),
+                                        })}
                                     </Text>
                                     {totalPages > 1 && (
                                         <Pagination

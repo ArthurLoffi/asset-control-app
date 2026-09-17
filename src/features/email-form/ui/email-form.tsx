@@ -8,11 +8,18 @@ import {
     TextInput,
 } from '@mantine/core';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {useEmailForm, type EmailFormProps} from '../model/use-email-form';
+import {
+    translateMessage,
+    DeactivationFields,
+    useRecordDeactivation,
+} from '@/shared';
 import {emailApi} from '@/entities';
-import {DeactivationFields, useRecordDeactivation} from '@/shared';
 
 export function EmailForm(props: EmailFormProps): ReactElement {
+    const {t} = useTranslation();
+    const resource = t('email').toLowerCase();
     const {email, onClose, onDeactivated} = props;
     const {
         saving: formSaving,
@@ -34,7 +41,7 @@ export function EmailForm(props: EmailFormProps): ReactElement {
         <Modal
             opened
             centered
-            title={email ? 'Edit email' : 'New email'}
+            title={t(email ? 'forms.edit' : 'forms.new', {resource})}
             onClose={onClose}
             closeOnClickOutside={!isSaving}
             closeOnEscape={!isSaving}
@@ -53,10 +60,10 @@ export function EmailForm(props: EmailFormProps): ReactElement {
                     {error.length > 0 && (
                         <Alert
                             color="red"
-                            title="Could not save email"
+                            title={t('forms.couldNotSave', {resource})}
                             role="alert"
                         >
-                            {error}
+                            {translateMessage(error, t)}
                         </Alert>
                     )}
                     <DeactivationFields
@@ -69,14 +76,14 @@ export function EmailForm(props: EmailFormProps): ReactElement {
                             <TextInput
                                 autoFocus
                                 required
-                                label="User"
+                                label={t('common.fields.user')}
                                 name="user"
                                 autoComplete="off"
                                 defaultValue={email?.user}
                             />
                             <TextInput
                                 required
-                                label="Email address"
+                                label={t('common.fields.emailAddress')}
                                 name="email"
                                 type="email"
                                 autoComplete="off"
@@ -85,12 +92,12 @@ export function EmailForm(props: EmailFormProps): ReactElement {
                             <PasswordInput
                                 visibilityToggleFocusable
                                 required
-                                label="Password"
+                                label={t('common.fields.password')}
                                 name="password_hash"
                                 autoComplete="new-password"
                                 defaultValue={email?.password_hash}
                                 visibilityToggleButtonProps={{
-                                    'aria-label': 'Toggle password visibility',
+                                    'aria-label': t('togglePasswordVisibility'),
                                 }}
                             />
                         </Stack>
@@ -101,14 +108,14 @@ export function EmailForm(props: EmailFormProps): ReactElement {
                             disabled={isSaving}
                             onClick={onClose}
                         >
-                            Cancel
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button type="submit" loading={isSaving}>
                             {deactivation.selected
-                                ? 'Deactivate email'
+                                ? t('deactivate', {resource})
                                 : email
-                                  ? 'Save changes'
-                                  : 'Create email'}
+                                  ? t('common.actions.saveChanges')
+                                  : t('forms.create', {resource})}
                         </Button>
                     </Group>
                 </Stack>

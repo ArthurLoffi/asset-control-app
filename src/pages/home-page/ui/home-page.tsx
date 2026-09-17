@@ -10,14 +10,16 @@ import {
 } from '@mantine/core';
 import {IconHome, IconRefresh} from '@tabler/icons-react';
 import {lazy, Suspense, type ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {useDashboard} from '../model/use-dashboard';
 import {MetricCard} from './dashboard-components';
 import {InventoryTable} from './inventory-table';
-import {ResourceResults} from '@/shared';
+import {translateMessage, ResourceResults} from '@/shared';
 
 const DashboardCharts = lazy(async () => import('./dashboard-charts'));
 
 export default function HomePage(): ReactElement {
+    const {t} = useTranslation();
     const {summary, loading, error, reload} = useDashboard();
     return (
         <Container size="xl" py="xl">
@@ -29,10 +31,10 @@ export default function HomePage(): ReactElement {
                         </ThemeIcon>
                         <div>
                             <Title order={1} size="h2">
-                                Dashboard
+                                {t('dashboard.title')}
                             </Title>
                             <Text c="dimmed" size="sm">
-                                An overview of your registered inventory.
+                                {t('dashboard.description')}
                             </Text>
                         </div>
                     </Group>
@@ -42,20 +44,20 @@ export default function HomePage(): ReactElement {
                         disabled={loading}
                         onClick={reload}
                     >
-                        Refresh
+                        {t('common.actions.refresh')}
                     </Button>
                 </Group>
                 <ResourceResults
                     loading={loading}
-                    error={error}
-                    loadingLabel="Loading dashboard…"
-                    errorTitle="Unable to load dashboard"
+                    error={translateMessage(error, t)}
+                    loadingLabel={t('dashboard.loading')}
+                    errorTitle={t('dashboard.unavailable')}
                     onRetry={reload}
                     empty={
                         summary?.total === 0 && summary.metrics[0].value === 0
                     }
-                    emptyTitle="No records yet"
-                    emptyDescription="Registered employees and inventory will appear here."
+                    emptyTitle={t('dashboard.noRecords')}
+                    emptyDescription={t('dashboard.emptyDescription')}
                 >
                     {summary !== undefined && (
                         <>
@@ -68,14 +70,12 @@ export default function HomePage(): ReactElement {
                                 ))}
                             </SimpleGrid>
                             <Text size="sm" c="dimmed">
-                                Counts reflect inventory records. Phone records
-                                include SIM-only entries; monitor records may
-                                indicate no monitor.
+                                {t('dashboard.recordDescription')}
                             </Text>
                             <Suspense
                                 fallback={
                                     <Text c="dimmed" size="sm" role="status">
-                                        Loading charts…
+                                        {t('dashboard.loadingCharts')}
                                     </Text>
                                 }
                             >

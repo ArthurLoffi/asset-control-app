@@ -11,29 +11,45 @@ import {
     useMantineTheme,
 } from '@mantine/core';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import type {DashboardSummary} from '../model/dashboard';
 import {ChartPanel} from './dashboard-components';
+import {translateInventoryValue} from '@/shared';
 
 export default function DashboardCharts({
     summary,
 }: {
     summary: DashboardSummary;
 }): ReactElement {
+    const {t, i18n} = useTranslation();
+    const formatPercentage = (value: number): string =>
+        new Intl.NumberFormat(i18n.language, {
+            style: 'percent',
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+        }).format(value / 100);
     const theme = useMantineTheme();
     const statuses = summary.statuses.map((status, index) => ({
         ...status,
+        key: status.name,
+        name:
+            status.name === 'Not recorded'
+                ? t('common.labels.notRecorded')
+                : (translateInventoryValue(status.name, t) ?? status.name),
         color: `${theme.primaryColor}.${4 + (index % 5)}`,
     }));
     return (
         <Stack gap="lg">
             <SimpleGrid cols={{base: 1, lg: 2}} spacing="lg">
                 <ChartPanel
-                    title="Inventory by department"
-                    description="From the linked employee or printer location."
+                    title={t('dashboard.inventoryByDepartment')}
+                    description={t(
+                        'dashboard.inventoryByDepartmentDescription',
+                    )}
                 >
                     {summary.total === 0 ? (
                         <Text c="dimmed" size="sm">
-                            No inventory records.
+                            {t('dashboard.noInventory')}
                         </Text>
                     ) : (
                         <ScrollArea.Autosize mah={360}>
@@ -48,7 +64,7 @@ export default function DashboardCharts({
                                 series={[
                                     {
                                         name: 'value',
-                                        label: 'Records',
+                                        label: t('dashboard.records'),
                                         color: `${theme.primaryColor}.6`,
                                     },
                                 ]}
@@ -76,12 +92,12 @@ export default function DashboardCharts({
                     )}
                 </ChartPanel>
                 <ChartPanel
-                    title="Recorded status"
-                    description="Machine, monitor and phone records. Printers have no status field."
+                    title={t('dashboard.recordedStatus')}
+                    description={t('dashboard.recordedStatusDescription')}
                 >
                     {summary.statusTotal === 0 ? (
                         <Text c="dimmed" size="sm">
-                            No records with a status field.
+                            {t('dashboard.noRecordsWithStatus')}
                         </Text>
                     ) : (
                         <Group gap="xl" justify="center" align="center">
@@ -95,13 +111,13 @@ export default function DashboardCharts({
                                     pieProps={{isAnimationActive: false}}
                                 />
                                 <Text c="dimmed" size="sm">
-                                    Total records
+                                    {t('dashboard.totalRecords')}
                                 </Text>
                             </Stack>
                             <Stack gap="sm" style={{flex: 1, minWidth: 180}}>
                                 {statuses.map((status) => (
                                     <Group
-                                        key={status.name}
+                                        key={status.key}
                                         justify="space-between"
                                         wrap="nowrap"
                                     >
@@ -128,8 +144,11 @@ export default function DashboardCharts({
                                                 size="xs"
                                                 c="dimmed"
                                             >
-                                                ({status.percentage.toFixed(1)}
-                                                %)
+                                                (
+                                                {formatPercentage(
+                                                    status.percentage,
+                                                )}
+                                                )
                                             </Text>
                                         </Text>
                                     </Group>
@@ -140,12 +159,12 @@ export default function DashboardCharts({
                 </ChartPanel>
             </SimpleGrid>
             <ChartPanel
-                title="Branch distribution"
-                description="All inventory records, including those with no recorded location."
+                title={t('dashboard.branchDistribution')}
+                description={t('dashboard.branchDistributionDescription')}
             >
                 {summary.total === 0 ? (
                     <Text c="dimmed" size="sm">
-                        No inventory records.
+                        {t('dashboard.noInventory')}
                     </Text>
                 ) : (
                     <SimpleGrid cols={{base: 1, sm: 2, lg: 3}} spacing="lg">
@@ -157,11 +176,11 @@ export default function DashboardCharts({
                                         {branch.value}{' '}
                                         <Text component="span" c="dimmed">
                                             (
-                                            {(
+                                            {formatPercentage(
                                                 (branch.value / summary.total) *
-                                                100
-                                            ).toFixed(1)}
-                                            %)
+                                                    100,
+                                            )}
+                                            )
                                         </Text>
                                     </Text>
                                 </Group>

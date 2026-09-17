@@ -49,7 +49,32 @@ export const theme = createTheme({
         xl: '0 8px 24px rgba(0, 0, 0, 0.12)',
     },
     components: {
+        Badge: {
+            styles: {
+                root: {
+                    height: 'auto',
+                    minHeight: 'var(--badge-height)',
+                    maxWidth: '100%',
+                },
+                label: {whiteSpace: 'normal', overflowWrap: 'anywhere'},
+            },
+        },
         Button: {
+            styles: {
+                root: {
+                    height: 'auto',
+                    minHeight: 'var(--button-height)',
+                    maxWidth: '100%',
+                    paddingBlock: 8,
+                },
+                label: {
+                    whiteSpace: 'normal',
+                    overflow: 'visible',
+                    height: 'auto',
+                    overflowWrap: 'anywhere',
+                },
+                inner: {height: 'auto'},
+            },
             defaultProps: {
                 radius: 'sm',
             },

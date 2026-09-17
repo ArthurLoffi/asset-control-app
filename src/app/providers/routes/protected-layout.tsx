@@ -1,17 +1,19 @@
 import type {ReactElement} from 'react';
 import {Alert, Button, Center, Loader, Stack, Text} from '@mantine/core';
 import {Navigate, Outlet, useLocation} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {translateMessage, ROUTES} from '@/shared';
 import {useSession} from '@/entities';
 import {AppShell} from '@/widgets';
-import {ROUTES} from '@/shared';
 
 export function ProtectedLayout(): ReactElement {
+    const {t} = useTranslation();
     const {session, loading, error, retry} = useSession();
     const location = useLocation();
     if (loading) {
         return (
             <Center mih="100vh">
-                <Loader aria-label="Checking session" />
+                <Loader aria-label={t('checkingSession')} />
             </Center>
         );
     }
@@ -21,12 +23,14 @@ export function ProtectedLayout(): ReactElement {
             <Center mih="100vh">
                 <Alert
                     color="red"
-                    title="Unable to check your session"
+                    title={t('login.unableToCheckSession')}
                     role="alert"
                 >
                     <Stack>
-                        <Text>{error}</Text>
-                        <Button onClick={retry}>Try again</Button>
+                        <Text>{translateMessage(error, t)}</Text>
+                        <Button onClick={retry}>
+                            {t('common.actions.retry')}
+                        </Button>
                     </Stack>
                 </Alert>
             </Center>

@@ -1,5 +1,6 @@
 import {Fieldset, Switch} from '@mantine/core';
 import type {ReactElement, ReactNode} from 'react';
+import {useTranslation} from 'react-i18next';
 
 type DeactivationFieldsProps = {
     editing: boolean;
@@ -16,13 +17,14 @@ export function DeactivationFields({
     onChange,
     children,
 }: DeactivationFieldsProps): ReactElement {
+    const {t} = useTranslation();
     return (
         <>
             {editing && (
                 <Switch
-                    label="Deactivate record"
-                    aria-label="Deactivate record"
-                    description="Save to remove this record from active lists and dashboard totals. Existing details will be preserved."
+                    label={t('deactivation.label')}
+                    aria-label={t('deactivation.label')}
+                    description={t('deactivation.description')}
                     color="red"
                     checked={selected}
                     disabled={saving}
