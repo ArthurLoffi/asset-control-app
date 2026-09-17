@@ -119,6 +119,7 @@ Use bulk organization lookups and employee records without per-employee lookups.
 Count monitor/phone entries as records (phone entries may be SIM-only). Printers
 have no status, and `created_at` is not an assignment or update timestamp.
 Preserve raw statuses, missing values, and unresolved location IDs in summaries.
+Use separate branch and department labels when dashboard location data is missing.
 Summary cards use medium labels and 32px totals for readability, retaining the
 shared theme and responsive grid.
 

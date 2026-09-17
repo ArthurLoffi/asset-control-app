@@ -218,7 +218,8 @@ const translation = {
             user: 'User',
         },
         labels: {
-            locationNotRecorded: 'Location not recorded',
+            branchNotRecorded: 'Branch not recorded',
+            departmentNotRecorded: 'Department not recorded',
             branchId: 'Branch #{{id}}',
             departmentId: 'Department #{{id}}',
             employeeId: 'Employee #{{id}}',

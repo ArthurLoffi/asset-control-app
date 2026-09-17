@@ -224,7 +224,8 @@ const translation = {
             user: 'Usuário',
         },
         labels: {
-            locationNotRecorded: 'Localização não informada',
+            branchNotRecorded: 'Filial não informada',
+            departmentNotRecorded: 'Departamento não informado',
             branchId: 'Filial #{{id}}',
             departmentId: 'Departamento #{{id}}',
             employeeId: 'Colaborador #{{id}}',
