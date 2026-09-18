@@ -139,7 +139,8 @@ shared theme and responsive grid.
 
 For changes, run `npm run check`, relevant tests, and `npm run build`. Manually
 verify affected flows with `npm run dev`, including loading/error/empty states,
-search reset, pagination, form validation, save failures, and successful editing.
+search reset, pagination, multi-match name searches, form validation, save
+failures, and successful editing.
 Use mocked API fixtures for UI checks when no backend is available, and report
 that limitation. Never mutate real inventory just to validate the UI.
 

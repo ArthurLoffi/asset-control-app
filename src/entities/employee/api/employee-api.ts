@@ -3,7 +3,7 @@ import type {
     EmployeeRecord,
     EmployeeSearch,
 } from '../model/types';
-import {apiRequest, createResourceWriter} from '@/shared';
+import { apiRequest, createResourceWriter } from '@/shared';
 
 type EmployeeResponse = EmployeeRecord;
 
@@ -34,25 +34,35 @@ export const employeeApi = {
             .filter((employee) =>
                 normalizeName(employee.name).includes(normalizedName),
             )
-            .map(({id}) => id);
+            .map(({ id }) => id);
     },
     async list(
         search: EmployeeSearch,
         signal: AbortSignal,
     ): Promise<EmployeeRecord[]> {
-        let employees: EmployeeResponse[];
         if (search.kind === 'all') {
-            employees = await employeeApi.listRecords(signal);
-        } else {
-            const query = new URLSearchParams({[search.kind]: search.value});
-            const employee = await apiRequest<EmployeeResponse>(
-                `/employees/${search.kind}?${query.toString()}`,
-                {signal},
-            );
-            employees = [employee];
+            return employeeApi.listRecords(signal);
         }
 
-        return employees;
+        if (search.kind === 'name') {
+            const employees = await employeeApi.listRecords(signal);
+            const normalizedName = normalizeName(search.value);
+
+            return employees.filter((employee) =>
+                normalizeName(employee.name).includes(normalizedName),
+            );
+        }
+
+        const query = new URLSearchParams({
+            id: search.value,
+        });
+
+        const employee = await apiRequest<EmployeeResponse>(
+            `/employees/id?${query.toString()}`,
+            { signal },
+        );
+
+        return [employee];
     },
     ...createResourceWriter<EmployeeResponse, EmployeeInput>('/employees'),
 };
