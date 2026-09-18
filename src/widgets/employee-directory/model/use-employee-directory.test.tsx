@@ -41,9 +41,10 @@ it('reuses bulk lists across StrictMode, forms, search, refresh, and remounts', 
                           {
                               ...employee,
                               id: 2,
-                              branch_id: 77,
-                              department_id: 88,
-                          },
+                                name: 'Ana Souza',
+                                branch_id: 77,
+                                department_id: 88,
+                            },
                       ]
                     : employee,
         });
@@ -79,7 +80,7 @@ it('reuses bulk lists across StrictMode, forms, search, refresh, and remounts', 
     expect(result.current.directory.error).toBe('');
     rerender({search: {kind: 'name', value: 'Ana'}});
     await waitFor(() => {
-        expect(result.current.directory.employees).toHaveLength(1);
+        expect(result.current.directory.employees).toHaveLength(2);
     });
     act(() => {
         result.current.directory.reload();
