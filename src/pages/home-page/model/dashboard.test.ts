@@ -42,7 +42,6 @@ describe('dashboard aggregation', () => {
         expect(summary.total).toBe(0);
         expect(summary.statuses).toEqual([]);
         expect(summary.departments).toEqual([]);
-        expect(summary.recentRecords).toEqual([]);
     });
 
     it('counts records without reinterpreting SIM-only or no-monitor entries as physical devices', () => {
@@ -92,17 +91,16 @@ describe('dashboard aggregation', () => {
             {name: 'Em uso', value: 2, percentage: (2 / 3) * 100},
             {name: 'Sem uso', value: 1, percentage: (1 / 3) * 100},
         ]);
-        expect(
-            summary.recentRecords.find(({type}) => type === 'Printer'),
-        ).toMatchObject({
-            employee: 'Not applicable',
-            branch: 'Branch #20',
-            department: 'Department #30',
+        expect(summary.branches).toContainEqual({
+            key: '20',
+            name: 'Branch #20',
+            value: 1,
         });
-        expect(
-            summary.recentRecords.find(({type}) => type === 'Printer')
-                ?.situation,
-        ).toBeUndefined();
+        expect(summary.departments).toContainEqual({
+            key: '30',
+            name: 'Department #30',
+            value: 1,
+        });
     });
 
     it('joins locations by ID and preserves missing employee/location references', () => {
@@ -126,17 +124,16 @@ describe('dashboard aggregation', () => {
             machine({id: 3}),
         ];
         const summary = summarizeDashboard(snapshot);
-        expect(summary.recentRecords[0]).toMatchObject({
-            employee: 'Recorded name',
-            branch: 'Recorded branch',
-            department: 'Recorded department',
+        expect(summary.branches).toContainEqual({
+            key: '2',
+            name: 'Recorded branch',
+            value: 1,
         });
-        expect(summary.recentRecords[1]).toMatchObject({
-            employee: 'Employee #99',
-            branch: 'Branch not recorded',
-            department: 'Department not recorded',
+        expect(summary.branches).toContainEqual({
+            key: 'unknown',
+            name: 'Branch not recorded',
+            value: 2,
         });
-        expect(summary.recentRecords[2].employee).toBe('Unassigned');
         expect(
             summary.departments.reduce(
                 (total, group) => total + group.value,
@@ -160,24 +157,11 @@ describe('dashboard aggregation', () => {
         ]);
     });
 
-    it('sorts by actual creation time, caps the table, and does not mutate source arrays', () => {
+    it('does not mutate source arrays during aggregation', () => {
         const snapshot = emptySnapshot();
-        snapshot.machines = Array.from({length: 12}, (_, index) =>
-            machine({
-                id: index + 1,
-                created_at: new Date(
-                    Date.UTC(2026, 0, index + 1),
-                ).toISOString(),
-            }),
-        );
-        snapshot.machines.push(
-            machine({id: 13, created_at: '0001-01-01T00:00:00Z'}),
-        );
+        snapshot.machines = [machine({id: 2}), machine({id: 1})];
         const original = structuredClone(snapshot);
-        const summary = summarizeDashboard(snapshot);
-        expect(summary.recentRecords).toHaveLength(10);
-        expect(summary.recentRecords[0].key).toBe('Machine-12');
-        expect(summary.recentRecords[9].key).toBe('Machine-3');
+        summarizeDashboard(snapshot);
         expect(snapshot).toEqual(original);
     });
 });

@@ -130,6 +130,10 @@ Preserve raw statuses, missing values, and unresolved location IDs in summaries.
 Use separate branch and department labels when dashboard location data is missing.
 Summary cards use medium labels and 32px totals for readability, retaining the
 shared theme and responsive grid.
+The final dashboard table uses GET /api/changes/recent for the ten latest audit
+updates. Show changed field values and the editor name; use the user ID only when
+the editor can no longer be resolved. Keep audit details separate from inventory
+totals, and never show secret fields.
 
 ## Development and Validation Commands
 

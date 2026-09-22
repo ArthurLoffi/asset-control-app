@@ -1,6 +1,10 @@
 import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {summarizeDashboard, type DashboardSnapshot} from './dashboard';
+import {
+    summarizeDashboard,
+    type DashboardSnapshot,
+    type RecentChange,
+} from './dashboard';
 import {
     employeeApi,
     machineApi,
@@ -9,27 +13,31 @@ import {
     printerApi,
     organizationApi,
 } from '@/entities';
-import {getInventoryRevision, useResourceQuery} from '@/shared';
+import {apiRequest, getInventoryRevision, useResourceQuery} from '@/shared';
 
 const allRecords = {kind: 'all'} as const;
+type DashboardData = DashboardSnapshot & {changes: RecentChange[]};
 let pendingDashboard:
-    {revision: number; request: Promise<DashboardSnapshot[]>} | undefined;
+    {revision: number; request: Promise<DashboardData[]>} | undefined;
 
 export async function loadDashboard(
     _search: 'all',
     signal: AbortSignal,
-): Promise<DashboardSnapshot[]> {
+): Promise<DashboardData[]> {
     signal.throwIfAborted();
     const revision = getInventoryRevision();
     if (pendingDashboard?.revision !== revision) {
         const sharedSignal = new AbortController().signal;
-        const request: Promise<DashboardSnapshot[]> = Promise.all([
+        const request: Promise<DashboardData[]> = Promise.all([
             employeeApi.listRecords(sharedSignal),
             machineApi.list(allRecords, sharedSignal),
             monitorApi.list(allRecords, sharedSignal),
             phoneApi.list(allRecords, sharedSignal),
             printerApi.list(allRecords, sharedSignal),
             organizationApi.list(sharedSignal),
+            apiRequest<RecentChange[]>('/changes/recent', {
+                signal: sharedSignal,
+            }),
         ]).then(
             ([
                 employees,
@@ -38,6 +46,7 @@ export async function loadDashboard(
                 phones,
                 printers,
                 organizations,
+                changes,
             ]) => [
                 {
                     employees,
@@ -46,6 +55,7 @@ export async function loadDashboard(
                     phones,
                     printers,
                     ...organizations,
+                    changes,
                 },
             ],
         );
@@ -60,7 +70,7 @@ export async function loadDashboard(
     }
 
     const {request} = pendingDashboard;
-    return new Promise<DashboardSnapshot[]>((resolve, reject) => {
+    return new Promise<DashboardData[]>((resolve, reject) => {
         const onAbort = (): void => {
             reject(new DOMException('The request was aborted.', 'AbortError'));
         };
@@ -99,5 +109,5 @@ export function useDashboard() {
                 : summarizeDashboard(snapshot, t),
         [snapshot, t],
     );
-    return {...query, summary};
+    return {...query, summary, changes: snapshot?.changes ?? []};
 }

@@ -130,10 +130,19 @@ const translation = {
         emptyDescription:
             'Colaboradores e inventário cadastrados aparecerão aqui.',
         loadingCharts: 'Carregando gráficos…',
-        latestRecords: 'Registros mais recentes',
-        latestRecordsDescription:
-            'Até 10 registros ordenados pela data de criação.',
+        latestChanges: 'Últimas alterações',
+        latestChangesDescription:
+            'As 10 alterações mais recentes no inventário.',
+        noChanges: 'Nenhuma alteração registrada ainda.',
         noInventory: 'Nenhum registro de inventário.',
+        changedResource: 'Recurso',
+        recordId: 'ID do registro',
+        changeDetails: 'O que mudou',
+        changeValue: '{{before}} → {{after}}',
+        noFieldDetails: 'Detalhes dos campos indisponíveis',
+        unknownEditor: 'Usuário desconhecido (ID {{id}})',
+        changedBy: 'Alterado por',
+        changedAt: 'Alterado em',
         inventoryByDepartment: 'Inventário por departamento',
         recordedStatus: 'Situação informada',
         branchDistribution: 'Distribuição por filial',

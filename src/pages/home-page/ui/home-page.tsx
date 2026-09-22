@@ -13,14 +13,14 @@ import {lazy, Suspense, type ReactElement} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useDashboard} from '../model/use-dashboard';
 import {MetricCard} from './dashboard-components';
-import {InventoryTable} from './inventory-table';
+import {RecentChangesTable} from './recent-changes-table';
 import {translateMessage, ResourceResults} from '@/shared';
 
 const DashboardCharts = lazy(async () => import('./dashboard-charts'));
 
 export default function HomePage(): ReactElement {
     const {t} = useTranslation();
-    const {summary, loading, error, reload} = useDashboard();
+    const {summary, changes, loading, error, reload} = useDashboard();
     return (
         <Container size="xl" py="xl">
             <Stack gap="lg">
@@ -54,7 +54,9 @@ export default function HomePage(): ReactElement {
                     errorTitle={t('dashboard.unavailable')}
                     onRetry={reload}
                     empty={
-                        summary?.total === 0 && summary.metrics[0].value === 0
+                        summary?.total === 0 &&
+                        summary.metrics[0].value === 0 &&
+                        changes.length === 0
                     }
                     emptyTitle={t('dashboard.noRecords')}
                     emptyDescription={t('dashboard.emptyDescription')}
@@ -81,7 +83,7 @@ export default function HomePage(): ReactElement {
                             >
                                 <DashboardCharts summary={summary} />
                             </Suspense>
-                            <InventoryTable records={summary.recentRecords} />
+                            <RecentChangesTable changes={changes} />
                         </>
                     )}
                 </ResourceResults>
