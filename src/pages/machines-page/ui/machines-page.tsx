@@ -231,7 +231,7 @@ export function MachinesPage(): ReactElement {
         currentPage * pageSize,
     );
 
-    function resetSearch() {
+    function resetSearch(): void {
         if (searchKind === 'unassigned') {
             setSearchKind('employee_name');
         }
@@ -242,7 +242,7 @@ export function MachinesPage(): ReactElement {
         setPage(1);
     }
 
-    function handleSearch(event: SubmitEvent<HTMLFormElement>) {
+    function handleSearch(event: SubmitEvent<HTMLFormElement>): void {
         event.preventDefault();
         if (searchKind === 'unassigned') {
             setSearchError('');
