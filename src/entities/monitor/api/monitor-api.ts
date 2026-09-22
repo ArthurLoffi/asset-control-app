@@ -12,6 +12,15 @@ export const monitorApi = {
             );
         }
 
+        if (search.kind === 'unassigned') {
+            return (
+                (await apiRequest<Monitor[] | undefined>(
+                    '/monitors/unassigned',
+                    {signal},
+                )) ?? []
+            );
+        }
+
         if (search.kind === 'employee_name') {
             const employeeIds = await employeeApi.findIdsByName(
                 search.value,

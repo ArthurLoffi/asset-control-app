@@ -24,6 +24,19 @@ describe('monitorApi.list', () => {
         expect(mockedApiRequest).toHaveBeenCalledWith('/monitors', {signal});
     });
 
+    it('requests only active monitors without an employee', async () => {
+        const monitors = [{id: 3, employee_id: null}];
+        mockedApiRequest.mockResolvedValue(monitors);
+
+        await expect(
+            monitorApi.list({kind: 'unassigned'}, signal),
+        ).resolves.toEqual(monitors);
+        expect(mockedApiRequest).toHaveBeenCalledTimes(1);
+        expect(mockedApiRequest).toHaveBeenCalledWith('/monitors/unassigned', {
+            signal,
+        });
+    });
+
     it('wraps a monitor ID result in a list', async () => {
         const monitor = {id: 7};
         mockedApiRequest.mockResolvedValue(monitor);

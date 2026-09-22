@@ -1,6 +1,6 @@
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {loadDashboard} from './use-dashboard';
-import {apiRequest} from '@/shared';
+import {apiRequest, createResourceWriter} from '@/shared';
 
 vi.mock(import('@/shared'), async (importOriginal) => ({
     ...(await importOriginal()),
@@ -10,8 +10,9 @@ const request = vi.mocked(apiRequest);
 
 describe('dashboard API loading', () => {
     beforeEach(() => request.mockReset());
+    afterEach(() => vi.unstubAllGlobals());
 
-    it('uses seven bulk GETs and cancels inventory reads without cancelling shared lists', async () => {
+    it('uses seven bulk GETs and refetches on a later visit', async () => {
         request.mockImplementation(async (path) =>
             path === '/employees'
                 ? [{id: 1, branch_id: 2, department_id: 3}]
@@ -28,13 +29,70 @@ describe('dashboard API loading', () => {
             '/phones',
             '/printers',
         ]) {
-            expect(request).toHaveBeenCalledWith(path, {signal});
+            const call = request.mock.calls.find(
+                ([requestPath]) => requestPath === path,
+            );
+            expect(call?.[1]?.signal).toBeInstanceOf(AbortSignal);
         }
 
         expect(request).toHaveBeenCalledWith('/utils/branches');
         expect(request).toHaveBeenCalledWith('/utils/departments');
         await loadDashboard('all', signal);
         expect(request).toHaveBeenCalledTimes(12);
+    });
+
+    it('shares an in-flight load when the first caller unmounts', async () => {
+        let finishEmployees: (records: never[]) => void = () => undefined;
+        // The project's TypeScript target does not include Promise.withResolvers.
+        // eslint-disable-next-line unicorn/prefer-promise-with-resolvers
+        const employees = new Promise<never[]>((resolve) => {
+            finishEmployees = resolve;
+        });
+        request.mockImplementation(async (path) => {
+            if (path === '/employees') {
+                return employees;
+            }
+
+            return [];
+        });
+        const first = new AbortController();
+        const firstLoad = loadDashboard('all', first.signal);
+        const secondLoad = loadDashboard('all', new AbortController().signal);
+        first.abort();
+        await expect(firstLoad).rejects.toMatchObject({name: 'AbortError'});
+        finishEmployees([]);
+        await expect(secondLoad).resolves.toHaveLength(1);
+        expect(request).toHaveBeenCalledTimes(5);
+    });
+
+    it('starts a fresh load after a successful inventory mutation', async () => {
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => Response.json({data: {id: 9}})),
+        );
+        let finishFirst: (records: never[]) => void = () => undefined;
+        // The project's TypeScript target does not include Promise.withResolvers.
+        // eslint-disable-next-line unicorn/prefer-promise-with-resolvers
+        const firstEmployees = new Promise<never[]>((resolve) => {
+            finishFirst = resolve;
+        });
+        let employeeReads = 0;
+        request.mockImplementation(async (path) => {
+            if (path === '/employees') {
+                employeeReads++;
+                return employeeReads === 1 ? firstEmployees : [];
+            }
+
+            return [];
+        });
+        const oldLoad = loadDashboard('all', new AbortController().signal);
+        await createResourceWriter<{id: number}, Record<string, unknown>>(
+            '/employees',
+        ).create({});
+        const newLoad = loadDashboard('all', new AbortController().signal);
+        finishFirst([]);
+        await Promise.all([oldLoad, newLoad]);
+        expect(employeeReads).toBe(2);
     });
 
     it('rejects a failed collection instead of returning partial or fabricated totals', async () => {

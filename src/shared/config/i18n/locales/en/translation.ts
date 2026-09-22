@@ -28,7 +28,9 @@ const translation = {
     emailId: 'Email ID',
     phoneId: 'Phone ID',
     machineId: 'Machine ID',
+    unassignedMachines: 'Unassigned machines',
     monitorId: 'Monitor ID',
+    unassignedMonitors: 'Unassigned monitors',
     printerId: 'Printer ID',
     enterEmailId: 'Enter an email ID',
     enterUser: 'Enter a user',
@@ -283,6 +285,8 @@ const translation = {
         description:
             'Save to remove this record from active lists and dashboard totals. Existing details will be preserved.',
         label: 'Deactivate record',
+        employeeUnassignsEquipment:
+            'Deactivating this employee will unassign their active machines, monitors, and phones.',
     },
     resources: {
         emails: {

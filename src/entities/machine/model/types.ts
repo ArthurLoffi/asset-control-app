@@ -30,6 +30,6 @@ export type Machine = ResourceRecord & {
 
 export type MachineInput = ResourceInput<Machine>;
 
-export type MachineSearch = CollectionSearch<
-    'id' | 'employee_id' | 'employee_name'
->;
+export type MachineSearch =
+    | CollectionSearch<'id' | 'employee_id' | 'employee_name'>
+    | {kind: 'unassigned'};
