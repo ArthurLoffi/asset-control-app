@@ -19,24 +19,28 @@ export type DashboardSnapshot = {
     departments: OrganizationOption[];
 };
 
-export type InventoryRecord = {
-    key: string;
-    type: string;
-    model: string;
-    employee: string;
+export type InventoryLocation = {
     branch: string;
     department: string;
     branchId?: number;
     departmentId?: number;
-    situation?: string;
-    createdAt: string;
-    href: string;
+};
+
+export type RecentChange = {
+    id: string;
+    time: string;
+    user_id: string;
+    user_name: string;
+    resource: string;
+    resource_id: number;
+    action: string;
+    changed_fields: Array<{field: string; before: string; after: string}>;
 };
 
 export type Distribution = {key: string; name: string; value: number};
 
 function groupRecords(
-    records: InventoryRecord[],
+    records: InventoryLocation[],
     kind: 'branch' | 'department',
 ): Distribution[] {
     const groups = new Map<string, Distribution>();
@@ -58,13 +62,6 @@ function groupRecords(
         const difference = b.value - a.value;
         return difference === 0 ? a.name.localeCompare(b.name) : difference;
     });
-}
-
-function creationTime(value: string): number {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
-        ? 0
-        : date.getTime();
 }
 
 export function summarizeDashboard(
@@ -99,48 +96,21 @@ export function summarizeDashboard(
     });
     const assignedRecords = (
         records: Array<Machine | Monitor | Phone>,
-        type: string,
-        href: string,
-    ): InventoryRecord[] =>
+    ): InventoryLocation[] =>
         records.map((record) => {
             const employee =
                 record.employee_id === null
                     ? undefined
                     : employees.get(record.employee_id);
-            return {
-                key: `${type}-${record.id}`,
-                type,
-                model: record.model,
-                employee:
-                    record.employee_id === null
-                        ? t('common.labels.unassigned')
-                        : (employee?.name ??
-                          t('common.labels.employeeId', {
-                              id: record.employee_id,
-                          })),
-                ...location(employee?.branch_id, employee?.department_id),
-                situation: record.situation,
-                createdAt: record.created_at,
-                href,
-            };
+            return location(employee?.branch_id, employee?.department_id);
         });
-    const records: InventoryRecord[] = [
-        ...assignedRecords(snapshot.machines, 'Machine', ROUTES.MACHINES),
-        ...assignedRecords(
-            snapshot.monitors,
-            'Monitor record',
-            ROUTES.MONITORS,
+    const records: InventoryLocation[] = [
+        ...assignedRecords(snapshot.machines),
+        ...assignedRecords(snapshot.monitors),
+        ...assignedRecords(snapshot.phones),
+        ...snapshot.printers.map((printer) =>
+            location(printer.branch_id, printer.departments_id),
         ),
-        ...assignedRecords(snapshot.phones, 'Phone record', ROUTES.PHONES),
-        ...snapshot.printers.map((printer) => ({
-            key: `Printer-${printer.id}`,
-            type: 'Printer',
-            model: printer.model,
-            employee: t('common.labels.notApplicable'),
-            ...location(printer.branch_id, printer.departments_id),
-            createdAt: printer.created_at,
-            href: ROUTES.PRINTERS,
-        })),
     ];
     const statusCounts = new Map<string, number>();
     for (const record of [
@@ -194,15 +164,6 @@ export function summarizeDashboard(
         })),
         departments: groupRecords(records, 'department'),
         branches: groupRecords(records, 'branch'),
-        recentRecords: records
-            .toSorted((a, b) => {
-                const difference =
-                    creationTime(b.createdAt) - creationTime(a.createdAt);
-                return difference === 0
-                    ? a.key.localeCompare(b.key)
-                    : difference;
-            })
-            .slice(0, 10),
     };
 }
 

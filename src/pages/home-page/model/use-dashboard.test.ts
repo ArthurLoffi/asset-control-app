@@ -12,7 +12,7 @@ describe('dashboard API loading', () => {
     beforeEach(() => request.mockReset());
     afterEach(() => vi.unstubAllGlobals());
 
-    it('uses seven bulk GETs and refetches on a later visit', async () => {
+    it('loads inventory and the recent change feed, then refetches on a later visit', async () => {
         request.mockImplementation(async (path) =>
             path === '/employees'
                 ? [{id: 1, branch_id: 2, department_id: 3}]
@@ -21,7 +21,8 @@ describe('dashboard API loading', () => {
         const {signal} = new AbortController();
         const [snapshot] = await loadDashboard('all', signal);
         expect(snapshot.employees).toHaveLength(1);
-        expect(request).toHaveBeenCalledTimes(7);
+        expect(snapshot.changes).toEqual([]);
+        expect(request).toHaveBeenCalledTimes(8);
         for (const path of [
             '/employees',
             '/machines',
@@ -37,8 +38,15 @@ describe('dashboard API loading', () => {
 
         expect(request).toHaveBeenCalledWith('/utils/branches');
         expect(request).toHaveBeenCalledWith('/utils/departments');
+        expect(
+            request.mock.calls.some(
+                ([path, options]) =>
+                    path === '/changes/recent' &&
+                    options?.signal instanceof AbortSignal,
+            ),
+        ).toBe(true);
         await loadDashboard('all', signal);
-        expect(request).toHaveBeenCalledTimes(12);
+        expect(request).toHaveBeenCalledTimes(14);
     });
 
     it('shares an in-flight load when the first caller unmounts', async () => {
@@ -62,7 +70,38 @@ describe('dashboard API loading', () => {
         await expect(firstLoad).rejects.toMatchObject({name: 'AbortError'});
         finishEmployees([]);
         await expect(secondLoad).resolves.toHaveLength(1);
-        expect(request).toHaveBeenCalledTimes(5);
+        expect(request).toHaveBeenCalledTimes(6);
+    });
+
+    it('uses audit entries for recent changes, including edits to older records', async () => {
+        request.mockImplementation(async (path) =>
+            path === '/changes/recent'
+                ? [
+                      {
+                          id: 'change-1',
+                          time: '2026-09-22T12:00:00Z',
+                          user_id: 'editor',
+                          user_name: 'Ana',
+                          resource: 'machines',
+                          resource_id: 1,
+                          action: 'update',
+                          changed_fields: [
+                              {field: 'model', before: 'Old', after: 'New'},
+                          ],
+                      },
+                  ]
+                : [],
+        );
+        const [snapshot] = await loadDashboard(
+            'all',
+            new AbortController().signal,
+        );
+        expect(snapshot.changes).toEqual([
+            expect.objectContaining({
+                id: 'change-1',
+                resource_id: 1,
+            }),
+        ]);
     });
 
     it('starts a fresh load after a successful inventory mutation', async () => {
@@ -106,5 +145,18 @@ describe('dashboard API loading', () => {
         await expect(
             loadDashboard('all', new AbortController().signal),
         ).rejects.toThrow('Phones unavailable');
+    });
+
+    it('rejects a failed audit feed instead of showing stale recent changes', async () => {
+        request.mockImplementation(async (path) => {
+            if (path === '/changes/recent') {
+                throw new Error('Changes unavailable');
+            }
+
+            return [];
+        });
+        await expect(
+            loadDashboard('all', new AbortController().signal),
+        ).rejects.toThrow('Changes unavailable');
     });
 });
