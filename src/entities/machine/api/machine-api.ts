@@ -12,6 +12,15 @@ export const machineApi = {
             );
         }
 
+        if (search.kind === 'unassigned') {
+            return (
+                (await apiRequest<Machine[] | undefined>(
+                    '/machines/unassigned',
+                    {signal},
+                )) ?? []
+            );
+        }
+
         if (search.kind === 'employee_name') {
             const employeeIds = await employeeApi.findIdsByName(
                 search.value,

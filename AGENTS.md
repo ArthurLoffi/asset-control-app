@@ -105,6 +105,10 @@ conversion belong in feature models. Email and printer flows demonstrate reuse.
 List tables sort the complete filtered result set before pagination. Sortable
 headers toggle ascending/descending order, expose the active direction visually
 and through `aria-sort`, and keep missing values at the end in either direction.
+Machine search includes a no-input unassigned filter backed by
+`GET /api/machines/unassigned`; do not load the full machine list for this filter.
+Monitor search uses the same no-input filter through
+`GET /api/monitors/unassigned`.
 
 ## Phone form
 
@@ -176,7 +180,8 @@ Employees, machines, phones, monitors, printers, and emails support deactivation
 POST /api/<resource>/deactivate?id=<id> sets the database timestamp once and
 preserves the record. Missing/null deactivated_at means active (including legacy
 imports). All ordinary lists, searches, assignment lookups, and updates use the
-active scope. Deactivating an employee does not cascade to assigned equipment.
+active scope. Deactivating an employee atomically unassigns active machines,
+monitors, and phones; it does not deactivate the equipment.
 GET /api/<resource>/inactive?after=0&limit=50 returns only deactivation IDs and
 timestamps, with next_after cursor pagination (limit 1-100). Keep history requests
 separate from active inventory and dashboard reads. Never reset a timestamp on

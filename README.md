@@ -59,7 +59,9 @@ changing the value.
 ## Machine screen
 
 Open `/machines` or select **Machines** in the sidebar. The inventory supports
-listing, machine ID and employee name searches, pagination, creation, and editing.
+listing, machine ID and employee name searches, an unassigned-machine filter,
+pagination, creation, and editing. The unassigned filter uses the dedicated
+`GET /api/machines/unassigned` endpoint and needs no search text.
 Machine code follows the same FSD boundaries as employees: entity data access and
 state, a form feature with isolated validation, and a route-level page composition.
 
@@ -72,6 +74,8 @@ Both inventories support listing, pagination, ID search, creation, and editing.
 Employee name is the default search on machines, monitors, and phones; matching
 supports partial names and ignores case, accents, and surrounding spaces. Clear
 restores the full inventory. All equipment for matching employees is included.
+The monitor search also offers **Unassigned monitors**, which needs no search text
+and requests `GET /api/monitors/unassigned`.
 
 The phone form supports model, IMEI, serial number, equipment category, SIM
 card status, situation, and optional employee assignment. Its API payload preserves
@@ -133,7 +137,8 @@ Unselecting the option restores editing with entered values preserved. Submit th
 **Deactivate** button to save; closing or cancelling makes no change. Deactivation
 preserves existing details, records a timestamp on the server, and removes the
 record from active lists, searches, and dashboard totals. Failed requests keep the
-form open for retry. Assigned equipment remains active when an employee is deactivated.
+form open for retry. Deactivating an employee unassigns their active machines,
+monitors, and phones in the same server transaction. Equipment remains active.
 
 This requires the sibling API's `POST /api/<resource>/deactivate?id=<id>` endpoint.
 Historical IDs and timestamps are available separately via the API's paginated

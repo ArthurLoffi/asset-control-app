@@ -28,7 +28,9 @@ const translation = {
     emailId: 'ID do e-mail',
     phoneId: 'ID do celular',
     machineId: 'ID do computador',
+    unassignedMachines: 'Computadores sem colaborador',
     monitorId: 'ID do monitor',
+    unassignedMonitors: 'Monitores sem colaborador',
     printerId: 'ID da impressora',
     enterEmailId: 'Digite um ID de e-mail',
     enterUser: 'Digite um usuário',
@@ -289,6 +291,8 @@ const translation = {
         description:
             'Salve para remover este registro das listas ativas e dos totais do painel. Os dados existentes serão preservados.',
         label: 'Desativar registro',
+        employeeUnassignsEquipment:
+            'Desativar este colaborador removerá a atribuição dos computadores, monitores e celulares ativos vinculados a ele.',
     },
     resources: {
         emails: {

@@ -240,6 +240,11 @@ export function EmployeeForm({
                             </SimpleGrid>
                         </Stack>
                     </DeactivationFields>
+                    {deactivation.selected && (
+                        <Text size="sm" c="dimmed">
+                            {t('deactivation.employeeUnassignsEquipment')}
+                        </Text>
+                    )}
                     <Group justify="flex-end" mt="sm">
                         <Button
                             variant="default"

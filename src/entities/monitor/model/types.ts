@@ -26,6 +26,6 @@ export type Monitor = ResourceRecord & {
 
 export type MonitorInput = ResourceInput<Monitor>;
 
-export type MonitorSearch = CollectionSearch<
-    'id' | 'employee_id' | 'employee_name'
->;
+export type MonitorSearch =
+    | CollectionSearch<'id' | 'employee_id' | 'employee_name'>
+    | {kind: 'unassigned'};

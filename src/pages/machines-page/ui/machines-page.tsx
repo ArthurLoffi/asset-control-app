@@ -157,9 +157,9 @@ function MachineRow({
 export function MachinesPage(): ReactElement {
     const {t} = useTranslation();
     const [search, setSearch] = useState<MachineSearch>({kind: 'all'});
-    const [searchKind, setSearchKind] = useState<'id' | 'employee_name'>(
-        'employee_name',
-    );
+    const [searchKind, setSearchKind] = useState<
+        'id' | 'employee_name' | 'unassigned'
+    >('employee_name');
     const [query, setQuery] = useState('');
     const [searchError, setSearchError] = useState('');
     const [page, setPage] = useState(1);
@@ -232,6 +232,10 @@ export function MachinesPage(): ReactElement {
     );
 
     function resetSearch() {
+        if (searchKind === 'unassigned') {
+            setSearchKind('employee_name');
+        }
+
         setQuery('');
         setSearchError('');
         setSearch({kind: 'all'});
@@ -240,6 +244,13 @@ export function MachinesPage(): ReactElement {
 
     function handleSearch(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (searchKind === 'unassigned') {
+            setSearchError('');
+            setSearch({kind: 'unassigned'});
+            setPage(1);
+            return;
+        }
+
         const value = query.trim();
         if (value.length === 0) {
             resetSearch();
@@ -356,35 +367,47 @@ export function MachinesPage(): ReactElement {
                                                     'common.fields.employeeName',
                                                 ),
                                             },
+                                            {
+                                                value: 'unassigned',
+                                                label: t('unassignedMachines'),
+                                            },
                                         ]}
                                         onChange={(value) => {
                                             setSearchKind(
                                                 value === 'employee_name'
                                                     ? 'employee_name'
-                                                    : 'id',
+                                                    : value === 'unassigned'
+                                                      ? 'unassigned'
+                                                      : 'id',
                                             );
                                             setQuery('');
                                             setSearchError('');
                                         }}
                                     />
-                                    <TextInput
-                                        label={t(
-                                            searchKind === 'id'
-                                                ? 'machineId'
-                                                : 'common.fields.employeeName',
-                                        )}
-                                        placeholder={t(
-                                            searchKind === 'id'
-                                                ? 'enterMachineId'
-                                                : 'enterEmployeeName',
-                                        )}
-                                        leftSection={<IconSearch size={16} />}
-                                        value={query}
-                                        onChange={(event) => {
-                                            setQuery(event.currentTarget.value);
-                                        }}
-                                        style={{flex: 1, minWidth: 180}}
-                                    />
+                                    {searchKind !== 'unassigned' && (
+                                        <TextInput
+                                            label={t(
+                                                searchKind === 'id'
+                                                    ? 'machineId'
+                                                    : 'common.fields.employeeName',
+                                            )}
+                                            placeholder={t(
+                                                searchKind === 'id'
+                                                    ? 'enterMachineId'
+                                                    : 'enterEmployeeName',
+                                            )}
+                                            leftSection={
+                                                <IconSearch size={16} />
+                                            }
+                                            value={query}
+                                            onChange={(event) => {
+                                                setQuery(
+                                                    event.currentTarget.value,
+                                                );
+                                            }}
+                                            style={{flex: 1, minWidth: 180}}
+                                        />
+                                    )}
                                     <Button type="submit">
                                         {t('common.actions.search')}
                                     </Button>

@@ -24,6 +24,19 @@ describe('machineApi.list', () => {
         expect(mockedApiRequest).toHaveBeenCalledWith('/machines', {signal});
     });
 
+    it('requests only active machines without an employee', async () => {
+        const machines = [{id: 3, employee_id: null}];
+        mockedApiRequest.mockResolvedValue(machines);
+
+        await expect(
+            machineApi.list({kind: 'unassigned'}, signal),
+        ).resolves.toEqual(machines);
+        expect(mockedApiRequest).toHaveBeenCalledTimes(1);
+        expect(mockedApiRequest).toHaveBeenCalledWith('/machines/unassigned', {
+            signal,
+        });
+    });
+
     it('wraps a machine ID result in a list', async () => {
         const machine = {id: 7};
         mockedApiRequest.mockResolvedValue(machine);
