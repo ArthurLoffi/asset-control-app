@@ -15,6 +15,18 @@ const validValues: MachineFormValues = {
 };
 
 describe('parseMachineForm', () => {
+    it('saves multiple employee IDs and rejects duplicates', () => {
+        expect(
+            parseMachineForm({...validValues, employee_ids: '7\n8'}).input,
+        ).toMatchObject({
+            employee_id: 7,
+            employee_ids: [7, 8],
+        });
+        expect(
+            parseMachineForm({...validValues, employee_ids: '7\n7'}).error,
+        ).toBeDefined();
+    });
+
     it('normalizes valid form values into the API input', () => {
         expect(parseMachineForm(validValues)).toEqual({
             input: {

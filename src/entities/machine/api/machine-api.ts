@@ -1,6 +1,11 @@
 import type {Machine, MachineInput, MachineSearch} from '../model/types';
 import {employeeApi} from '@/entities';
-import {ApiError, apiRequest, createResourceWriter} from '@/shared';
+import {
+    ApiError,
+    apiRequest,
+    createResourceWriter,
+    uniqueRecordsById,
+} from '@/shared';
 
 export const machineApi = {
     async list(search: MachineSearch, signal: AbortSignal): Promise<Machine[]> {
@@ -34,7 +39,7 @@ export const machineApi = {
                     ),
                 ),
             );
-            return results.flat();
+            return uniqueRecordsById(results.flat());
         }
 
         const query = new URLSearchParams({[search.kind]: search.value});

@@ -180,6 +180,12 @@ and secure cookies in production. Vite continues proxying all /api calls to 8080
 
 ## Deactivation
 
+Employee forms enter multiple email addresses and phone numbers, and machine,
+monitor, and phone forms enter multiple employee IDs, one per line. Send the
+plural arrays while retaining the first value in the legacy singular fields.
+Render every saved value, including legacy records that contain only a singular
+field. Shared phone records count for each assigned employee in coverage views.
+
 Employees, machines, phones, monitors, printers, and emails support deactivation.
 POST /api/<resource>/deactivate?id=<id> sets the database timestamp once and
 preserves the record. Missing/null deactivated_at means active (including legacy

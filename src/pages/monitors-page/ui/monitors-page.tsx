@@ -37,6 +37,8 @@ import {
     SortableTableHeader,
     sortableTimestamp,
     useTableSort,
+    effectiveValues,
+    formatValues,
 } from '@/shared';
 import {
     useEmployees,
@@ -93,7 +95,7 @@ function MonitorRow({
             </Table.Td>
             <Table.Td>
                 <Text size="sm">
-                    {monitor.employee_id === null
+                    {employeeName === undefined
                         ? t('common.labels.unassigned')
                         : (employeeName ?? t('common.labels.noEmployee'))}
                 </Text>
@@ -165,9 +167,12 @@ export function MonitorsPage(): ReactElement {
                 }
 
                 case 'employee': {
-                    return monitor.employee_id === null
-                        ? ''
-                        : employeeNames.get(monitor.employee_id);
+                    return effectiveValues(
+                        monitor.employee_id,
+                        monitor.employee_ids,
+                    )
+                        .map((id) => employeeNames.get(id) ?? `#${id}`)
+                        .join(', ');
                 }
 
                 case 'condition': {
@@ -543,14 +548,14 @@ export function MonitorsPage(): ReactElement {
                                                 <MonitorRow
                                                     key={monitor.id}
                                                     monitor={monitor}
-                                                    employeeName={
-                                                        monitor.employee_id ===
-                                                        null
-                                                            ? undefined
-                                                            : employeeNames.get(
-                                                                  monitor.employee_id,
-                                                              )
-                                                    }
+                                                    employeeName={formatValues(
+                                                        monitor.employee_id,
+                                                        monitor.employee_ids,
+                                                        (id) =>
+                                                            employeeNames.get(
+                                                                id,
+                                                            ) ?? `#${id}`,
+                                                    )}
                                                     onEdit={(
                                                         selectedMonitor,
                                                     ) => {

@@ -10,6 +10,7 @@ import {
     Stack,
     Text,
     TextInput,
+    Textarea,
 } from '@mantine/core';
 import {
     parsePhoneForm,
@@ -21,6 +22,7 @@ import {
     DeactivationFields,
     translateInventoryValue,
     useRecordDeactivation,
+    effectiveValues,
 } from '@/shared';
 import {
     phoneApi,
@@ -90,6 +92,7 @@ export function PhoneForm({
             serial_number: getText('serial_number'),
             situation: getText('situation'),
             employee_id: getText('employee_id'),
+            employee_ids: getText('employee_ids'),
         });
 
         if (result.error !== undefined) {
@@ -173,14 +176,19 @@ export function PhoneForm({
                         onChange={deactivation.setSelected}
                     >
                         <SimpleGrid cols={{base: 1, sm: 2}}>
-                            <TextInput
+                            <Textarea
                                 autoFocus
-                                label={t('common.fields.employeeId')}
-                                name="employee_id"
-                                type="number"
-                                min={1}
-                                step={1}
-                                defaultValue={phone?.employee_id ?? ''}
+                                label={t('multiValues.employeeIds')}
+                                description={t('multiValues.onePerLine')}
+                                name="employee_ids"
+                                defaultValue={
+                                    phone
+                                        ? effectiveValues(
+                                              phone.employee_id,
+                                              phone.employee_ids,
+                                          ).join('\n')
+                                        : ''
+                                }
                                 placeholder={t('common.labels.optional')}
                             />
                             <TextInput

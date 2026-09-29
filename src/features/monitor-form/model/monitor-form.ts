@@ -5,6 +5,7 @@ import {
     type MonitorInput,
     type MonitorSituation,
 } from '@/entities';
+import {parseEmployeeIds} from '@/shared';
 
 export type MonitorFormValues = Record<
     | 'asset_number'
@@ -16,7 +17,7 @@ export type MonitorFormValues = Record<
     | 'serial_number'
     | 'situation',
     string
->;
+> & {employee_ids?: string};
 
 type MonitorFormResult =
     {input: MonitorInput; error?: never} | {input?: never; error: string};
@@ -36,12 +37,23 @@ function optionalText(value: string) {
 
 export function parseMonitorForm(values: MonitorFormValues): MonitorFormResult {
     const assetNumber = optionalPositiveInteger(values.asset_number);
-    const employeeId = optionalPositiveInteger(values.employee_id);
+    const employeeIds =
+        values.employee_ids === undefined
+            ? undefined
+            : parseEmployeeIds(values.employee_ids);
+    const employeeId =
+        employeeIds === undefined && values.employee_ids === undefined
+            ? optionalPositiveInteger(values.employee_id)
+            : (employeeIds?.[0] ?? null);
     if (values.model.length === 0 || values.situation.length === 0) {
         return {error: 'Complete all required monitor fields.'};
     }
 
-    if (assetNumber === undefined || employeeId === undefined) {
+    if (
+        assetNumber === undefined ||
+        employeeId === undefined ||
+        (employeeIds === undefined && values.employee_ids !== undefined)
+    ) {
         return {error: 'Select valid monitor details.'};
     }
 
@@ -72,6 +84,7 @@ export function parseMonitorForm(values: MonitorFormValues): MonitorFormResult {
                     : (values.monitor_condition as MonitorCondition),
             situation: values.situation as MonitorSituation,
             employee_id: employeeId,
+            ...(employeeIds && {employee_ids: employeeIds}),
         },
     };
 }

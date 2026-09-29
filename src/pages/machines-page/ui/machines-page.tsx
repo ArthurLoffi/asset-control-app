@@ -37,6 +37,8 @@ import {
     SortableTableHeader,
     sortableTimestamp,
     useTableSort,
+    effectiveValues,
+    formatValues,
 } from '@/shared';
 import {
     useEmployees,
@@ -109,7 +111,7 @@ function MachineRow({
             <Table.Td>
                 <Text size="sm">{machine.user}</Text>
                 <Text size="xs" c="dimmed">
-                    {machine.employee_id === null
+                    {employeeName === undefined
                         ? t('common.labels.unassigned')
                         : (employeeName ?? t('common.labels.noEmployee'))}
                 </Text>
@@ -188,9 +190,12 @@ export function MachinesPage(): ReactElement {
                 case 'assignment': {
                     return machine.user.length > 0
                         ? machine.user
-                        : machine.employee_id === null
-                          ? ''
-                          : employeeNames.get(machine.employee_id);
+                        : effectiveValues(
+                              machine.employee_id,
+                              machine.employee_ids,
+                          )
+                              .map((id) => employeeNames.get(id) ?? `#${id}`)
+                              .join(', ');
                 }
 
                 case 'condition': {
@@ -572,14 +577,14 @@ export function MachinesPage(): ReactElement {
                                                 <MachineRow
                                                     key={machine.id}
                                                     machine={machine}
-                                                    employeeName={
-                                                        machine.employee_id ===
-                                                        null
-                                                            ? undefined
-                                                            : employeeNames.get(
-                                                                  machine.employee_id,
-                                                              )
-                                                    }
+                                                    employeeName={formatValues(
+                                                        machine.employee_id,
+                                                        machine.employee_ids,
+                                                        (id) =>
+                                                            employeeNames.get(
+                                                                id,
+                                                            ) ?? `#${id}`,
+                                                    )}
                                                     onEdit={(
                                                         selectedMachine,
                                                     ) => {

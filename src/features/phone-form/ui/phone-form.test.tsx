@@ -113,6 +113,7 @@ describe('phone create and edit forms', () => {
                     has_chip: equipment.hasChip,
                     situation: 'Em uso',
                     employee_id: null,
+                    employee_ids: [],
                 };
                 if (mode === 'edit') {
                     expect(phoneApi.update).toHaveBeenCalledWith(

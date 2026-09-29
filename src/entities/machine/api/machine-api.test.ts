@@ -85,6 +85,19 @@ describe('machineApi.list', () => {
         );
     });
 
+    it('shows shared machines once when both assigned employees match', async () => {
+        mockedApiRequest.mockResolvedValueOnce([
+            {id: 12, name: 'Anna Silva'},
+            {id: 13, name: 'Anna Souza'},
+        ]);
+        mockedApiRequest.mockResolvedValueOnce([{id: 3}]);
+        mockedApiRequest.mockResolvedValueOnce([{id: 3}, {id: 4}]);
+
+        await expect(
+            machineApi.list({kind: 'employee_name', value: 'Anna'}, signal),
+        ).resolves.toEqual([{id: 3}, {id: 4}]);
+    });
+
     it('returns no machines when the employee name does not match', async () => {
         mockedApiRequest.mockResolvedValueOnce([{id: 12, name: 'Anna Silva'}]);
 

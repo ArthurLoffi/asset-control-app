@@ -25,6 +25,7 @@ export type Phone = ResourceRecord & {
     has_chip: Nullable<boolean>;
     situation: PhoneSituation;
     employee_id: Nullable<number>;
+    employee_ids?: number[];
 };
 
 export type PhoneInput = ResourceInput<Phone>;
