@@ -5,6 +5,7 @@ import {
     type Phone,
     type PhoneSituation,
 } from '@/entities';
+import {parseEmployeeIds} from '@/shared';
 
 export type PhoneFormValues = Record<
     | 'equipament'
@@ -15,7 +16,7 @@ export type PhoneFormValues = Record<
     | 'serial_number'
     | 'situation',
     string
->;
+> & {employee_ids?: string};
 
 type PhoneFormResult =
     {input: PhoneInput; error?: never} | {input?: never; error: string};
@@ -40,9 +41,18 @@ export function parsePhoneForm(values: PhoneFormValues): PhoneFormResult {
         return {error: 'Complete all required phone fields.'};
     }
 
+    const employeeIds =
+        values.employee_ids === undefined
+            ? undefined
+            : parseEmployeeIds(values.employee_ids);
     const employeeId =
-        values.employee_id.length === 0 ? null : Number(values.employee_id);
+        values.employee_ids === undefined
+            ? values.employee_id.length === 0
+                ? null
+                : Number(values.employee_id)
+            : (employeeIds?.[0] ?? null);
     if (
+        (employeeIds === undefined && values.employee_ids !== undefined) ||
         (employeeId !== null &&
             (!Number.isSafeInteger(employeeId) || employeeId <= 0)) ||
         (values.equipament.length > 0 &&
@@ -71,6 +81,7 @@ export function parsePhoneForm(values: PhoneFormValues): PhoneFormResult {
                     : values.has_chip === 'true',
             situation: values.situation as PhoneSituation,
             employee_id: employeeId,
+            ...(employeeIds && {employee_ids: employeeIds}),
         },
     };
 }

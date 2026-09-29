@@ -47,6 +47,10 @@ export const messageTranslations = {
         'Enter a name and email, then select a branch and department.',
         'Digite um nome e e-mail, depois selecione uma filial e um departamento.',
     ],
+    contacts: [
+        'Enter distinct, valid email addresses and phone numbers.',
+        'Digite endereços de e-mail e telefones válidos e distintos.',
+    ],
     machineRequired: [
         'Complete all required machine fields.',
         'Preencha todos os campos obrigatórios do computador.',

@@ -36,6 +36,7 @@ import {
     SortableTableHeader,
     sortableTimestamp,
     useTableSort,
+    formatValues,
 } from '@/shared';
 import {type Employee, type EmployeeSearch} from '@/entities';
 import {EmployeeForm} from '@/features';
@@ -70,9 +71,10 @@ export function EmployeesPage(): ReactElement {
                 }
 
                 case 'contact': {
-                    return employee.email.length > 0
-                        ? employee.email
-                        : employee.phone;
+                    return (
+                        formatValues(employee.email, employee.emails, String) ??
+                        formatValues(employee.phone, employee.phones, String)
+                    );
                 }
 
                 case 'branch': {
@@ -461,21 +463,24 @@ export function EmployeesPage(): ReactElement {
                                                         </Table.Td>
                                                         <Table.Td>
                                                             <Text size="sm">
-                                                                {employee.email
-                                                                    .length > 0
-                                                                    ? employee.email
-                                                                    : '—'}
+                                                                {formatValues(
+                                                                    employee.email,
+                                                                    employee.emails,
+                                                                    String,
+                                                                ) ?? '—'}
                                                             </Text>
                                                             <Text
                                                                 size="xs"
                                                                 c="dimmed"
                                                             >
-                                                                {employee.phone
-                                                                    .length > 0
-                                                                    ? employee.phone
-                                                                    : t(
-                                                                          'noPhoneAdded',
-                                                                      )}
+                                                                {formatValues(
+                                                                    employee.phone,
+                                                                    employee.phones,
+                                                                    String,
+                                                                ) ??
+                                                                    t(
+                                                                        'noPhoneAdded',
+                                                                    )}
                                                             </Text>
                                                         </Table.Td>
                                                         <Table.Td>

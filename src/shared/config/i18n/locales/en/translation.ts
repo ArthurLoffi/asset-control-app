@@ -77,6 +77,12 @@ const translation = {
     employeeForm: {
         invalid: 'Enter a name and email, then select a branch and department.',
     },
+    multiValues: {
+        emails: 'Email addresses',
+        phones: 'Phone numbers',
+        employeeIds: 'Employee IDs',
+        onePerLine: 'Enter one value per line.',
+    },
     employeeCoverage: 'Employee coverage',
     employeeCoverageDescription:
         'See who has a company phone and SIM, a SIM only, or no SIM.',

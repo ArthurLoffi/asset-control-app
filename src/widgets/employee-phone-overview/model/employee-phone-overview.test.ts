@@ -32,6 +32,15 @@ function phone(values: Partial<Phone>): Phone {
 }
 
 describe('employee phone coverage', () => {
+    it('counts a shared phone for every assigned employee', () => {
+        const result = summarizeEmployeePhones(employees, [
+            phone({employee_id: 1, employee_ids: [1, 2]}),
+        ]);
+        expect(result[0]?.phones).toHaveLength(1);
+        expect(result[1]?.phones).toHaveLength(1);
+        expect(result[2]?.phones).toHaveLength(0);
+    });
+
     it('groups employees into phone + SIM, SIM only, no SIM, and not recorded', () => {
         const result = summarizeEmployeePhones(employees, [
             phone({}),

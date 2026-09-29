@@ -7,6 +7,7 @@ import {
     type MachineSituation,
     type MachineType,
 } from '@/entities';
+import {parseEmployeeIds} from '@/shared';
 
 export type MachineFormValues = Record<
     | 'asset_number'
@@ -20,7 +21,7 @@ export type MachineFormValues = Record<
     | 'type'
     | 'user',
     string
->;
+> & {employee_ids?: string};
 
 export type MachineFormResult =
     {input: MachineInput; error?: never} | {input?: never; error: string};
@@ -44,7 +45,14 @@ function optionalBoolean(value: string) {
 
 export function parseMachineForm(values: MachineFormValues): MachineFormResult {
     const assetNumber = optionalPositiveInteger(values.asset_number);
-    const employeeId = optionalPositiveInteger(values.employee_id);
+    const employeeIds =
+        values.employee_ids === undefined
+            ? undefined
+            : parseEmployeeIds(values.employee_ids);
+    const employeeId =
+        employeeIds === undefined && values.employee_ids === undefined
+            ? optionalPositiveInteger(values.employee_id)
+            : (employeeIds?.[0] ?? null);
     const requiredValues = [
         values.user,
         values.type,
@@ -56,7 +64,11 @@ export function parseMachineForm(values: MachineFormValues): MachineFormResult {
         return {error: 'Complete all required machine fields.'};
     }
 
-    if (assetNumber === undefined || employeeId === undefined) {
+    if (
+        assetNumber === undefined ||
+        employeeId === undefined ||
+        (employeeIds === undefined && values.employee_ids !== undefined)
+    ) {
         return {
             error: 'Asset and employee IDs must be positive whole numbers.',
         };
@@ -90,6 +102,7 @@ export function parseMachineForm(values: MachineFormValues): MachineFormResult {
                     : (values.machine_condition as MachineCondition),
             situation: values.situation as MachineSituation,
             employee_id: employeeId,
+            ...(employeeIds && {employee_ids: employeeIds}),
         },
     };
 }

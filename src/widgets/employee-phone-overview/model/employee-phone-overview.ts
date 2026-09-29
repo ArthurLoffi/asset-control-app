@@ -1,4 +1,5 @@
 import {type Employee, type Phone} from '@/entities';
+import {effectiveValues} from '@/shared';
 
 export const provisionOptions = [
     {
@@ -79,13 +80,14 @@ export function summarizeEmployeePhones(
 ): EmployeePhoneSummary[] {
     const assignments = new Map<number, Phone[]>();
     for (const phone of phones) {
-        if (phone.employee_id === null) {
-            continue;
+        for (const id of effectiveValues(
+            phone.employee_id,
+            phone.employee_ids,
+        )) {
+            const assigned = assignments.get(id) ?? [];
+            assigned.push(phone);
+            assignments.set(id, assigned);
         }
-
-        const assigned = assignments.get(phone.employee_id) ?? [];
-        assigned.push(phone);
-        assignments.set(phone.employee_id, assigned);
     }
 
     return employees.map((employee) => {

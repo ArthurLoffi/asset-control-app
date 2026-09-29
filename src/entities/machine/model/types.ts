@@ -26,6 +26,7 @@ export type Machine = ResourceRecord & {
     machine_condition: Nullable<MachineCondition>;
     situation: MachineSituation;
     employee_id: Nullable<number>;
+    employee_ids?: number[];
 };
 
 export type MachineInput = ResourceInput<Machine>;

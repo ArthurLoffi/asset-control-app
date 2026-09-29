@@ -10,6 +10,7 @@ import {
     Stack,
     Text,
     TextInput,
+    Textarea,
 } from '@mantine/core';
 import {parseMachineForm, type MachineFormValues} from '../model/machine-form';
 import {
@@ -17,6 +18,7 @@ import {
     DeactivationFields,
     translateInventoryValue,
     useRecordDeactivation,
+    effectiveValues,
 } from '@/shared';
 import {
     machineApi,
@@ -54,13 +56,18 @@ function MachineFields({machine}: {machine?: Machine}): ReactElement {
                 defaultValue={machine?.user}
                 placeholder={t('forms.alexUser')}
             />
-            <TextInput
-                label={t('common.fields.employeeId')}
-                name="employee_id"
-                type="number"
-                min={1}
-                step={1}
-                defaultValue={machine?.employee_id ?? ''}
+            <Textarea
+                label={t('multiValues.employeeIds')}
+                description={t('multiValues.onePerLine')}
+                name="employee_ids"
+                defaultValue={
+                    machine
+                        ? effectiveValues(
+                              machine.employee_id,
+                              machine.employee_ids,
+                          ).join('\n')
+                        : ''
+                }
                 placeholder={t('common.labels.optional')}
             />
             <Select
@@ -184,6 +191,7 @@ export function MachineForm({
             machine_condition: getText('machine_condition'),
             situation: getText('situation'),
             employee_id: getText('employee_id'),
+            employee_ids: getText('employee_ids'),
         });
 
         if (result.error !== undefined) {

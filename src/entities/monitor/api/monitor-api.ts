@@ -1,6 +1,11 @@
 import type {Monitor, MonitorInput, MonitorSearch} from '../model/types';
 import {employeeApi} from '@/entities';
-import {ApiError, apiRequest, createResourceWriter} from '@/shared';
+import {
+    ApiError,
+    apiRequest,
+    createResourceWriter,
+    uniqueRecordsById,
+} from '@/shared';
 
 export const monitorApi = {
     async list(search: MonitorSearch, signal: AbortSignal): Promise<Monitor[]> {
@@ -34,7 +39,7 @@ export const monitorApi = {
                     ),
                 ),
             );
-            return results.flat();
+            return uniqueRecordsById(results.flat());
         }
 
         const query = new URLSearchParams({[search.kind]: search.value});

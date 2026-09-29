@@ -79,6 +79,12 @@ const translation = {
         invalid:
             'Digite um nome e e-mail, depois selecione uma filial e um departamento.',
     },
+    multiValues: {
+        emails: 'Endereços de e-mail',
+        phones: 'Números de telefone',
+        employeeIds: 'IDs de colaboradores',
+        onePerLine: 'Digite um valor por linha.',
+    },
     employeeCoverage: 'Cobertura de celulares',
     employeeCoverageDescription:
         'Veja quem possui celular e chip corporativos, somente chip ou nenhum chip.',

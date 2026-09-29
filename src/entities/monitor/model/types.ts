@@ -22,6 +22,7 @@ export type Monitor = ResourceRecord & {
     monitor_condition: Nullable<MonitorCondition>;
     situation: MonitorSituation;
     employee_id: Nullable<number>;
+    employee_ids?: number[];
 };
 
 export type MonitorInput = ResourceInput<Monitor>;

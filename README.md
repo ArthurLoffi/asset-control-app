@@ -26,7 +26,10 @@ validation, payloads, search rules, and presentation stay in their FSD slices.
 
 Open `/employees` or select **Employees** in the sidebar. The screen supports
 listing employees, name and ID searches, creation, and editing. The directory
-resolves branch and department IDs to their names through the API lookup endpoints.
+resolves branch and department IDs to their names through the API lookup endpoints
+and shows all saved email addresses and phone numbers. In the employee form, enter
+one contact per line. Machine, monitor, and phone forms accept multiple employee
+IDs in the same way; inventory tables show every assigned employee.
 
 Run the API in `../asset-control` on port 8080, then run `npm run dev` here.
 Vite proxies `/api` to `http://localhost:8080`. For deployment, route `/api` to the

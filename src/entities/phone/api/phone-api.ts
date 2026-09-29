@@ -1,6 +1,11 @@
 import type {Phone, PhoneInput, PhoneSearch} from '../model/types';
 import {employeeApi} from '@/entities';
-import {ApiError, apiRequest, createResourceWriter} from '@/shared';
+import {
+    ApiError,
+    apiRequest,
+    createResourceWriter,
+    uniqueRecordsById,
+} from '@/shared';
 
 export const phoneApi = {
     async list(search: PhoneSearch, signal: AbortSignal): Promise<Phone[]> {
@@ -25,7 +30,7 @@ export const phoneApi = {
                     ),
                 ),
             );
-            return results.flat();
+            return uniqueRecordsById(results.flat());
         }
 
         const query = new URLSearchParams({[search.kind]: search.value});

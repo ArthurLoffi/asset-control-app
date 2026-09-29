@@ -10,11 +10,17 @@ import {
     Stack,
     Text,
     TextInput,
+    Textarea,
 } from '@mantine/core';
+import {
+    parseEmployeeForm,
+    type EmployeeFormValues,
+} from '../model/employee-form';
 import {
     translateMessage,
     DeactivationFields,
     useRecordDeactivation,
+    effectiveValues,
 } from '@/shared';
 import {employeeApi, type Employee, useOrganizations} from '@/entities';
 
@@ -61,29 +67,21 @@ export function EmployeeForm({
         }
 
         const data = new FormData(event.currentTarget);
-        const getText = (name: string) => {
+        const getText = (name: keyof EmployeeFormValues) => {
             const value = data.get(name);
             return typeof value === 'string' ? value.trim() : '';
         };
 
-        const input = {
+        const result = parseEmployeeForm({
             name: getText('name'),
-            email: getText('email'),
-            phone: getText('phone'),
-            branch_id: Number(getText('branch_id')),
-            department_id: Number(getText('department_id')),
-        };
+            emails: getText('emails'),
+            phones: getText('phones'),
+            branch_id: getText('branch_id'),
+            department_id: getText('department_id'),
+        });
 
-        if (
-            input.name.length === 0 ||
-            input.email.length === 0 ||
-            [input.branch_id, input.department_id].some(
-                (id) => !(Number.isSafeInteger(id) && id > 0),
-            )
-        ) {
-            setError(
-                'Enter a name and email, then select a branch and department.',
-            );
+        if (result.error !== undefined) {
+            setError(result.error);
             return;
         }
 
@@ -91,9 +89,9 @@ export function EmployeeForm({
         setError('');
         try {
             if (employee) {
-                await employeeApi.update(employee.id, input);
+                await employeeApi.update(employee.id, result.input);
             } else {
-                await employeeApi.create(input);
+                await employeeApi.create(result.input);
             }
 
             onSaved(
@@ -173,21 +171,33 @@ export function EmployeeForm({
                                 defaultValue={employee?.name}
                                 placeholder={t('forms.alexMorgan')}
                             />
-                            <TextInput
+                            <Textarea
                                 required
-                                type="email"
-                                label={t('common.fields.email')}
-                                name="email"
-                                autoComplete="email"
-                                defaultValue={employee?.email}
+                                label={t('multiValues.emails')}
+                                description={t('multiValues.onePerLine')}
+                                name="emails"
+                                defaultValue={
+                                    employee
+                                        ? effectiveValues(
+                                              employee.email,
+                                              employee.emails,
+                                          ).join('\n')
+                                        : ''
+                                }
                                 placeholder={t('forms.emailPlaceholder')}
                             />
-                            <TextInput
-                                type="tel"
-                                label={t('common.fields.contactPhone')}
-                                name="phone"
-                                autoComplete="tel"
-                                defaultValue={employee?.phone}
+                            <Textarea
+                                label={t('multiValues.phones')}
+                                description={t('multiValues.onePerLine')}
+                                name="phones"
+                                defaultValue={
+                                    employee
+                                        ? effectiveValues(
+                                              employee.phone,
+                                              employee.phones,
+                                          ).join('\n')
+                                        : ''
+                                }
                                 placeholder={t('common.labels.optional')}
                             />
                             <SimpleGrid cols={{base: 1, sm: 2}}>

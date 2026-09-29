@@ -29,6 +29,7 @@ import {
     SortableTableHeader,
     translateMessage,
     useTableSort,
+    effectiveValues,
 } from '@/shared';
 import {type Employee, type Phone} from '@/entities';
 
@@ -101,7 +102,8 @@ export function EmployeePhoneOverview({
         currentPage * pageSize,
     );
     const unassignedCount = phones.filter(
-        ({employee_id}) => employee_id === null,
+        (phone) =>
+            effectiveValues(phone.employee_id, phone.employee_ids).length === 0,
     ).length;
 
     function clearFilters() {

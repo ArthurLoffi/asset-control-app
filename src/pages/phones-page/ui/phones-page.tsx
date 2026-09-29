@@ -38,6 +38,8 @@ import {
     SortableTableHeader,
     sortableTimestamp,
     useTableSort,
+    effectiveValues,
+    formatValues,
 } from '@/shared';
 import {usePhones, type Phone, type PhoneSearch} from '@/entities';
 import {PhoneForm} from '@/features';
@@ -89,7 +91,7 @@ function PhoneRow({
             </Table.Td>
             <Table.Td>
                 <Text size="sm">
-                    {phone.employee_id === null
+                    {employeeName === undefined
                         ? t('common.labels.unassigned')
                         : (employeeName ?? t('common.labels.noEmployee'))}
                 </Text>
@@ -171,9 +173,12 @@ export function PhonesPage(): ReactElement {
                 }
 
                 case 'employee': {
-                    return phone.employee_id === null
-                        ? ''
-                        : employeeNames.get(phone.employee_id);
+                    return effectiveValues(
+                        phone.employee_id,
+                        phone.employee_ids,
+                    )
+                        .map((id) => employeeNames.get(id) ?? `#${id}`)
+                        .join(', ');
                 }
 
                 case 'sim': {
@@ -603,14 +608,15 @@ export function PhonesPage(): ReactElement {
                                                             <PhoneRow
                                                                 key={phone.id}
                                                                 phone={phone}
-                                                                employeeName={
-                                                                    phone.employee_id ===
-                                                                    null
-                                                                        ? undefined
-                                                                        : employeeNames.get(
-                                                                              phone.employee_id,
-                                                                          )
-                                                                }
+                                                                employeeName={formatValues(
+                                                                    phone.employee_id,
+                                                                    phone.employee_ids,
+                                                                    (id) =>
+                                                                        employeeNames.get(
+                                                                            id,
+                                                                        ) ??
+                                                                        `#${id}`,
+                                                                )}
                                                                 onEdit={(
                                                                     selectedPhone,
                                                                 ) => {
