@@ -12,11 +12,11 @@ import {
 } from '@mantine/core';
 import {Navigate, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
+import {LoginBackgroundStyle} from '../model/background-login';
 import {translateMessage, ROUTES} from '@/shared';
 import {useSession} from '@/entities';
 import {LanguageSwitcher, LoginForm} from '@/features';
-import { LoginBackgroundStyle } from '../model/background-login';
-import { CompanyLogo } from '@/widgets';
+import {CompanyLogo} from '@/widgets';
 
 export function LoginPage(): ReactElement {
     const {t} = useTranslation();

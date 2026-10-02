@@ -60,6 +60,33 @@ export function EmployeeForm({
     const error =
         deactivation.error.length > 0 ? deactivation.error : formError;
 
+    function maskPhone(value: string): string {
+        const digits = value.replaceAll(/\D/g, '').slice(0, 11);
+
+        if (digits.length <= 2) {
+            return `(${digits}`;
+        }
+
+        if (digits.length <= 7) {
+            return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+        }
+
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+    }
+
+    const handlePhonesChange = (
+        event: React.ChangeEvent<HTMLTextAreaElement>,
+    ) => {
+        const {value} = event.currentTarget;
+
+        const masked = value
+            .split('\n')
+            .map((phone) => maskPhone(phone))
+            .join('\n');
+
+        event.currentTarget.value = masked;
+    };
+
     async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (isSaving) {
@@ -199,6 +226,7 @@ export function EmployeeForm({
                                         : ''
                                 }
                                 placeholder={t('common.labels.optional')}
+                                onChange={handlePhonesChange}
                             />
                             <SimpleGrid cols={{base: 1, sm: 2}}>
                                 <Select

@@ -3,7 +3,7 @@ import type {
     EmployeeRecord,
     EmployeeSearch,
 } from '../model/types';
-import { apiRequest, createResourceWriter } from '@/shared';
+import {apiRequest, createResourceWriter} from '@/shared';
 
 type EmployeeResponse = EmployeeRecord;
 
@@ -34,7 +34,7 @@ export const employeeApi = {
             .filter((employee) =>
                 normalizeName(employee.name).includes(normalizedName),
             )
-            .map(({ id }) => id);
+            .map(({id}) => id);
     },
     async list(
         search: EmployeeSearch,
@@ -59,7 +59,7 @@ export const employeeApi = {
 
         const employee = await apiRequest<EmployeeResponse>(
             `/employees/id?${query.toString()}`,
-            { signal },
+            {signal},
         );
 
         return [employee];
