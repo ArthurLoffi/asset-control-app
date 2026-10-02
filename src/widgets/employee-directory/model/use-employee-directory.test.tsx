@@ -41,10 +41,10 @@ it('reuses bulk lists across StrictMode, forms, search, refresh, and remounts', 
                           {
                               ...employee,
                               id: 2,
-                                name: 'Ana Souza',
-                                branch_id: 77,
-                                department_id: 88,
-                            },
+                              name: 'Ana Souza',
+                              branch_id: 77,
+                              department_id: 88,
+                          },
                       ]
                     : employee,
         });

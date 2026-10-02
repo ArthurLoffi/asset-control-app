@@ -1,6 +1,6 @@
-import type { CSSProperties } from 'react';
+import type {CSSProperties} from 'react';
 
-type LoginBackgroundStyle = CSSProperties & {
+type LoginBackgroundStyleCss = CSSProperties & {
     '--login-background-image': string;
 };
 
@@ -19,6 +19,6 @@ const loginBackgroundSource = resolveLoginBackgroundSource(
     import.meta.env.VITE_LOGIN_BACKGROUND,
 );
 
-export const LoginBackgroundStyle: LoginBackgroundStyle = {
+export const LoginBackgroundStyle: LoginBackgroundStyleCss = {
     '--login-background-image': `url(${JSON.stringify(loginBackgroundSource)})`,
 };

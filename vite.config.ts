@@ -5,8 +5,9 @@ import {defineConfig} from 'vite';
 export default defineConfig({
     plugins: [react()],
     server: {
+        allowedHosts: ['app.msapplications.online'],
         proxy: {
-            '/api': 'http://localhost:8080',
+            '/api': 'http://localhost:8060',
         },
     },
     resolve: {
