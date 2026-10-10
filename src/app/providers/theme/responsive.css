@@ -26,9 +26,8 @@
 }
 
 .login-page__visual {
-    position: relative;
-    min-width: 0;
-    min-height: 0;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
     background-color: #050706;
     background-image:
@@ -44,19 +43,21 @@
     content: '';
     background:
         radial-gradient(circle at 16% 14%, rgb(34 169 90 / 18%), transparent 38%),
-        linear-gradient(90deg, transparent 72%, rgb(0 0 0 / 45%));
+        linear-gradient(90deg, transparent 40%, rgb(0 0 0 / 55%));
     pointer-events: none;
 }
 
 .login-page__content {
+    position: relative;
+    z-index: 1;
+    grid-column: 2;
+    grid-row: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 0;
     padding: clamp(32px, 5vw, 64px);
     overflow-y: auto;
-    background: #000000;
-    border-left: 1px solid rgb(255 255 255 / 6%);
 }
 
 .login-page__card {
@@ -64,10 +65,11 @@
     max-width: 420px;
     padding: clamp(28px, 4vw, 40px);
     color: #f3f4f6;
-    background: #141617;
+    background: rgb(20 22 23 / 92%);
     border: 1px solid #2b2e30;
     border-radius: 8px;
     box-shadow: 0 24px 72px rgb(0 0 0 / 42%);
+    backdrop-filter: blur(8px);
 }
 
 .login-page__product-name {
@@ -172,16 +174,11 @@
         height: auto;
     }
 
-    .login-page__visual {
-        display: none;
-    }
-
     .login-page__content {
+        grid-column: 1;
         min-height: 100vh;
         min-height: 100dvh;
         padding: 20px 16px;
-        background: #000000;
-        border-left: 0;
     }
 
     .login-page__card {
