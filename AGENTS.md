@@ -220,3 +220,11 @@ The header reads the optional `VITE_COMPANY_LOGO` build-time variable. It may
 point to an external URL, a public asset path, or a file in
 `src/widgets/header/assets`; missing or unloadable logos remain hidden. The
 logo is visible from the Mantine `sm` breakpoint upward and is hidden on phones.
+
+## Login background
+
+The login page background image (`VITE_LOGIN_BACKGROUND`, default
+`/login-hero.jpg`) is an absolutely positioned layer covering the whole
+`.login-page`, on desktop and phones. The form column is transparent over it,
+and the card keeps a near-opaque background so text contrast never depends on
+the image. Keep these styles scoped to `.login-page*` selectors.
