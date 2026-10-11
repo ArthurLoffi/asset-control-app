@@ -221,6 +221,19 @@ point to an external URL, a public asset path, or a file in
 `src/widgets/header/assets`; missing or unloadable logos remain hidden. The
 logo is visible from the Mantine `sm` breakpoint upward and is hidden on phones.
 
+## Design review agent
+
+`.claude/agents/design-reviewer.md` defines a read-only `design-reviewer`
+subagent that validates the latest state of components and pages against this
+document (theme, FSD boundaries, shared result/table/form components, i18n
+parity, accessibility, responsiveness) and runs `npm run check`, `npm test`,
+and `npm run build`. The Stop hook in `.claude/settings.json` runs
+`.claude/hooks/design-review.sh` at the end of each Claude turn; when `src/`,
+`public/`, or `index.html` changed since the last review, it asks Claude to
+invoke the agent once per distinct working-tree state. The agent reports
+findings and never edits files; the main agent applies fixes. Review state is
+kept in the gitignored `.claude/.design-review-state`.
+
 ## Login background
 
 The login page background image (`VITE_LOGIN_BACKGROUND`, default
