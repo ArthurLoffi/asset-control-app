@@ -245,3 +245,10 @@ The login page background image (`VITE_LOGIN_BACKGROUND`, default
 `.login-page`, on desktop and phones. The form column is transparent over it,
 and the card keeps a near-opaque background so text contrast never depends on
 the image. Keep these styles scoped to `.login-page*` selectors.
+
+## Not found page
+
+Unknown paths inside the protected layout render the lazy-loaded
+`pages/not-found-page` (`path="*"`), so unauthenticated visitors still go to
+login first. It uses the shared Mantine theme, translated `notFound.*` keys, and
+a link back to `ROUTES.HOME`.
