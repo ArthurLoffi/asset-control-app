@@ -199,3 +199,31 @@ it('translates the dashboard empty state and navigation', async () => {
     expect(screen.getByText('Nenhum registro ainda')).toBeDefined();
     expect(screen.getByRole('link', {name: 'Colaboradores'})).toBeDefined();
 });
+
+it('renders a translated not found page for unknown routes', async () => {
+    vi.stubGlobal(
+        'fetch',
+        vi.fn(async (url: string) =>
+            Response.json(
+                url === '/api/auth/session'
+                    ? {
+                          id: '1',
+                          name: 'Ana',
+                          expires_at: Math.floor(Date.now() / 1000) + 3600,
+                      }
+                    : {content: [], paging: {has_next: false}},
+            ),
+        ),
+    );
+    openApp('/missing-route');
+    await screen.findByRole('heading', {name: 'Page not found'});
+    expect(screen.getByRole('link', {name: 'Back to home'})).toBeDefined();
+    fireEvent.click(
+        screen.getByRole('button', {
+            name: 'Change language to Portuguese (Brazil)',
+        }),
+    );
+    await screen.findByRole('heading', {name: 'Página não encontrada'});
+    fireEvent.click(screen.getByRole('link', {name: 'Voltar ao início'}));
+    await screen.findByRole('heading', {name: 'Painel'});
+});

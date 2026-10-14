@@ -12,6 +12,7 @@ const PrintersPage = lazy(async () => import('@/pages/printers-page'));
 const MonitorsPage = lazy(async () => import('@/pages/monitors-page'));
 const EmailsPage = lazy(async () => import('@/pages/emails-page'));
 const LoginPage = lazy(async () => import('@/pages/login-page'));
+const NotFoundPage = lazy(async () => import('@/pages/not-found-page'));
 
 const AppRouter = (): ReactElement => (
     <Suspense
@@ -31,6 +32,7 @@ const AppRouter = (): ReactElement => (
                 <Route path={ROUTES.PRINTERS} element={<PrintersPage />} />
                 <Route path={ROUTES.MONITORS} element={<MonitorsPage />} />
                 <Route path={ROUTES.EMAILS} element={<EmailsPage />} />
+                <Route path="*" element={<NotFoundPage />} />
             </Route>
         </Routes>
     </Suspense>

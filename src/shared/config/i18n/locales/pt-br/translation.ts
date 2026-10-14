@@ -197,6 +197,11 @@ const translation = {
         portuguese: 'Português (Brasil)',
         switchTo: 'Mudar idioma para {{language}}',
     },
+    notFound: {
+        title: 'Página não encontrada',
+        description: 'A página que você procura não existe ou foi movida.',
+        backHome: 'Voltar ao início',
+    },
     common: {
         sort: {
             ascending: 'Ordenar {{column}} em ordem crescente',
