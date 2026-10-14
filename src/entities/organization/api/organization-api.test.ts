@@ -13,7 +13,9 @@ describe('shared organization lists', () => {
             {id: 2, name: 'Zulu'},
             {id: 1, name: 'Alpha'},
         ];
-        const request = vi.fn(async () => Response.json({data: items}));
+        const request = vi.fn(async () =>
+            Response.json({content: items, paging: {has_next: false}}),
+        );
         vi.stubGlobal('fetch', request);
         const {organizationApi} = await import('./organization-api');
         const {signal} = new AbortController();
@@ -28,11 +30,11 @@ describe('shared organization lists', () => {
         expect(later.departments).toBe(first.departments);
         expect(request.mock.calls).toHaveLength(2);
         expect(request).toHaveBeenCalledWith(
-            '/api/utils/branches',
+            '/api/branches?page=0&page_size=100',
             expect.anything(),
         );
         expect(request).toHaveBeenCalledWith(
-            '/api/utils/departments',
+            '/api/departments?page=0&page_size=100',
             expect.anything(),
         );
     });
@@ -54,7 +56,12 @@ describe('shared organization lists', () => {
         const active = organizationApi.list(new AbortController().signal);
         controller.abort();
         await expect(cancelled).rejects.toMatchObject({name: 'AbortError'});
-        finish(Response.json({data: [{id: 1, name: 'Office'}]}));
+        finish(
+            Response.json({
+                content: [{id: 1, name: 'Office'}],
+                paging: {has_next: false},
+            }),
+        );
         await expect(active).resolves.toMatchObject({
             branches: [{id: 1, name: 'Office'}],
         });
@@ -76,12 +83,12 @@ describe('shared organization lists', () => {
     it('retries only the failed list and keeps successful empty lists', async () => {
         let isFailing = true;
         const request = vi.fn(async (path: string) =>
-            isFailing && path.endsWith('/departments')
+            isFailing && path.includes('/departments')
                 ? Response.json(
-                      {error: 'Departments unavailable'},
+                      {message: 'Departments unavailable', code: 'CORE_003'},
                       {status: 500},
                   )
-                : Response.json({data: null}),
+                : Response.json({content: [], paging: {has_next: false}}),
         );
         vi.stubGlobal('fetch', request);
         const {organizationApi} = await import('./organization-api');
@@ -96,9 +103,9 @@ describe('shared organization lists', () => {
         });
         await organizationApi.list(signal);
         expect(request.mock.calls.map(([path]) => path)).toEqual([
-            '/api/utils/branches',
-            '/api/utils/departments',
-            '/api/utils/departments',
+            '/api/branches?page=0&page_size=100',
+            '/api/departments?page=0&page_size=100',
+            '/api/departments?page=0&page_size=100',
         ]);
     });
 });

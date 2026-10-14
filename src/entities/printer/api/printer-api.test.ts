@@ -26,56 +26,56 @@ afterEach(() => {
 });
 
 describe('printer API contract', () => {
-    it('unwraps the backend collection envelope and forwards cancellation', async () => {
-        const request = mockResponse({status: 'success', data: [printer]});
+    it('reads the paginated collection and forwards cancellation', async () => {
+        const request = mockResponse({
+            content: [printer],
+            paging: {has_next: false},
+        });
         await expect(printerApi.list({kind: 'all'}, signal)).resolves.toEqual([
             printer,
         ]);
         expect(request).toHaveBeenCalledWith(
-            '/api/printers',
+            '/api/printers?page=0&page_size=100',
             expect.objectContaining({signal}),
         );
     });
 
-    it('handles a null collection', async () => {
-        mockResponse({data: null});
-        await expect(printerApi.list({kind: 'all'}, signal)).resolves.toEqual(
-            [],
-        );
-    });
-
-    it('uses the ID endpoint and wraps a single result', async () => {
-        const request = mockResponse({data: printer});
+    it('uses the ID route and wraps a single result', async () => {
+        const request = mockResponse(printer);
         await expect(
             printerApi.list({kind: 'id', value: '7'}, signal),
         ).resolves.toEqual([printer]);
         expect(request).toHaveBeenCalledWith(
-            '/api/printers/id?id=7',
+            '/api/printers/7',
             expect.objectContaining({signal}),
         );
     });
 
     it('treats only an ID 404 as an empty search result', async () => {
-        mockResponse({error: 'Printer not found'}, 404);
+        mockResponse(
+            {message: 'Printer not found by id', code: 'PRINTER_001'},
+            404,
+        );
         await expect(
             printerApi.list({kind: 'id', value: '7'}, signal),
         ).resolves.toEqual([]);
         await expect(printerApi.list({kind: 'all'}, signal)).rejects.toThrow(
-            'Printer not found',
+            'Printer not found by id',
         );
     });
 
     it('preserves server errors', async () => {
-        mockResponse({error: 'Database unavailable'}, 500);
+        mockResponse({message: 'Unexpected error', code: 'CORE_003'}, 500);
         await expect(
             printerApi.list({kind: 'id', value: '7'}, signal),
-        ).rejects.toThrow('Database unavailable');
+        ).rejects.toThrow('Unexpected error');
     });
 
-    it('sends create and update payloads with the backend field names', async () => {
-        const request = mockResponse({data: printer});
+    it('sends create, update, and deactivation to the REST routes', async () => {
+        const request = mockResponse(printer);
         await printerApi.create(input);
         await printerApi.update(7, input);
+        await printerApi.deactivate(7);
         expect(request).toHaveBeenNthCalledWith(
             1,
             '/api/printers',
@@ -86,11 +86,16 @@ describe('printer API contract', () => {
         );
         expect(request).toHaveBeenNthCalledWith(
             2,
-            '/api/printers?id=7',
+            '/api/printers/7',
             expect.objectContaining({
                 method: 'PUT',
                 body: JSON.stringify(input),
             }),
+        );
+        expect(request).toHaveBeenNthCalledWith(
+            3,
+            '/api/printers/7',
+            expect.objectContaining({method: 'DELETE'}),
         );
         const options = request.mock.calls[0]?.[1] as RequestInit;
         expect(new Headers(options.headers).get('Content-Type')).toBe(

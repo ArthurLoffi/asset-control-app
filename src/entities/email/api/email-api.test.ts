@@ -9,6 +9,7 @@ const input: EmailInput = {
 };
 const email = {...input, id: 42, created_at: '2026-09-14T12:00:00Z'};
 const {signal} = new AbortController();
+const page = (content: unknown[]) => ({content, paging: {has_next: false}});
 
 function mockResponse(body: unknown, status = 200) {
     const request = vi
@@ -24,70 +25,61 @@ afterEach(() => {
 
 describe('email API', () => {
     it('lists all emails and forwards cancellation', async () => {
-        const request = mockResponse({data: [email]});
+        const request = mockResponse(page([email]));
         await expect(emailApi.list({kind: 'all'}, signal)).resolves.toEqual([
             email,
         ]);
         expect(request).toHaveBeenCalledWith(
-            '/api/emails',
+            '/api/emails?page=0&page_size=100',
             expect.objectContaining({signal}),
         );
     });
 
-    it('normalizes an empty collection and preserves list errors', async () => {
-        mockResponse({data: null});
-        await expect(emailApi.list({kind: 'all'}, signal)).resolves.toEqual([]);
-        mockResponse({error: 'List unavailable'}, 404);
+    it('preserves list errors', async () => {
+        mockResponse({message: 'List unavailable', code: 'CORE_003'}, 500);
         await expect(emailApi.list({kind: 'all'}, signal)).rejects.toThrow(
             'List unavailable',
         );
     });
 
-    it('routes filtered lists through the existing lookup endpoint', async () => {
-        const request = mockResponse({data: email});
+    it('uses the ID route and the user filter', async () => {
+        const request = mockResponse(email);
         await expect(
             emailApi.list({kind: 'id', value: '42'}, signal),
         ).resolves.toEqual([email]);
         expect(request).toHaveBeenCalledWith(
-            '/api/emails/id?id=42',
+            '/api/emails/42',
             expect.objectContaining({signal}),
         );
-    });
-    it('encodes user searches and preserves the stored password', async () => {
-        const request = mockResponse({data: email});
+        const filtered = mockResponse(page([email]));
         await expect(
             emailApi.find({kind: 'user', value: 'Ana [Ops]&'}, signal),
         ).resolves.toEqual([email]);
-        expect(request).toHaveBeenCalledWith(
-            '/api/emails/user?user=Ana+%5BOps%5D%26',
+        expect(filtered).toHaveBeenCalledWith(
+            '/api/emails?page=0&page_size=100&user=Ana+%5BOps%5D%26',
             expect.objectContaining({signal}),
         );
     });
 
-    it('uses the ID lookup route', async () => {
-        const request = mockResponse({data: email});
+    it('treats a missing ID as empty but preserves server failures', async () => {
+        mockResponse(
+            {message: 'Email not found by id', code: 'EMAIL_001'},
+            404,
+        );
         await expect(
             emailApi.find({kind: 'id', value: '42'}, signal),
-        ).resolves.toEqual([email]);
-        expect(request).toHaveBeenCalledWith(
-            '/api/emails/id?id=42',
-            expect.objectContaining({signal}),
-        );
-    });
-
-    it('treats missing matches as empty but preserves server failures', async () => {
-        mockResponse({error: 'not found'}, 404);
-        await expect(
-            emailApi.find({kind: 'user', value: 'missing'}, signal),
         ).resolves.toEqual([]);
-        mockResponse({error: 'database operation timed out'}, 504);
+        mockResponse(
+            {message: 'Database operation timed out', code: 'CORE_005'},
+            504,
+        );
         await expect(
             emailApi.find({kind: 'id', value: '42'}, signal),
-        ).rejects.toThrow('database operation timed out');
+        ).rejects.toThrow('Database operation timed out');
     });
 
     it('returns saved records and sends unmodified passwords on both write routes', async () => {
-        const request = mockResponse({data: email});
+        const request = mockResponse(email);
         await expect(emailApi.create(input)).resolves.toEqual(email);
         await expect(emailApi.update(42, input)).resolves.toEqual(email);
         expect(request).toHaveBeenNthCalledWith(
@@ -100,7 +92,7 @@ describe('email API', () => {
         );
         expect(request).toHaveBeenNthCalledWith(
             2,
-            '/api/emails?id=42',
+            '/api/emails/42',
             expect.objectContaining({
                 method: 'PUT',
                 body: JSON.stringify(input),
@@ -109,9 +101,12 @@ describe('email API', () => {
     });
 
     it('does not swallow write failures', async () => {
-        mockResponse({error: 'record not found'}, 404);
+        mockResponse(
+            {message: 'Email not found by id', code: 'EMAIL_001'},
+            404,
+        );
         await expect(emailApi.update(42, input)).rejects.toThrow(
-            'record not found',
+            'Email not found by id',
         );
     });
 });

@@ -53,8 +53,13 @@ TypeScript checks unused locals/parameters and switch fallthrough.
 
 The sibling `../asset-control` Go/Gin API uses MongoDB. Verify DTOs, validation,
 controllers, and routes there before implementing frontend contracts.
-`shared/api` owns `apiRequest` and `ApiError`, unwraps `{status, data}` responses,
-and exposes backend `{error}` messages. Hooks cancel stale reads with
+`shared/api` owns `apiRequest` and `ApiError`. The API returns records directly,
+lists as `{content, paging}`, and errors as `{message, code, logs}`; `ApiError`
+carries `message`, `status`, and the stable `code` (branch on the code, e.g.
+`AUTH_004` for an expired session). `listAll` reads every page (`page_size=100`)
+because screens sort and paginate locally; `findResource` turns an ID 404 into
+an empty result; `listEquipment` maps machine/monitor/phone searches to filters;
+`createResourceWriter` sends `POST`, `PUT /{id}`, and `DELETE /{id}`. Hooks cancel stale reads with
 `AbortController`. Vite proxies `/api` to `http://localhost:8080`; production needs
 a reverse proxy or `VITE_API_BASE_URL` pointing at an API with suitable CORS.
 Never access MongoDB directly from browser code.
@@ -62,15 +67,14 @@ Never access MongoDB directly from browser code.
 The `/printers` route is lazy-loaded and linked from the sidebar. It supports
 listing, ID search, client-side pagination, refreshing, and creation/editing:
 
-- `GET /api/printers`: list; `GET /api/printers/id?id=<id>`: single printer.
-- `POST /api/printers`: create; `PUT /api/printers?id=<id>`: update.
+- `GET /api/printers`: paginated list; `GET /api/printers/<id>`: single printer.
+- `POST /api/printers`: create; `PUT /api/printers/<id>`: update.
 - Inputs: required positive integer `asset_number`, `branch_id`, `departments_id`;
   required `model` (at most 100 characters); required IPv4/IPv6 `ip`; nullable
   `machine_condition` (`Novo`, `Bom`, or `Ruim`). Keep the plural `departments_id`.
 - Responses additionally contain `id` and `created_at`. Printers are assigned to
   branches/departments, not employees; they have no situation or serial field.
-- Location names/options come from `/api/utils/branches` and
-  `/api/utils/departments`. Preserve existing IDs when a lookup is unavailable.
+- Location names/options come from `/api/branches` and `/api/departments`. Preserve existing IDs when a lookup is unavailable.
 - Browser numeric inputs must be safe integers to avoid precision loss.
 
 Printer code lives in `entities/printer`, `features/printer-form`, and
@@ -78,8 +82,8 @@ Printer code lives in `entities/printer`, `features/printer-form`, and
 
 ## Email Contract and Shared Resources
 
-Organization reference data uses one bulk request each to `/api/utils/branches`
-and `/api/utils/departments`, cached in memory until a full page reload. Reuse
+Organization reference data reads `/api/branches` and `/api/departments` once
+each (all pages), cached in memory until a full page reload. Reuse
 the sorted lists and ID maps through `useOrganizations`; concurrent consumers
 share requests and failed lists remain retryable. Never request names per ID.
 Employee APIs return raw records; compose organization names in the
@@ -87,11 +91,11 @@ Employee APIs return raw records; compose organization names in the
 
 The lazy-loaded `/emails` page lists all emails by default, with client-side
 pagination (10 per page), user/ID searches, creation, and editing. Use
-`GET /api/emails`, `GET /api/emails/user?user=...`, `GET /api/emails/id?id=...`,
-`POST /api/emails`, and `PUT /api/emails?id=...`. Clearing or submitting an empty
+`GET /api/emails`, `GET /api/emails?user=...`, `GET /api/emails/<id>`,
+`POST /api/emails`, and `PUT /api/emails/<id>`. Clearing or submitting an empty
 search reloads all emails and resets pagination.
 IDs range from 1 through 2147483647. User search is a literal case-insensitive
-substring search that returns the lowest-ID match. Inputs require `user`,
+substring filter that returns every match. Inputs require `user`,
 `email`, and `password_hash`; preserve passwords exactly, including whitespace.
 The server generates `id` and `created_at`, and returns the saved record. After
 save, select that ID, including when editing changes the original user search.
@@ -105,10 +109,10 @@ conversion belong in feature models. Email and printer flows demonstrate reuse.
 List tables sort the complete filtered result set before pagination. Sortable
 headers toggle ascending/descending order, expose the active direction visually
 and through `aria-sort`, and keep missing values at the end in either direction.
-Machine search includes a no-input unassigned filter backed by
-`GET /api/machines/unassigned`; do not load the full machine list for this filter.
-Monitor search uses the same no-input filter through
-`GET /api/monitors/unassigned`.
+Machine and monitor search include a no-input unassigned filter backed by
+`GET /api/<resource>?unassigned=true`; do not load the full list for this filter.
+Employee-name searches resolve matching employee IDs (accent-insensitive, in the
+browser) and then make one `?employee_id=<id>&employee_id=<id>` request.
 
 ## Phone form
 
@@ -130,8 +134,8 @@ Preserve raw statuses, missing values, and unresolved location IDs in summaries.
 Use separate branch and department labels when dashboard location data is missing.
 Summary cards use medium labels and 32px totals for readability, retaining the
 shared theme and responsive grid.
-The final dashboard table uses GET /api/changes/recent for the ten latest audit
-updates. Show changed field values and the editor name; use the user ID only when
+The final dashboard table uses `GET /api/changes?direction=DESC&page_size=10`
+for the ten latest audit updates. Show changed field values and the editor name; use the user ID only when
 the editor can no longer be resolved. Keep audit details separate from inventory
 totals, and never show secret fields.
 
@@ -156,8 +160,8 @@ that limitation. Never mutate real inventory just to validate the UI.
 
 Include an update to `AGENTS.md` in every commit.
 
-Use short Conventional Commit subjects: `type: imperative description`
-(`feat`, `fix`, `chore`, or `refactor`). Keep commits focused. PRs should describe
+Use short Conventional Commit subjects with scope: `type(scope): imperative description`
+(`feat`, `fix`, `chore`, or `refactor`). Never add an AI co-author trailer. Keep commits focused. PRs should describe
 user-visible behavior and routes, link related issues, include screenshots for
 visual changes, report validation, and identify remaining limitations.
 
@@ -187,13 +191,13 @@ Render every saved value, including legacy records that contain only a singular
 field. Shared phone records count for each assigned employee in coverage views.
 
 Employees, machines, phones, monitors, printers, and emails support deactivation.
-POST /api/<resource>/deactivate?id=<id> sets the database timestamp once and
+DELETE /api/<resource>/<id> sets the database timestamp once and
 preserves the record. Missing/null deactivated_at means active (including legacy
 imports). All ordinary lists, searches, assignment lookups, and updates use the
 active scope. Deactivating an employee atomically unassigns active machines,
 monitors, and phones; it does not deactivate the equipment.
-GET /api/<resource>/inactive?after=0&limit=50 returns only deactivation IDs and
-timestamps, with next_after cursor pagination (limit 1-100). Keep history requests
+GET /api/<resource>/inactive returns only deactivation IDs and timestamps,
+using the same `{content, paging}` listing contract. Keep history requests
 separate from active inventory and dashboard reads. Never reset a timestamp on
 retry or let ordinary writes change lifecycle metadata.
 Edit forms use shared DeactivationFields and useRecordDeactivation. Selecting

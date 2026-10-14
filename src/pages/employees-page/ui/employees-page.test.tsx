@@ -15,6 +15,8 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
+const page = (content: unknown[]) => ({content, paging: {has_next: false}});
+
 it('uses cached lists while paginating, searching, and editing employees', async () => {
     vi.stubGlobal(
         'matchMedia',
@@ -44,36 +46,32 @@ it('uses cached lists while paginating, searching, and editing employees', async
     let hasOrganizationError = true;
     let hasSaveError = true;
     const request = vi.fn(async (path: string, options: RequestInit) => {
-        if (path === '/api/utils/branches') {
-            return Response.json({data: [{id: 2, name: 'Office'}]});
+        if (path === '/api/branches?page=0&page_size=100') {
+            return Response.json(page([{id: 2, name: 'Office'}]));
         }
 
-        if (path === '/api/utils/departments') {
+        if (path === '/api/departments?page=0&page_size=100') {
             return hasOrganizationError
                 ? Response.json(
-                      {error: 'Departments unavailable'},
+                      {message: 'Departments unavailable', code: 'CORE_003'},
                       {status: 500},
                   )
-                : Response.json({data: [{id: 3, name: 'IT'}]});
+                : Response.json(page([{id: 3, name: 'IT'}]));
         }
 
         if (options.method === 'PUT') {
             if (hasSaveError) {
                 return Response.json(
-                    {error: 'Save unavailable'},
+                    {message: 'Save unavailable', code: 'CORE_003'},
                     {status: 500},
                 );
             }
 
             employees[0].name = 'Updated person';
-            return Response.json({data: employees[0]});
+            return Response.json(employees[0]);
         }
 
-        if (path.includes('/employees/name?')) {
-            return Response.json({error: 'Not found'}, {status: 404});
-        }
-
-        return Response.json({data: employees});
+        return Response.json(page(employees));
     });
     vi.stubGlobal('fetch', request);
     render(
@@ -126,11 +124,11 @@ it('uses cached lists while paginating, searching, and editing employees', async
     expect(
         request.mock.calls
             .map(([path]) => path)
-            .filter((path) => path.includes('/utils/')),
+            .filter((path) => /\/(?:branches|departments)\?/u.test(path)),
     ).toEqual([
-        '/api/utils/branches',
-        '/api/utils/departments',
-        '/api/utils/departments',
+        '/api/branches?page=0&page_size=100',
+        '/api/departments?page=0&page_size=100',
+        '/api/departments?page=0&page_size=100',
     ]);
     const writes = request.mock.calls.filter(
         ([, options]) => options.method === 'PUT',

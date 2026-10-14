@@ -13,7 +13,12 @@ import {
     printerApi,
     organizationApi,
 } from '@/entities';
-import {apiRequest, getInventoryRevision, useResourceQuery} from '@/shared';
+import {
+    apiRequest,
+    getInventoryRevision,
+    type Page,
+    useResourceQuery,
+} from '@/shared';
 
 const allRecords = {kind: 'all'} as const;
 type DashboardData = DashboardSnapshot & {changes: RecentChange[]};
@@ -35,9 +40,10 @@ export async function loadDashboard(
             phoneApi.list(allRecords, sharedSignal),
             printerApi.list(allRecords, sharedSignal),
             organizationApi.list(sharedSignal),
-            apiRequest<RecentChange[]>('/changes/recent', {
-                signal: sharedSignal,
-            }),
+            apiRequest<Page<RecentChange>>(
+                '/changes?direction=DESC&page_size=10',
+                {signal: sharedSignal},
+            ).then(({content}) => content),
         ]).then(
             ([
                 employees,

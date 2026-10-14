@@ -7,8 +7,10 @@ afterEach(() => {
 
 it('uses the auth API contract without storing a token', async () => {
     const session = {id: 'id', name: 'Ana', expires_at: 1_800_000_000};
-    const request = vi.fn(async (_path: string, _options: RequestInit) =>
-        Response.json({data: session}),
+    const request = vi.fn(async (path: string, _options: RequestInit) =>
+        path.endsWith('/logout')
+            ? new Response(null, {status: 204})
+            : Response.json(session),
     );
     vi.stubGlobal('fetch', request);
     expect(await sessionApi.login({user: 'Ana', password: ' pass '})).toEqual(
@@ -22,7 +24,7 @@ it('uses the auth API contract without storing a token', async () => {
     await sessionApi.current(controller.signal);
     expect(request.mock.calls[1][0]).toBe('/api/auth/session');
     expect(request.mock.calls[1][1].signal).toBe(controller.signal);
-    await sessionApi.logout();
+    await expect(sessionApi.logout()).resolves.toBeUndefined();
     expect(request.mock.calls[2][0]).toBe('/api/auth/logout');
     expect(request.mock.calls[2][1].method).toBe('POST');
 });

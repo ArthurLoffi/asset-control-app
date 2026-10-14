@@ -43,6 +43,9 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
+const page = (content: unknown[]) => ({content, paging: {has_next: false}});
+const listPath = '/api/emails?page=0&page_size=100';
+
 function openPage() {
     render(
         <MantineProvider env="test">
@@ -54,25 +57,16 @@ function openPage() {
 describe('email screen with mocked API', () => {
     it('removes a deactivated search result and reloads the active list', async () => {
         let isActive = true;
-        const request = vi.fn(async (path: string) => {
-            if (path.includes('/deactivate')) {
+        const request = vi.fn(async (_path: string, options: RequestInit) => {
+            if (options.method === 'DELETE') {
                 isActive = false;
                 return Response.json({
-                    data: {
-                        id: original.id,
-                        deactivated_at: '2026-09-16T12:00:00Z',
-                    },
+                    id: original.id,
+                    deactivated_at: '2026-09-16T12:00:00Z',
                 });
             }
 
-            return Response.json({
-                data:
-                    path === '/api/emails'
-                        ? isActive
-                            ? [original]
-                            : []
-                        : original,
-            });
+            return Response.json(page(isActive ? [original] : []));
         });
         vi.stubGlobal('fetch', request);
         openPage();
@@ -94,10 +88,7 @@ describe('email screen with mocked API', () => {
             expect(screen.queryByText(original.email)).toBeNull();
         });
         expect(screen.queryByRole('dialog')).toBeNull();
-        expect(request).toHaveBeenLastCalledWith(
-            '/api/emails',
-            expect.anything(),
-        );
+        expect(request).toHaveBeenLastCalledWith(listPath, expect.anything());
         expect(
             request.mock.calls.some(([path]) => path.includes('/inactive')),
         ).toBe(false);
@@ -114,14 +105,14 @@ describe('email screen with mocked API', () => {
                 };
             }
 
-            return Response.json({
-                data: path === '/api/emails' ? [record] : record,
-            });
+            return Response.json(
+                path.startsWith('/api/emails?') ? page([record]) : record,
+            );
         });
         vi.stubGlobal('fetch', request);
         openPage();
         await screen.findByText('ana@example.com');
-        expect(request).toHaveBeenCalledWith('/api/emails', expect.anything());
+        expect(request).toHaveBeenCalledWith(listPath, expect.anything());
         fireEvent.change(screen.getByLabelText('User'), {
             target: {value: 'Ana'},
         });
@@ -161,7 +152,7 @@ describe('email screen with mocked API', () => {
         await screen.findByText('Email updated successfully.');
         await screen.findByText('Renamed');
         expect(request).toHaveBeenCalledWith(
-            '/api/emails?id=42',
+            '/api/emails/42',
             expect.objectContaining({
                 method: 'PUT',
                 body: JSON.stringify({
@@ -172,28 +163,28 @@ describe('email screen with mocked API', () => {
             }),
         );
         expect(request).toHaveBeenLastCalledWith(
-            '/api/emails/id?id=42',
+            '/api/emails/42',
             expect.anything(),
         );
         const count = request.mock.calls.length;
         fireEvent.click(screen.getByRole('button', {name: 'Clear'}));
         await screen.findByText('Renamed');
         expect(request).toHaveBeenCalledTimes(count + 1);
-        expect(request).toHaveBeenLastCalledWith(
-            '/api/emails',
-            expect.anything(),
-        );
+        expect(request).toHaveBeenLastCalledWith(listPath, expect.anything());
     });
 
     it('keeps a failed create form open for retry and then displays the generated ID', async () => {
         const request = vi
             .fn()
-            .mockResolvedValueOnce(Response.json({data: []}))
+            .mockResolvedValueOnce(Response.json(page([])))
             .mockResolvedValueOnce(
-                Response.json({error: 'Unable to save'}, {status: 500}),
+                Response.json(
+                    {message: 'Unable to save', code: 'CORE_003'},
+                    {status: 500},
+                ),
             )
-            .mockResolvedValueOnce(Response.json({data: original}))
-            .mockImplementation(async () => Response.json({data: original}));
+            .mockResolvedValueOnce(Response.json(original))
+            .mockImplementation(async () => Response.json(original));
         vi.stubGlobal('fetch', request);
         openPage();
         await screen.findByText('No emails yet');
@@ -222,7 +213,7 @@ describe('email screen with mocked API', () => {
         await screen.findByText('Email created successfully.');
         await screen.findByText('ID #42');
         expect(request).toHaveBeenLastCalledWith(
-            '/api/emails/id?id=42',
+            '/api/emails/42',
             expect.anything(),
         );
     });
@@ -230,14 +221,15 @@ describe('email screen with mocked API', () => {
     it('shows not-found and server errors, then refreshes successfully', async () => {
         const request = vi
             .fn()
-            .mockResolvedValueOnce(Response.json({data: []}))
+            .mockResolvedValueOnce(Response.json(page([])))
+            .mockResolvedValueOnce(Response.json(page([])))
             .mockResolvedValueOnce(
-                Response.json({error: 'not found'}, {status: 404}),
+                Response.json(
+                    {message: 'Offline', code: 'CORE_003'},
+                    {status: 500},
+                ),
             )
-            .mockResolvedValueOnce(
-                Response.json({error: 'Offline'}, {status: 500}),
-            )
-            .mockResolvedValueOnce(Response.json({data: original}));
+            .mockResolvedValueOnce(Response.json(page([original])));
         vi.stubGlobal('fetch', request);
         openPage();
         await screen.findByText('No emails yet');
@@ -263,9 +255,9 @@ describe('email screen with mocked API', () => {
             email: `user${index + 1}@example.com`,
         }));
         const request = vi.fn(async (path: string) =>
-            Response.json({
-                data: path === '/api/emails' ? records : records[0],
-            }),
+            Response.json(
+                page(path.includes('user=') ? [records[0]] : records),
+            ),
         );
         vi.stubGlobal('fetch', request);
         openPage();
@@ -287,17 +279,17 @@ describe('email screen with mocked API', () => {
         const request = vi
             .fn()
             .mockResolvedValueOnce(
-                Response.json({error: 'List unavailable'}, {status: 500}),
+                Response.json(
+                    {message: 'List unavailable', code: 'CORE_003'},
+                    {status: 500},
+                ),
             )
-            .mockResolvedValueOnce(Response.json({data: [original]}));
+            .mockResolvedValueOnce(Response.json(page([original])));
         vi.stubGlobal('fetch', request);
         openPage();
         await screen.findByText('List unavailable');
         fireEvent.click(screen.getByRole('button', {name: 'Try again'}));
         await screen.findByText('ana@example.com');
-        expect(request).toHaveBeenLastCalledWith(
-            '/api/emails',
-            expect.anything(),
-        );
+        expect(request).toHaveBeenLastCalledWith(listPath, expect.anything());
     });
 });

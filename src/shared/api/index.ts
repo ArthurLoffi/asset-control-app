@@ -3,4 +3,8 @@ export {
     createResourceWriter,
     findResource,
     getInventoryRevision,
+    listAll,
+    listEquipment,
+    type ListFilters,
+    type Page,
 } from './resource-api';
