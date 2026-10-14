@@ -51,7 +51,7 @@ export function SessionProvider({
 
                 if (error_ instanceof ApiError && error_.status === 401) {
                     setSession(undefined);
-                    setExpired(error_.code === 'session_expired');
+                    setExpired(error_.code === 'AUTH_004');
                 } else {
                     setError(
                         error_ instanceof Error

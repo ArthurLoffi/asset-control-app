@@ -136,6 +136,8 @@ beforeEach(() => {
         },
     );
 });
+const emptyPage = {content: [], paging: {has_next: false}};
+
 afterEach(() => {
     cleanup();
     vi.unstubAllGlobals();
@@ -145,12 +147,11 @@ describe.each(forms)('$resource deactivation', ({resource, form}) => {
     it('locks and fades fields, preserves entered values, and submits only deactivation', async () => {
         const onSaved = vi.fn<() => void>();
         const request = vi.fn(async (path: string, options: RequestInit) =>
-            Response.json({
-                data:
-                    options.method === 'POST' && path.includes('/deactivate')
-                        ? {id: 17, deactivated_at: '2026-09-16T12:00:00Z'}
-                        : [],
-            }),
+            Response.json(
+                options.method === 'DELETE' && path.endsWith('/17')
+                    ? {id: 17, deactivated_at: '2026-09-16T12:00:00Z'}
+                    : emptyPage,
+            ),
         );
         vi.stubGlobal('fetch', request);
         render(
@@ -176,12 +177,11 @@ describe.each(forms)('$resource deactivation', ({resource, form}) => {
             expect(onSaved).toHaveBeenCalledOnce();
         });
         expect(request).toHaveBeenCalledWith(
-            `/api/${resource}/deactivate?id=17`,
-            expect.objectContaining({method: 'POST', credentials: 'include'}),
+            `/api/${resource}/17`,
+            expect.objectContaining({method: 'DELETE', credentials: 'include'}),
         );
         const writes = request.mock.calls.filter(
-            ([, options]) =>
-                options.method === 'POST' || options.method === 'PUT',
+            ([, options]) => options.method !== undefined,
         );
         expect(writes).toHaveLength(1);
         expect(writes[0][1].body).toBeUndefined();
@@ -195,20 +195,21 @@ describe.each(forms)('$resource deactivation', ({resource, form}) => {
         let attempts = 0;
         vi.stubGlobal(
             'fetch',
-            vi.fn(async (path: string) => {
-                if (path.includes('/deactivate')) {
+            vi.fn(async (_path: string, options: RequestInit) => {
+                if (options.method === 'DELETE') {
                     attempts++;
                     return attempts === 1
-                        ? Response.json({error: 'Try again'}, {status: 500})
+                        ? Response.json(
+                              {message: 'Try again', code: 'CORE_003'},
+                              {status: 500},
+                          )
                         : Response.json({
-                              data: {
-                                  id: 17,
-                                  deactivated_at: '2026-09-16T12:00:00Z',
-                              },
+                              id: 17,
+                              deactivated_at: '2026-09-16T12:00:00Z',
                           });
                 }
 
-                return Response.json({data: []});
+                return Response.json(emptyPage);
             }),
         );
         render(
@@ -230,7 +231,7 @@ describe.each(forms)('$resource deactivation', ({resource, form}) => {
     it('does not offer deactivation when creating a record', () => {
         vi.stubGlobal(
             'fetch',
-            vi.fn(async () => Response.json({data: []})),
+            vi.fn(async () => Response.json(emptyPage)),
         );
         render(
             <MantineProvider env="test">

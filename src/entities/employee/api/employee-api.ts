@@ -3,9 +3,7 @@ import type {
     EmployeeRecord,
     EmployeeSearch,
 } from '../model/types';
-import {apiRequest, createResourceWriter} from '@/shared';
-
-type EmployeeResponse = EmployeeRecord;
+import {createResourceWriter, findResource, listAll} from '@/shared';
 
 function normalizeName(value: string): string {
     return value
@@ -17,11 +15,7 @@ function normalizeName(value: string): string {
 
 export const employeeApi = {
     async listRecords(signal: AbortSignal): Promise<EmployeeRecord[]> {
-        return (
-            (await apiRequest<EmployeeRecord[] | undefined>('/employees', {
-                signal,
-            })) ?? []
-        );
+        return listAll<EmployeeRecord>('/employees', {}, signal);
     },
     async findIdsByName(name: string, signal: AbortSignal): Promise<number[]> {
         const employees = await employeeApi.listRecords(signal);
@@ -53,16 +47,7 @@ export const employeeApi = {
             );
         }
 
-        const query = new URLSearchParams({
-            id: search.value,
-        });
-
-        const employee = await apiRequest<EmployeeResponse>(
-            `/employees/id?${query.toString()}`,
-            {signal},
-        );
-
-        return [employee];
+        return findResource<EmployeeRecord>('/employees', search, signal);
     },
-    ...createResourceWriter<EmployeeResponse, EmployeeInput>('/employees'),
+    ...createResourceWriter<EmployeeRecord, EmployeeInput>('/employees'),
 };

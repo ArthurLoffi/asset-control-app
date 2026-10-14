@@ -61,15 +61,19 @@ export async function apiRequest<T>(
             }
         }
 
+        // Every API error uses the {message, code, logs} envelope.
         const body = (await response.json().catch(() => undefined)) as
-            {error?: string; code?: string} | undefined;
+            {message?: string; code?: string} | undefined;
         throw new ApiError(
-            body?.error ?? `Request failed (${response.status}).`,
+            body?.message ?? `Request failed (${response.status}).`,
             response.status,
             body?.code,
         );
     }
 
-    const body = (await response.json()) as {data: T};
-    return body.data;
+    if (response.status === 204) {
+        return undefined as T;
+    }
+
+    return (await response.json()) as T;
 }

@@ -1,17 +1,11 @@
 import type {Printer, PrinterInput, PrinterSearch} from '../model/types';
-import {apiRequest, createResourceWriter, findResource} from '@/shared';
+import {createResourceWriter, findResource, listAll} from '@/shared';
 
 export const printerApi = {
     ...createResourceWriter<Printer, PrinterInput>('/printers'),
     async list(search: PrinterSearch, signal: AbortSignal): Promise<Printer[]> {
-        if (search.kind === 'all') {
-            return (
-                (await apiRequest<Printer[] | undefined>('/printers', {
-                    signal,
-                })) ?? []
-            );
-        }
-
-        return findResource<Printer>('/printers', search, signal);
+        return search.kind === 'all'
+            ? listAll<Printer>('/printers', {}, signal)
+            : findResource<Printer>('/printers', search, signal);
     },
 };

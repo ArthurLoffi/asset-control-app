@@ -47,7 +47,7 @@ it('expires the UI at the server-provided deadline without another request', asy
 });
 it('preserves the expired-session explanation after a page reload', async () => {
     vi.spyOn(sessionApi, 'current').mockRejectedValue(
-        new ApiError('session expired', 401, 'session_expired'),
+        new ApiError('session expired', 401, 'AUTH_004'),
     );
     await act(async () => {
         render(

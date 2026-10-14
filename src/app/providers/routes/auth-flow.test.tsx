@@ -49,8 +49,12 @@ function openApp(path = '/emails'): void {
     );
 }
 
-function json(data: unknown, status = 200): Response {
-    return Response.json(status === 200 ? {data} : {error: data}, {status});
+const emptyPage = {content: [], paging: {has_next: false}};
+
+function json(body: unknown, status = 200, code = 'CORE_003'): Response {
+    return Response.json(status === 200 ? body : {message: body, code}, {
+        status,
+    });
 }
 
 it('protects deep links, reports login failures, signs in and handles logout failure and success', async () => {
@@ -84,11 +88,11 @@ it('protects deep links, reports login failures, signs in and handles logout fai
             }
 
             isLoggedIn = false;
-            return json(undefined);
+            return new Response(null, {status: 204});
         }
 
         expect(isLoggedIn).toBe(true);
-        return json([]);
+        return json(emptyPage);
     });
     vi.stubGlobal('fetch', request);
     openApp();
@@ -118,7 +122,7 @@ it('protects deep links, reports login failures, signs in and handles logout fai
     expect(screen.getByText('Ana')).toBeDefined();
     await waitFor(() => {
         expect(
-            request.mock.calls.some(([path]) => path === '/api/emails'),
+            request.mock.calls.some(([path]) => path.startsWith('/api/emails')),
         ).toBe(true);
     });
     fireEvent.click(screen.getByRole('button', {name: 'Sign out'}));
@@ -160,7 +164,9 @@ it('removes inventory and asks for login when an API request rejects the session
                 });
             }
 
-            return isExpired ? json('session expired', 401) : json([]);
+            return isExpired
+                ? json('session expired', 401, 'AUTH_004')
+                : json([]);
         }),
     );
     openApp();

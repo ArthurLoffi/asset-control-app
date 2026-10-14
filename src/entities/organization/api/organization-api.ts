@@ -1,5 +1,5 @@
 import type {OrganizationLists, OrganizationOption} from '../model/types';
-import {apiRequest} from '@/shared';
+import {listAll} from '@/shared';
 
 const lists = new Map<string, Promise<OrganizationOption[]>>();
 
@@ -8,9 +8,9 @@ async function loadList(path: string): Promise<OrganizationOption[]> {
     if (!pending) {
         // Reference lists live until a full page reload. Shared requests survive
         // individual unmounts, including React StrictMode's effect cleanup.
-        pending = apiRequest<OrganizationOption[] | undefined>(path)
+        pending = listAll<OrganizationOption>(path)
             .then((items) =>
-                (items ?? []).toSorted((left, right) => {
+                items.toSorted((left, right) => {
                     const order = left.name.localeCompare(right.name);
                     return order === 0 ? left.id - right.id : order;
                 }),
@@ -38,10 +38,7 @@ export const organizationApi = {
             };
 
             signal.addEventListener('abort', onAbort, {once: true});
-            void Promise.all([
-                loadList('/utils/branches'),
-                loadList('/utils/departments'),
-            ])
+            void Promise.all([loadList('/branches'), loadList('/departments')])
                 .then(([branches, departments]) => {
                     signal.throwIfAborted();
                     resolve({branches, departments});

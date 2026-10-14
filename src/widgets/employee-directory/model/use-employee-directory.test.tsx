@@ -10,6 +10,8 @@ afterEach(() => {
     vi.unstubAllGlobals();
 });
 
+const page = (content: unknown[]) => ({content, paging: {has_next: false}});
+
 it('reuses bulk lists across StrictMode, forms, search, refresh, and remounts', async () => {
     const employee = {
         id: 1,
@@ -21,33 +23,35 @@ it('reuses bulk lists across StrictMode, forms, search, refresh, and remounts', 
         created_at: '2026-09-15T12:00:00Z',
     };
     const request = vi.fn(async (path: string) => {
-        if (path === '/api/utils/branches') {
-            return Response.json({data: [{id: 2, name: 'Office'}]});
+        if (path === '/api/branches?page=0&page_size=100') {
+            return Response.json(page([{id: 2, name: 'Office'}]));
         }
 
-        if (path === '/api/utils/departments') {
-            return Response.json({data: [{id: 3, name: 'IT'}]});
+        if (path === '/api/departments?page=0&page_size=100') {
+            return Response.json(page([{id: 3, name: 'IT'}]));
         }
 
-        if (path === '/api/employees/id?id=99') {
-            return Response.json({error: 'Not found'}, {status: 404});
+        if (path === '/api/employees/99') {
+            return Response.json(
+                {message: 'Employee not found by id', code: 'EMPLOYEE_001'},
+                {status: 404},
+            );
         }
 
-        return Response.json({
-            data:
-                path === '/api/employees'
-                    ? [
-                          employee,
-                          {
-                              ...employee,
-                              id: 2,
-                              name: 'Ana Souza',
-                              branch_id: 77,
-                              department_id: 88,
-                          },
-                      ]
-                    : employee,
-        });
+        return Response.json(
+            path.startsWith('/api/employees?')
+                ? page([
+                      employee,
+                      {
+                          ...employee,
+                          id: 2,
+                          name: 'Ana Souza',
+                          branch_id: 77,
+                          department_id: 88,
+                      },
+                  ])
+                : employee,
+        );
     });
     vi.stubGlobal('fetch', request);
     const initialProps: {search: EmployeeSearch} = {search: {kind: 'all'}};
@@ -100,6 +104,9 @@ it('reuses bulk lists across StrictMode, forms, search, refresh, and remounts', 
     expect(
         request.mock.calls
             .map(([path]) => path)
-            .filter((path) => path.includes('/utils/')),
-    ).toEqual(['/api/utils/branches', '/api/utils/departments']);
+            .filter((path) => /\/(?:branches|departments)\?/u.test(path)),
+    ).toEqual([
+        '/api/branches?page=0&page_size=100',
+        '/api/departments?page=0&page_size=100',
+    ]);
 });

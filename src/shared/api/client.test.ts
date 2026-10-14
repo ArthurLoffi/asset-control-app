@@ -6,7 +6,7 @@ afterEach(() => {
 });
 
 it('sends cookies and CSRF protection with JSON requests', async () => {
-    const request = vi.fn(async () => Response.json({data: {id: 1}}));
+    const request = vi.fn(async () => Response.json({id: 1}));
     vi.stubGlobal('fetch', request);
     expect(await apiRequest('/test', {method: 'POST', body: '{}'})).toEqual({
         id: 1,
@@ -25,7 +25,7 @@ it('notifies session consumers only for unauthorized resource requests', async (
         'fetch',
         vi.fn(async () =>
             Response.json(
-                {error: 'session expired'},
+                {message: 'session expired', code: 'AUTH_004'},
                 {
                     status: 401,
                 },

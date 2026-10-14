@@ -57,7 +57,8 @@ it('switches login fields and existing server errors without losing input or rec
     const request = vi.fn(async (path: string) =>
         Response.json(
             {
-                error: path.endsWith('login')
+                code: 'AUTH_001',
+                message: path.endsWith('login')
                     ? 'invalid username or password'
                     : 'authentication required',
             },
@@ -120,16 +121,15 @@ it.each([
     'translates %s, its header, empty state, and open creation form',
     async (path, english, portuguese, newEnglish, newPortuguese) => {
         const request = vi.fn(async (url: string) =>
-            Response.json({
-                data:
-                    url === '/api/auth/session'
-                        ? {
-                              id: '1',
-                              name: 'A very long employee name that must not crowd header controls',
-                              expires_at: Math.floor(Date.now() / 1000) + 3600,
-                          }
-                        : [],
-            }),
+            Response.json(
+                url === '/api/auth/session'
+                    ? {
+                          id: '1',
+                          name: 'A very long employee name that must not crowd header controls',
+                          expires_at: Math.floor(Date.now() / 1000) + 3600,
+                      }
+                    : {content: [], paging: {has_next: false}},
+            ),
         );
         vi.stubGlobal('fetch', request);
         openApp(path);
@@ -177,16 +177,15 @@ it('translates the dashboard empty state and navigation', async () => {
     vi.stubGlobal(
         'fetch',
         vi.fn(async (url: string) =>
-            Response.json({
-                data:
-                    url === '/api/auth/session'
-                        ? {
-                              id: '1',
-                              name: 'Ana',
-                              expires_at: Math.floor(Date.now() / 1000) + 3600,
-                          }
-                        : [],
-            }),
+            Response.json(
+                url === '/api/auth/session'
+                    ? {
+                          id: '1',
+                          name: 'Ana',
+                          expires_at: Math.floor(Date.now() / 1000) + 3600,
+                      }
+                    : {content: [], paging: {has_next: false}},
+            ),
         ),
     );
     openApp('/');
