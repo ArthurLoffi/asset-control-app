@@ -8,8 +8,16 @@ import {
     Paper,
     Stack,
     Text,
+    ThemeIcon,
     Title,
 } from '@mantine/core';
+import {
+    IconDevices,
+    IconHistory,
+    IconPackages,
+    IconUsersGroup,
+    type Icon,
+} from '@tabler/icons-react';
 import {Navigate, useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {LoginBackgroundStyle} from '../model/background-login';
@@ -18,13 +26,58 @@ import {useSession} from '@/entities';
 import {LanguageSwitcher, LoginForm} from '@/features';
 import {CompanyLogo} from '@/widgets';
 
+const loginFeatures: Array<[Icon, string]> = [
+    [IconDevices, 'login.features.inventory'],
+    [IconUsersGroup, 'login.features.assignments'],
+    [IconHistory, 'login.features.history'],
+];
+
+function LoginIntro(): ReactElement {
+    const {t} = useTranslation();
+    return (
+        <section className="login-page__intro">
+            <Stack gap="lg" maw={520}>
+                <Title order={2} className="login-page__hero-title">
+                    {t('login.heroTitle')}
+                </Title>
+                <Text className="login-page__hero-description">
+                    {t('login.heroDescription')}
+                </Text>
+                <Stack component="ul" gap="sm" className="login-page__features">
+                    {loginFeatures.map(([FeatureIcon, key]) => (
+                        <Group
+                            key={key}
+                            component="li"
+                            gap="sm"
+                            wrap="nowrap"
+                            align="center"
+                        >
+                            <ThemeIcon
+                                variant="light"
+                                size={36}
+                                className="login-page__feature-icon"
+                                aria-hidden
+                            >
+                                <FeatureIcon size={20} stroke={1.6} />
+                            </ThemeIcon>
+                            <Text className="login-page__feature-text">
+                                {t(key)}
+                            </Text>
+                        </Group>
+                    ))}
+                </Stack>
+            </Stack>
+        </section>
+    );
+}
+
 export function LoginPage(): ReactElement {
     const {t} = useTranslation();
     const {session, loading, error, expired, signedOut, retry} = useSession();
     const location = useLocation();
     if (loading) {
         return (
-            <Center mih="100vh">
+            <Center mih="100dvh" className="login-page__loading">
                 <Loader aria-label={t('checkingSession')} />
             </Center>
         );
@@ -55,18 +108,27 @@ export function LoginPage(): ReactElement {
             <section className="login-page__content">
                 <Paper className="login-page__card" radius="md">
                     <Stack gap="lg">
-                        <Group
-                            justify="space-between"
-                            align="center"
-                            wrap="nowrap"
-                        >
-                            <CompanyLogo marginLeft={0} />
-                            <LanguageSwitcher />
-                        </Group>
+                        <CompanyLogo marginLeft={0} />
                         <div>
-                            <Text className="login-page__product-name">
-                                {t('app.name')}
-                            </Text>
+                            <Group
+                                justify="space-between"
+                                wrap="nowrap"
+                                mb="sm"
+                            >
+                                <Group gap="xs" wrap="nowrap">
+                                    <ThemeIcon
+                                        variant="light"
+                                        size={32}
+                                        aria-hidden
+                                    >
+                                        <IconPackages size={18} stroke={1.6} />
+                                    </ThemeIcon>
+                                    <Text className="login-page__product-name">
+                                        {t('app.name')}
+                                    </Text>
+                                </Group>
+                                <LanguageSwitcher />
+                            </Group>
                             <Title order={1} className="login-page__title">
                                 {t('login.signIn')}
                             </Title>
@@ -105,6 +167,7 @@ export function LoginPage(): ReactElement {
                     </Stack>
                 </Paper>
             </section>
+            <LoginIntro />
         </main>
     );
 }

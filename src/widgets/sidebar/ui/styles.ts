@@ -7,30 +7,54 @@ type WrapperProps = {
 } & ComponentProps<'div'>;
 
 export const Wrapper = styled.div<WrapperProps>(({$open}) => ({
-    display: 'flex',
+    display: $open ? 'flex' : 'none',
     flexDirection: 'column',
-    width: $open ? '300px' : '0px',
-    padding: '20px',
-    height: '100dvh',
-    overflow: 'auto',
+    gap: '4px',
+    width: '100%',
+    height: '100%',
+    overflowY: 'auto',
     scrollbarWidth: 'none',
 }));
 
 export const Li = styled.div({
-    marginTop: '10px',
-    marginLeft: '10px',
+    minWidth: 0,
 });
 
 export const NavLink = styled(RouterNavLink)({
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '12px',
+    minHeight: '44px',
+    padding: '10px 14px',
+    borderRadius: 'var(--mantine-radius-md)',
+    color: 'var(--mantine-color-text)',
+    fontSize: 'var(--mantine-font-size-sm)',
+    fontWeight: 500,
     textDecoration: 'none',
-    color: 'inherit',
-    padding: '8px 16px',
-    borderRadius: '8px',
-    '&:hover, &.active': {
-        backgroundColor: '#3E444C',
-        maxWidth: '90%',
+    overflowWrap: 'anywhere',
+    transition: 'background-color 150ms ease, color 150ms ease',
+    '& svg': {
+        flexShrink: 0,
+        color: 'var(--mantine-color-dimmed)',
+        transition: 'color 150ms ease',
+    },
+    '&:hover': {
+        backgroundColor: 'var(--mantine-color-default-hover)',
+    },
+    '&.active': {
+        backgroundColor: 'var(--mantine-primary-color-light)',
+        boxShadow: 'inset 3px 0 0 var(--mantine-primary-color-filled)',
+        color: 'var(--mantine-primary-color-light-color)',
+        fontWeight: 600,
+    },
+    '&.active svg': {
+        color: 'var(--mantine-primary-color-light-color)',
+    },
+    '&:focus-visible': {
+        outline: '2px solid var(--mantine-primary-color-filled)',
+        outlineOffset: '2px',
+    },
+    '@media (prefers-reduced-motion: reduce)': {
+        transition: 'none',
     },
 });

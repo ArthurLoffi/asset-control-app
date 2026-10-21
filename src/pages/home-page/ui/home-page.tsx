@@ -3,12 +3,18 @@ import {
     Container,
     Group,
     SimpleGrid,
+    Skeleton,
     Stack,
     Text,
     ThemeIcon,
     Title,
+    VisuallyHidden,
 } from '@mantine/core';
-import {IconHome, IconRefresh} from '@tabler/icons-react';
+import {
+    IconInfoCircle,
+    IconLayoutDashboard,
+    IconRefresh,
+} from '@tabler/icons-react';
 import {lazy, Suspense, type ReactElement} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useDashboard} from '../model/use-dashboard';
@@ -18,18 +24,38 @@ import {translateMessage, ResourceResults} from '@/shared';
 
 const DashboardCharts = lazy(async () => import('./dashboard-charts'));
 
-export default function HomePage(): ReactElement {
+function ChartsSkeleton(): ReactElement {
     const {t} = useTranslation();
-    const {summary, changes, loading, error, reload} = useDashboard();
+    return (
+        <Stack gap="lg">
+            <VisuallyHidden role="status">
+                {t('dashboard.loadingCharts')}
+            </VisuallyHidden>
+            <SimpleGrid cols={{base: 1, lg: 2}} spacing="lg">
+                <Skeleton h={340} radius="md" />
+                <Skeleton h={340} radius="md" />
+            </SimpleGrid>
+            <Skeleton h={180} radius="md" />
+        </Stack>
+    );
+}
+
+export default function HomePage(): ReactElement {
+    const {t, i18n} = useTranslation();
+    const {summary, changes, updatedAt, loading, error, reload} =
+        useDashboard();
     return (
         <Container size="xl" py="xl">
             <Stack gap="lg">
-                <Group justify="space-between">
-                    <Group wrap="nowrap">
+                <Group justify="space-between" align="center">
+                    <Group
+                        wrap="nowrap"
+                        style={{minWidth: 0, flex: '1 1 260px'}}
+                    >
                         <ThemeIcon size={48} radius="md" variant="light">
-                            <IconHome size={26} />
+                            <IconLayoutDashboard size={26} aria-hidden />
                         </ThemeIcon>
-                        <div>
+                        <div style={{minWidth: 0}}>
                             <Title order={1} size="h2">
                                 {t('dashboard.title')}
                             </Title>
@@ -38,14 +64,26 @@ export default function HomePage(): ReactElement {
                             </Text>
                         </div>
                     </Group>
-                    <Button
-                        variant="subtle"
-                        leftSection={<IconRefresh size={16} />}
-                        disabled={loading}
-                        onClick={reload}
-                    >
-                        {t('common.actions.refresh')}
-                    </Button>
+                    <Group gap="sm" wrap="wrap">
+                        {updatedAt !== undefined && !loading && (
+                            <Text size="sm" c="dimmed">
+                                {t('dashboard.updatedAt', {
+                                    time: new Intl.DateTimeFormat(
+                                        i18n.language,
+                                        {timeStyle: 'short'},
+                                    ).format(updatedAt),
+                                })}
+                            </Text>
+                        )}
+                        <Button
+                            variant="default"
+                            leftSection={<IconRefresh size={16} aria-hidden />}
+                            loading={loading}
+                            onClick={reload}
+                        >
+                            {t('common.actions.refresh')}
+                        </Button>
+                    </Group>
                 </Group>
                 <ResourceResults
                     loading={loading}
@@ -68,19 +106,27 @@ export default function HomePage(): ReactElement {
                                 spacing="lg"
                             >
                                 {summary.metrics.map((metric) => (
-                                    <MetricCard key={metric.href} {...metric} />
+                                    <MetricCard
+                                        key={metric.key}
+                                        metric={metric}
+                                    />
                                 ))}
                             </SimpleGrid>
-                            <Text size="sm" c="dimmed">
-                                {t('dashboard.recordDescription')}
-                            </Text>
-                            <Suspense
-                                fallback={
-                                    <Text c="dimmed" size="sm" role="status">
-                                        {t('dashboard.loadingCharts')}
-                                    </Text>
-                                }
-                            >
+                            <Group gap="xs" wrap="nowrap" align="flex-start">
+                                <IconInfoCircle
+                                    size={16}
+                                    aria-hidden
+                                    style={{
+                                        flexShrink: 0,
+                                        marginTop: 2,
+                                        color: 'var(--mantine-color-dimmed)',
+                                    }}
+                                />
+                                <Text size="sm" c="dimmed">
+                                    {t('dashboard.recordDescription')}
+                                </Text>
+                            </Group>
+                            <Suspense fallback={<ChartsSkeleton />}>
                                 <DashboardCharts summary={summary} />
                             </Suspense>
                             <RecentChangesTable changes={changes} />

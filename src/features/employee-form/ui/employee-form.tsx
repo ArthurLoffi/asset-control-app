@@ -61,7 +61,7 @@ export function EmployeeForm({
         deactivation.error.length > 0 ? deactivation.error : formError;
 
     function maskPhone(value: string): string {
-        const digits = value.replaceAll(/\D/g, '').slice(0, 11);
+        const digits = value.replaceAll(/\D/gu, '').slice(0, 11);
 
         if (digits.length <= 2) {
             return `(${digits}`;

@@ -1,6 +1,7 @@
 import {AppShell as MantineAppShell} from '@mantine/core';
 import {useDisclosure} from '@mantine/hooks';
 import type {ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Header, Sidebar} from '@/widgets';
 
 type AppShellProps = {
@@ -12,6 +13,7 @@ const AppShell = ({
     children,
     shouldAppear = true,
 }: AppShellProps): ReactElement => {
+    const {t} = useTranslation();
     const [opened, {toggle, close}] = useDisclosure(false);
     return (
         <MantineAppShell
@@ -32,6 +34,7 @@ const AppShell = ({
             </MantineAppShell.Header>
             <MantineAppShell.Navbar
                 p="md"
+                aria-label={t('common.labels.mainNavigation')}
                 style={{
                     borderRight:
                         '1px solid var(--mantine-color-default-border)',

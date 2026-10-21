@@ -16,6 +16,18 @@ import type {DashboardSummary} from '../model/dashboard';
 import {ChartPanel} from './dashboard-components';
 import {translateInventoryValue} from '@/shared';
 
+// Raw backend statuses keep their meaning across languages; unfamiliar values
+// cycle through the fallback colors. The legend always shows text and counts.
+const statusColors: Record<string, string> = {
+    'Em uso': 'brand.6',
+    'Uso temporário': 'blue.5',
+    Manutenção: 'yellow.5',
+    'Com defeito': 'red.6',
+    'Sem uso': 'gray.5',
+    'Not recorded': 'dark.2',
+};
+const fallbackStatusColors = ['grape.5', 'cyan.5', 'orange.5', 'teal.4'];
+
 export default function DashboardCharts({
     summary,
 }: {
@@ -29,14 +41,17 @@ export default function DashboardCharts({
             maximumFractionDigits: 1,
         }).format(value / 100);
     const theme = useMantineTheme();
-    const statuses = summary.statuses.map((status, index) => ({
+    let fallbackIndex = 0;
+    const statuses = summary.statuses.map((status) => ({
         ...status,
         key: status.name,
         name:
             status.name === 'Not recorded'
                 ? t('common.labels.notRecorded')
                 : (translateInventoryValue(status.name, t) ?? status.name),
-        color: `${theme.primaryColor}.${4 + (index % 5)}`,
+        color:
+            statusColors[status.name] ??
+            fallbackStatusColors[fallbackIndex++ % fallbackStatusColors.length],
     }));
     return (
         <Stack gap="lg">
@@ -75,10 +90,13 @@ export default function DashboardCharts({
                                 yAxisProps={{
                                     width: 145,
                                     interval: 0,
-                                    tick: {fontSize: 11},
+                                    tick: {fontSize: 12},
                                 }}
                                 xAxisProps={{allowDecimals: false}}
-                                barProps={{isAnimationActive: false}}
+                                barProps={{
+                                    isAnimationActive: false,
+                                    radius: [0, 4, 4, 0],
+                                }}
                                 barChartProps={{margin: {right: 30}}}
                             />
                             <VisuallyHidden>
@@ -106,6 +124,7 @@ export default function DashboardCharts({
                                     data={statuses}
                                     size={180}
                                     thickness={24}
+                                    paddingAngle={2}
                                     chartLabel={String(summary.statusTotal)}
                                     withTooltip={false}
                                     pieProps={{isAnimationActive: false}}
@@ -186,7 +205,8 @@ export default function DashboardCharts({
                                 </Group>
                                 <Progress
                                     value={(branch.value / summary.total) * 100}
-                                    size="sm"
+                                    size="md"
+                                    radius="xl"
                                     aria-label={branch.name}
                                 />
                             </Stack>

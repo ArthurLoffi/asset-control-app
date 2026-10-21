@@ -1,6 +1,6 @@
 import {createTheme, type MantineColorsTuple} from '@mantine/core';
 
-// Brand accent — generated 10-shade scale from #004AAD (base at index 6).
+// Brand accent — 10-shade green scale (base at index 6).
 const brand: MantineColorsTuple = [
     '#edf8f2',
     '#d2efdd',
@@ -14,11 +14,28 @@ const brand: MantineColorsTuple = [
     '#045f30',
 ];
 
+// Cool neutral surfaces for the default dark scheme. Index 2 (dimmed text)
+// keeps at least 4.5:1 contrast on Card (index 6), body (7), and canvas (8).
+const dark: MantineColorsTuple = [
+    '#C9CDD3',
+    '#B4BAC2',
+    '#9AA1AB',
+    '#6C737D',
+    '#474D56',
+    '#393E46',
+    '#2C3038',
+    '#1F2228',
+    '#181A1F',
+    '#111316',
+];
+
 export const theme = createTheme({
     primaryColor: 'brand',
     colors: {
         brand,
+        dark,
     },
+    cursorType: 'pointer',
     fontFamily:
         'Inter Variable, Inter, -apple-system, BlinkMacSystemFont, sans-serif',
     headings: {
@@ -81,15 +98,32 @@ export const theme = createTheme({
         },
         Paper: {
             defaultProps: {
-                radius: 'sm',
+                radius: 'md',
                 shadow: 'xs',
             },
         },
         Card: {
             defaultProps: {
-                radius: 'sm',
+                radius: 'md',
                 shadow: 'xs',
                 withBorder: true,
+            },
+        },
+        ThemeIcon: {
+            defaultProps: {
+                radius: 'md',
+            },
+        },
+        Table: {
+            defaultProps: {
+                highlightOnHover: true,
+            },
+            styles: {
+                th: {
+                    color: 'var(--mantine-color-dimmed)',
+                    fontSize: 'var(--mantine-font-size-xs)',
+                    fontWeight: 600,
+                },
             },
         },
     },

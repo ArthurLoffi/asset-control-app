@@ -7,6 +7,11 @@ Use Node.js 22 or newer and install locked dependencies with `npm ci`.
 Mantine 9 provides components, layout, and theme support; Tabler supplies React
 icons. Existing sidebar styles use styled-components. Use the installed UI stack
 and shared theme instead of introducing another styling or component framework.
+Page-specific hover/motion styles may live in a colocated CSS Module
+(`ui/*.module.css`) using Mantine CSS variables; respect
+`prefers-reduced-motion` and keep visible `:focus-visible` outlines. The theme
+defines the cool neutral `dark` scale (dimmed text keeps 4.5:1 contrast on cards, panels, and canvas), `md`
+card radius, dimmed table headers, and a deeper `AppShell.Main` canvas.
 ESLint with XO handles source linting and Prettier-compatible formatting; Vitest
 runs colocated model and API tests.
 
@@ -128,12 +133,19 @@ The lazy-loaded home page uses only API records and the shared Mantine theme.
 Keep loading and aggregation in its model, reuse entity APIs and shared query/
 result components, and never substitute fixtures or partial totals after errors.
 Use bulk organization lookups and employee records without per-employee lookups.
-Count monitor/phone entries as records (phone entries may be SIM-only). Printers
+Monitor and phone totals count physical devices only: a monitor needs a model
+or serial number and a phone needs a model or IMEI; SIM-only and no-monitor
+entries are excluded from every total, chart, and coverage figure. Printers
 have no status, and `created_at` is not an assignment or update timestamp.
 Preserve raw statuses, missing values, and unresolved location IDs in summaries.
 Use separate branch and department labels when dashboard location data is missing.
 Summary cards use medium labels and 32px totals for readability, retaining the
-shared theme and responsive grid.
+shared theme and responsive grid. Each card is a single link to its list, shows
+the sidebar icon, keeps totals aligned at the bottom, and adds a secondary
+count (employees with equipment, unassigned equipment, branches with printers).
+Metrics carry stable keys, not English labels. The header shows when the data
+was loaded. Status colors are fixed per raw status and the legend always shows
+text and counts, so color is never the only cue.
 The final dashboard table uses `GET /api/changes?direction=DESC&page_size=10`
 for the ten latest audit updates. Show changed field values and the editor name; use the user ID only when
 the editor can no longer be resolved. Keep audit details separate from inventory
@@ -244,7 +256,11 @@ The login page background image (`VITE_LOGIN_BACKGROUND`, default
 `/login-hero.jpg`) is an absolutely positioned layer covering the whole
 `.login-page`, on desktop and phones. The form column is transparent over it,
 and the card keeps a near-opaque background so text contrast never depends on
-the image. Keep these styles scoped to `.login-page*` selectors.
+the image. From the `sm` breakpoint up, a translated intro (headline and three
+features) sits over a darkened area of the image, after the form in DOM order;
+phones show only the card. The card row holds the brand mark and language
+switcher; inputs show icons and the password field warns when Caps Lock is on.
+Keep these styles scoped to `.login-page*` and `.login-form*` selectors.
 
 ## Not found page
 

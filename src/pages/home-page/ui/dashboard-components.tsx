@@ -1,52 +1,83 @@
-import {Anchor, Badge, Group, Paper, Stack, Text, Title} from '@mantine/core';
-import {IconArrowUpRight} from '@tabler/icons-react';
+import {Card, Group, Paper, Stack, Text, ThemeIcon, Title} from '@mantine/core';
+import {
+    IconArrowUpRight,
+    IconDeviceDesktop,
+    IconDeviceLaptop,
+    IconDeviceMobile,
+    IconPrinter,
+    IconUser,
+    type Icon,
+} from '@tabler/icons-react';
 import type {ReactElement, ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
-import {translateInventoryValue} from '@/shared';
+import type {DashboardMetric, DashboardMetricKey} from '../model/dashboard';
+// CSS side effects require their extension; local TypeScript imports do not.
+// eslint-disable-next-line n/file-extension-in-import
+import classes from './dashboard.module.css';
+
+const metricLabels: Record<DashboardMetricKey, string> = {
+    employees: 'dashboard.registeredEmployees',
+    machines: 'dashboard.machines',
+    monitors: 'dashboard.monitors',
+    phones: 'dashboard.phones',
+    printers: 'dashboard.printers',
+};
+
+const metricIcons: Record<DashboardMetricKey, Icon> = {
+    employees: IconUser,
+    machines: IconDeviceLaptop,
+    monitors: IconDeviceDesktop,
+    phones: IconDeviceMobile,
+    printers: IconPrinter,
+};
 
 export function MetricCard({
-    label,
-    value,
-    href,
+    metric: {key, value, detail, href},
 }: {
-    label: string;
-    value: number;
-    href: string;
+    metric: DashboardMetric;
 }): ReactElement {
-    const {t} = useTranslation();
-    const metricKey = {
-        'Registered employees': 'registeredEmployees',
-        Machines: 'machines',
-        'Monitor records': 'monitorRecords',
-        'Phone records': 'phoneRecords',
-        Printers: 'printers',
-    }[label];
-    const localizedLabel =
-        metricKey === undefined ? label : t(`dashboard.${metricKey}`);
+    const {t, i18n} = useTranslation();
+    const MetricIcon = metricIcons[key];
+    const format = (count: number): string =>
+        new Intl.NumberFormat(i18n.language).format(count);
     return (
-        <Paper withBorder p="lg">
-            <Stack gap="sm">
-                <Group justify="space-between" wrap="nowrap">
-                    <Text size="md" c="dimmed" fw={500}>
-                        {localizedLabel}
-                    </Text>
-                    <Anchor
-                        component={Link}
-                        to={href}
-                        aria-label={t('viewRecord', {
-                            record: localizedLabel.toLowerCase(),
-                        })}
-                        style={{display: 'inline-flex'}}
-                    >
-                        <IconArrowUpRight size={18} />
-                    </Anchor>
-                </Group>
-                <Text fz={32} fw={700} lh={1.2}>
-                    {value}
+        <Card
+            component={Link}
+            to={href}
+            padding="lg"
+            className={classes.metric}
+        >
+            <Group justify="space-between" align="flex-start" wrap="nowrap">
+                <Text size="md" c="dimmed" fw={500}>
+                    {t(metricLabels[key])}
                 </Text>
-            </Stack>
-        </Paper>
+                <ThemeIcon variant="light" size={40} radius="md">
+                    <MetricIcon size={22} stroke={1.6} aria-hidden />
+                </ThemeIcon>
+            </Group>
+            <Text fz={32} fw={700} lh={1.2} mt="auto">
+                {format(value)}
+            </Text>
+            <Group
+                justify="space-between"
+                wrap="nowrap"
+                gap="xs"
+                align="center"
+            >
+                <Text size="sm" c="dimmed">
+                    {t(`dashboard.metricDetails.${key}`, {
+                        count: detail,
+                        formattedCount: format(detail),
+                    })}
+                </Text>
+                <IconArrowUpRight
+                    size={18}
+                    className={classes.metricArrow}
+                    aria-hidden
+                />
+            </Group>
+        </Card>
     );
 }
 
@@ -67,7 +98,7 @@ export function ChartPanel({
                         {title}
                     </Title>
                     {description !== undefined && (
-                        <Text c="dimmed" size="sm">
+                        <Text c="dimmed" size="sm" mt={4}>
                             {description}
                         </Text>
                     )}
@@ -75,20 +106,5 @@ export function ChartPanel({
                 {children}
             </Stack>
         </Paper>
-    );
-}
-
-export function StatusBadge({status}: {status?: string}): ReactElement {
-    const {t} = useTranslation();
-    return status === undefined ? (
-        <Text c="dimmed" size="sm">
-            {t('common.labels.notApplicable')}
-        </Text>
-    ) : (
-        <Badge variant="light">
-            {status.length > 0
-                ? (translateInventoryValue(status, t) ?? status)
-                : t('common.labels.notRecorded')}
-        </Badge>
     );
 }
