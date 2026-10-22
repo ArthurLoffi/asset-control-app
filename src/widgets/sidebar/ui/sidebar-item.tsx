@@ -13,12 +13,7 @@ const SidebarItem = ({item, onClick}: SidebarItemsProp): ReactElement => {
     return (
         <Li>
             <NavLink onClick={onClick} to={item.link}>
-                <item.icon
-                    width={20}
-                    height={20}
-                    stroke={1.5}
-                    color="#ffffff"
-                />
+                <item.icon size={20} stroke={1.6} aria-hidden />
                 {t(`navigation.${item.text.toLowerCase()}`)}
             </NavLink>
         </Li>

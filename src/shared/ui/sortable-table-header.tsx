@@ -46,7 +46,7 @@ export function SortableTableHeader<Key extends string>({
                 onClick={() => {
                     onSort(column);
                 }}
-                style={{width: '100%'}}
+                style={{width: '100%', font: 'inherit'}}
             >
                 <Group gap={4} wrap="nowrap">
                     <span>{label}</span>

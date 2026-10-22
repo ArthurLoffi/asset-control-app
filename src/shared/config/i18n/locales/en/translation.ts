@@ -61,7 +61,6 @@ const translation = {
     togglePasswordVisibility: 'Toggle password visibility',
     editRecord: 'Edit {{record}}',
     editRecordWithId: 'Edit {{record}} (ID {{id}})',
-    viewRecord: 'View {{record}}',
     deactivate: 'Deactivate {{resource}}',
     loadingBranches: 'Loading branches…',
     loadingDepartments: 'Loading departments…',
@@ -121,9 +120,18 @@ const translation = {
         phoneRecord: 'Phone record',
         registeredEmployees: 'Registered employees',
         machines: 'Machines',
-        monitorRecords: 'Monitor records',
-        phoneRecords: 'Phone records',
+        monitors: 'Monitors',
+        phones: 'Phones',
         printers: 'Printers',
+        metricDetails: {
+            employees: '{{formattedCount}} with equipment',
+            machines: '{{formattedCount}} unassigned',
+            monitors: '{{formattedCount}} unassigned',
+            phones: '{{formattedCount}} unassigned',
+            printers_one: '{{formattedCount}} branch',
+            printers_other: '{{formattedCount}} branches',
+        },
+        updatedAt: 'Updated at {{time}}',
         title: 'Dashboard',
         description: 'An overview of your registered inventory.',
         loading: 'Loading dashboard…',
@@ -148,7 +156,7 @@ const translation = {
         recordedStatus: 'Recorded status',
         branchDistribution: 'Branch distribution',
         recordDescription:
-            'Counts reflect inventory records. Phone records include SIM-only entries; monitor records may indicate no monitor.',
+            'Monitor and phone totals count physical devices with a model, serial number, or IMEI. SIM-only and no-monitor entries are not included.',
         records: 'records',
         totalRecords: 'total records',
         inventoryByDepartmentDescription:
@@ -245,6 +253,7 @@ const translation = {
             user: 'User',
         },
         labels: {
+            mainNavigation: 'Main navigation',
             branchNotRecorded: 'Branch not recorded',
             departmentNotRecorded: 'Department not recorded',
             branchId: 'Branch #{{id}}',
@@ -294,6 +303,16 @@ const translation = {
         pagination: 'Showing {{from}}–{{to}} of {{count}} {{resource}}',
     },
     login: {
+        capsLockOn: 'Caps Lock is on',
+        heroTitle: 'All your IT assets in one place.',
+        heroDescription:
+            'Track equipment, assignments, and changes across every branch and department.',
+        features: {
+            inventory:
+                'Machines, monitors, phones, and printers in a single inventory',
+            assignments: 'Assignments by employee, branch, and department',
+            history: 'An audit trail of every inventory change',
+        },
         description: 'Sign in to manage your IT inventory.',
         password: 'Password',
         signIn: 'Sign in',

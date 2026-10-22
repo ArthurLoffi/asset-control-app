@@ -21,7 +21,10 @@ import {
 } from '@/shared';
 
 const allRecords = {kind: 'all'} as const;
-type DashboardData = DashboardSnapshot & {changes: RecentChange[]};
+type DashboardData = DashboardSnapshot & {
+    changes: RecentChange[];
+    loadedAt: Date;
+};
 let pendingDashboard:
     {revision: number; request: Promise<DashboardData[]>} | undefined;
 
@@ -62,6 +65,7 @@ export async function loadDashboard(
                     printers,
                     ...organizations,
                     changes,
+                    loadedAt: new Date(),
                 },
             ],
         );
@@ -115,5 +119,10 @@ export function useDashboard() {
                 : summarizeDashboard(snapshot, t),
         [snapshot, t],
     );
-    return {...query, summary, changes: snapshot?.changes ?? []};
+    return {
+        ...query,
+        summary,
+        changes: snapshot?.changes ?? [],
+        updatedAt: snapshot?.loadedAt,
+    };
 }

@@ -61,7 +61,6 @@ const translation = {
     togglePasswordVisibility: 'Alternar visibilidade da senha',
     editRecord: 'Editar {{record}}',
     editRecordWithId: 'Editar {{record}} (ID {{id}})',
-    viewRecord: 'Ver {{record}}',
     deactivate: 'Desativar {{resource}}',
     loadingBranches: 'Carregando filiais…',
     loadingDepartments: 'Carregando departamentos…',
@@ -125,9 +124,18 @@ const translation = {
         phoneRecord: 'Registro de celular',
         registeredEmployees: 'Colaboradores cadastrados',
         machines: 'Computadores',
-        monitorRecords: 'Registros de monitores',
-        phoneRecords: 'Registros de celulares',
+        monitors: 'Monitores',
+        phones: 'Celulares',
         printers: 'Impressoras',
+        metricDetails: {
+            employees: '{{formattedCount}} com equipamento',
+            machines: '{{formattedCount}} sem responsável',
+            monitors: '{{formattedCount}} sem responsável',
+            phones: '{{formattedCount}} sem responsável',
+            printers_one: '{{formattedCount}} filial',
+            printers_other: '{{formattedCount}} filiais',
+        },
+        updatedAt: 'Atualizado às {{time}}',
         title: 'Painel',
         description: 'Uma visão geral do seu inventário cadastrado.',
         loading: 'Carregando painel…',
@@ -153,7 +161,7 @@ const translation = {
         recordedStatus: 'Situação informada',
         branchDistribution: 'Distribuição por filial',
         recordDescription:
-            'As contagens representam registros do inventário. Registros de celular incluem entradas somente com chip; monitores podem indicar que não há monitor.',
+            'Os totais de monitores e celulares contam aparelhos físicos com modelo, número de série ou IMEI. Registros somente com chip ou sem monitor não são incluídos.',
         records: 'registros',
         totalRecords: 'total de registros',
         inventoryByDepartmentDescription:
@@ -250,6 +258,7 @@ const translation = {
             user: 'Usuário',
         },
         labels: {
+            mainNavigation: 'Navegação principal',
             branchNotRecorded: 'Filial não informada',
             departmentNotRecorded: 'Departamento não informado',
             branchId: 'Filial #{{id}}',
@@ -299,6 +308,16 @@ const translation = {
         pagination: 'Exibindo {{from}}–{{to}} de {{count}} {{resource}}',
     },
     login: {
+        capsLockOn: 'Caps Lock está ativado',
+        heroTitle: 'Todos os ativos de TI em um só lugar.',
+        heroDescription:
+            'Acompanhe equipamentos, atribuições e alterações em todas as filiais e departamentos.',
+        features: {
+            inventory:
+                'Computadores, monitores, celulares e impressoras em um único inventário',
+            assignments: 'Atribuições por colaborador, filial e departamento',
+            history: 'Histórico de auditoria de cada alteração no inventário',
+        },
         description: 'Entre para gerenciar seu inventário de TI.',
         password: 'Senha',
         signIn: 'Entrar',

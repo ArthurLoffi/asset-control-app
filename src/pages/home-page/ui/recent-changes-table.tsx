@@ -1,4 +1,13 @@
-import {Anchor, Stack, Table, Text} from '@mantine/core';
+import {Anchor, Avatar, Group, Stack, Table, Text} from '@mantine/core';
+import {
+    IconDeviceDesktop,
+    IconDeviceLaptop,
+    IconDeviceMobile,
+    IconMail,
+    IconPrinter,
+    IconUser,
+    type Icon,
+} from '@tabler/icons-react';
 import {useCallback, type ReactElement} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
@@ -33,6 +42,15 @@ const resourceLabels: Record<string, string> = {
     emails: 'email',
 };
 
+const resourceIcons: Record<string, Icon> = {
+    employees: IconUser,
+    machines: IconDeviceLaptop,
+    monitors: IconDeviceDesktop,
+    phones: IconDeviceMobile,
+    printers: IconPrinter,
+    emails: IconMail,
+};
+
 const fieldLabels: Record<string, string> = {
     name: 'common.fields.fullName',
     phone: 'common.fields.contactPhone',
@@ -63,7 +81,52 @@ function formatChangeTime(value: string): string {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 1900
         ? '—'
-        : date.toLocaleString(i18n.language);
+        : new Intl.DateTimeFormat(i18n.language, {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+          }).format(date);
+}
+
+function ResourceCell({resource}: {resource: string}): ReactElement {
+    const {t} = useTranslation();
+    const link = resourceLinks[resource];
+    if (link === undefined) {
+        return <Text size="sm">{resource}</Text>;
+    }
+
+    const ResourceIcon = resourceIcons[resource];
+
+    return (
+        <Anchor component={Link} to={link} size="sm">
+            <Group gap={6} wrap="nowrap" component="span">
+                <ResourceIcon size={16} stroke={1.6} aria-hidden />
+                {t(resourceLabels[resource])}
+            </Group>
+        </Anchor>
+    );
+}
+
+function EditorCell({change}: {change: RecentChange}): ReactElement {
+    const {t} = useTranslation();
+    if (change.user_name.length === 0) {
+        return (
+            <Text size="sm" c="dimmed">
+                {t('dashboard.unknownEditor', {id: change.user_id})}
+            </Text>
+        );
+    }
+
+    return (
+        <Group gap="xs" wrap="nowrap">
+            <Avatar
+                name={change.user_name}
+                color="initials"
+                size={28}
+                aria-hidden
+            />
+            <Text size="sm">{change.user_name}</Text>
+        </Group>
+    );
 }
 
 export function RecentChangesTable({
@@ -176,30 +239,15 @@ export function RecentChangesTable({
                             {sortedRecords.map((change) => (
                                 <Table.Tr key={change.id}>
                                     <Table.Td>
-                                        {resourceLinks[change.resource] ===
-                                        undefined ? (
-                                            <Text size="sm">
-                                                {change.resource}
-                                            </Text>
-                                        ) : (
-                                            <Anchor
-                                                component={Link}
-                                                to={
-                                                    resourceLinks[
-                                                        change.resource
-                                                    ]
-                                                }
-                                                size="sm"
-                                            >
-                                                {t(
-                                                    resourceLabels[
-                                                        change.resource
-                                                    ],
-                                                )}
-                                            </Anchor>
-                                        )}
+                                        <ResourceCell
+                                            resource={change.resource}
+                                        />
                                     </Table.Td>
-                                    <Table.Td>{change.resource_id}</Table.Td>
+                                    <Table.Td>
+                                        <Text size="sm" ff="monospace">
+                                            {change.resource_id}
+                                        </Text>
+                                    </Table.Td>
                                     <Table.Td>
                                         {change.changed_fields.length === 0 ? (
                                             <Text size="sm" c="dimmed">
@@ -248,14 +296,12 @@ export function RecentChangesTable({
                                         )}
                                     </Table.Td>
                                     <Table.Td>
-                                        {change.user_name.length > 0
-                                            ? change.user_name
-                                            : t('dashboard.unknownEditor', {
-                                                  id: change.user_id,
-                                              })}
+                                        <EditorCell change={change} />
                                     </Table.Td>
-                                    <Table.Td>
-                                        {formatChangeTime(change.time)}
+                                    <Table.Td style={{whiteSpace: 'nowrap'}}>
+                                        <Text size="sm">
+                                            {formatChangeTime(change.time)}
+                                        </Text>
                                     </Table.Td>
                                 </Table.Tr>
                             ))}
